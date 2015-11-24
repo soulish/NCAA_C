@@ -1,0 +1,5 @@
+This is my NCAA basketball analysis code.  It was originally written in
+Ruby.  I am planning on converting it into C++, while retaining all of its
+functionality.  Since I use ROOT to do a lot of plotting and fitting of
+the data, I may retain some Ruby code to make fast plots without having
+to write to file.  But otherwise, all of the code will be written in C++.
