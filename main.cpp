@@ -35,7 +35,7 @@ int main() {
 
     TeamGame *tg = new TeamGame("2015 north carolina","2015 iowa",7,new boost::gregorian::date(2014,12,3),"home",0,55,60,19,68,4,23,13,17,24,46,8,5,3,10,22,18,55,3,20,21,24,17,42,9,3,6,12,20,-8.0f);
     cout << endl;
-    cout << tg->efg->p << endl;
+    cout << tg->oefg->p << endl;
 
     return 0;
 }

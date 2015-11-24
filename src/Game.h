@@ -18,15 +18,15 @@ public://probably will go to protected later
     string opp;
     string loc;
     boost::gregorian::date *date;
-    int pts;
-    Pct *fg;
-    Pct *two;
-    Pct *three;
-    Pct *ft;
-    Pct *efg;
-    Pct *ts;
-    Pct *ftmr;
-    int pf;
+    int opts;
+    Pct *ofg;
+    Pct *otwo;
+    Pct *othree;
+    Pct *oft;
+    Pct *oefg;
+    Pct *ots;
+    Pct *oftmr;
+    int opf;
 
 
     Game(string,string,boost::gregorian::date*,string,int,int,int,int,int,int,int,int);
