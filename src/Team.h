@@ -15,17 +15,6 @@
 using namespace std;
 
 class Team {
-private:
-    string name;
-    bool tournament_team;
-    int year;
-    unordered_map<string,TeamGame*>     gamesByDate;      //date strings are of form YYYY-MM-DD
-    unordered_map<string,TeamAverage*>  averagesByDate;
-    unordered_map<string,TeamWAverage*> waveragesByDate;
-
-    static unordered_map<string, Team*> teams; //hash to store all the teams by name
-    static Team *lastTeam;
-
 public:
     //constructor and destructor
     Team(string teamname);
@@ -45,11 +34,25 @@ public:
     void addAverage(TeamAverage* a);
     void addWAverage(TeamWAverage* w);
 
+    void addGames(string);
+
     //static functions
     static int getNumTeams(){  return (int)teams.size();  }
     static const unordered_map<string, Team *> &getTeams() {  return teams; }
     static Team *getLastTeam() {  return lastTeam;  }
     static Team *findTeam(string name){  return teams[name];  }
+
+private:
+    string name;
+    bool tournament_team;
+    int year;
+    unordered_map<string,TeamGame*>     gamesByDate;      //date strings are of form YYYY-MM-DD
+    unordered_map<string,TeamAverage*>  averagesByDate;
+    unordered_map<string,TeamWAverage*> waveragesByDate;
+
+    static unordered_map<string, Team*> teams; //hash to store all the teams by name
+    static Team *lastTeam;
+
 };
 
 

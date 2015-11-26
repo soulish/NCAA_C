@@ -66,9 +66,12 @@ int main() {
     string temp = boost::gregorian::to_iso_extended_string(*(tg->date));
     cout << temp << endl;
 
+    a->addGames("/home/soulish/cpp/NCAA_C/teams/2015/teams.2015_north_carolina.games.d");
+
     std::unordered_map<string, TeamGame *> games = a->getGamesByDate();
-    cout << games["2014-12-03"]->opts << "-" << games["2014-12-03"]->dpts << endl;
-    cout << games["2014-12-03"]->ofg->m << "-" << games["2014-12-03"]->ofg->a << " = " << games["2014-12-03"]->ofg->p << endl;
+    cout << games["2014-11-16"]->opts << "-" << games["2014-11-16"]->dpts << endl;
+    cout << games["2014-11-16"]->ofg->m << "-" << games["2014-11-16"]->ofg->a << " = " << games["2014-11-16"]->ofg->p << endl;
+
 
     return 0;
 }
