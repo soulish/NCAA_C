@@ -3,6 +3,7 @@
 //it is not useful in and of itself.
 
 #include <iostream>
+#include <stdlib.h>
 #include "src/Team.h"
 #include "src/Pct.h"
 #include "src/Pcts.h"
@@ -66,7 +67,10 @@ int main() {
     string temp = boost::gregorian::to_iso_extended_string(*(tg->date));
     cout << temp << endl;
 
-    a->addGames("/home/soulish/cpp/NCAA_C/teams/2015/teams.2015_north_carolina.games.d");
+    char* home, path[256];
+    home = getenv("HOME");
+    sprintf(path,"%s/cpp/NCAA_C/teams/2015/teams.2015_north_carolina.games.d",home);
+    a->addGames(path);
 
     std::unordered_map<string, TeamGame *> games = a->getGamesByDate();
     cout << games["2014-11-16"]->opts << "-" << games["2014-11-16"]->dpts << endl;
