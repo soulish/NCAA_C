@@ -9,11 +9,10 @@
 #include "src/Pcts.h"
 #include "src/Game.h"
 #include "src/TeamGame.h"
+#include "src/readTeams.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/foreach.hpp>
-#define foreach_         BOOST_FOREACH
-#define foreach_r_       BOOST_REVERSE_FOREACH
 
 
 using namespace std;
@@ -26,15 +25,9 @@ int main() {
     cout << Team::getNumTeams() << endl;
     unordered_map teams = Team::getTeams();
 
-    Team *b = Team::findTeam("2015 north carolina");
-
-    if (b) // b/c I return a NULL pointer if not found, this is necessary
-        cout << "hi: " << b->getName() << endl;
-    cout << "bye:" << teams["2015 north carolina"]->getName() << endl;
-
-    foreach_(unordered_map::value_type &p, teams) {
-        std::cout << "From foreach_ " << p.first << ";" << p.second->getName() << '\n';
-    }
+    BOOST_FOREACH(unordered_map::value_type &p, teams) {
+                    std::cout << "From foreach_ " << p.first << ";" << p.second->getName() << '\n';
+                }
 
     Pct *p = new Pct(50,100);
 
@@ -58,24 +51,28 @@ int main() {
             "\t" << pcts->average('m') << "\t" << pcts->weighted_average() <<
             "\t" << pcts->weighted_average_alt() <<  endl;
 
-    TeamGame *tg = new TeamGame("2015 north carolina","2015 iowa",7,new boost::gregorian::date(2014,12,3),"home",0,55,60,19,68,4,23,13,17,24,46,8,5,3,10,22,18,55,3,20,21,24,17,42,9,3,6,12,20,-8.0f);
-    cout << endl;
-    cout << tg->oefg->p << endl;
-
-    a->addGame(tg);
-
-    string temp = boost::gregorian::to_iso_extended_string(*(tg->date));
-    cout << temp << endl;
-
     char* home, path[256];
     home = getenv("HOME");
     sprintf(path,"%s/cpp/NCAA_C/teams/2015/teams.2015_north_carolina.games.d",home);
     a->addGames(path);
 
+    typedef std::unordered_map<string, TeamGame*> unordered_map2;
     std::unordered_map<string, TeamGame *> games = a->getGamesByDate();
     cout << games["2014-11-16"]->opts << "-" << games["2014-11-16"]->dpts << endl;
     cout << games["2014-11-16"]->ofg->m << "-" << games["2014-11-16"]->ofg->a << " = " << games["2014-11-16"]->ofg->p << endl;
 
+    Team *c;
+    c = Team::findTeam("2015 alabama");
+    sprintf(path,"%s/cpp/NCAA_C/teams/2015/teams.2015_alabama.games.d",home);
+    c->addGames(path);
+    games = c->getGamesByDate();
+    BOOST_FOREACH(unordered_map2::value_type &q, games) {
+                    std::cout << "From foreach_ " << q.first << ";" << q.second->opp << '\n';
+                }
+
+
+    sprintf(path,"%s/cpp/NCAA_C/teams/2015/",home);
+    readTeamsFromDir(path);
 
     return 0;
 }
