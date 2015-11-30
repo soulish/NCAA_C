@@ -8,7 +8,7 @@
 
 class Pct {
 public:
-    int m,a;
+    const int m,a;
     float p, var, std_dev,sdom, sdosd,vofv;
 
     Pct(int makes, int attempts);

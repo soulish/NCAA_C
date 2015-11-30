@@ -74,5 +74,12 @@ int main() {
     sprintf(path,"%s/cpp/NCAA_C/teams/2015/",home);
     readTeamsFromDir(path);
 
+    Team *e;
+    e = Team::findTeam("2015 tulane");
+    games = e->getGamesByDate();
+    BOOST_FOREACH(unordered_map2::value_type &q, games) {
+                    std::cout << "From foreach_ " << q.first << ";" << q.second->opp << '\n';
+                }
+
     return 0;
 }

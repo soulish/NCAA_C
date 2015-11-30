@@ -54,7 +54,6 @@ int readTeamsFromDir(std::string dir){
         std::cout << path << std::endl;
     }
 
-    closedir( dp );
     return 0;
 }
 
