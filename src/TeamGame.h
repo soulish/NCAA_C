@@ -20,10 +20,35 @@ public:
              int _opp_orb, int _opp_trb, int _opp_ast, int _opp_stl, int _opp_blk, int _opp_tov, int _opp_pf,
              float _spread);
     //Destructor
+    virtual ~TeamGame() {
+        //delete pointers
+        delete oor;
+        delete odr;
+        delete otr;
+        delete oas;
+        delete ost;
+        delete obl;
+        delete oto;
+
+        delete dfg;
+        delete dtwo;
+        delete dthree;
+        delete dft;
+        delete dor;
+        delete ddr;
+        delete dtr;
+        delete das;
+        delete dst;
+        delete dbl;
+        delete dto;
+        delete defg;
+        delete dftmr;
+    }
     //Copy Constructor
     //Copy Assignment
 
-    //Getters
+
+//Getters
     const int getGame_no() const {  return game_no;  }
     const int getWin() const { return win; }
     const float getPoss() const { return poss;  }

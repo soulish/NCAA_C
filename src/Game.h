@@ -15,6 +15,17 @@ public:
     //Constructor
     Game(std::string,std::string,boost::gregorian::date*,std::string,int,int,int,int,int,int,int,int);
     //Destructor
+    virtual ~Game() {
+        //delete pointers
+        delete date;
+        delete ofg;
+        delete otwo;
+        delete othree;
+        delete oft;
+        delete oefg;
+        delete ots;
+        delete oftmr;
+    }
     //Copy Constructor
     //Copy Assignment
 
