@@ -14,9 +14,7 @@ class Pcts {
 public:
     vector<Pct> *pcts;
 
-    Pcts() {
-        pcts = new vector<Pct>();
-    }
+    Pcts() : pcts(new vector<Pct>) {  }
 
     void add_pct(Pct pct);
     int length();

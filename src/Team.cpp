@@ -12,10 +12,10 @@ Team *Team::lastTeam;
 //Constructor.  All we need is the name of the team.
 //The year is determined from the name.
 //The team is put into the static hash of teams to be found later.
-Team::Team(string teamname) {
-    name = teamname;
-    year = stoi(teamname.substr(0,4)); //teamnames must follow this convention
-    tournament_team = false;
+Team::Team(string teamname)
+        : name (teamname),
+          year(stoi(teamname.substr(0,4))),
+          tournament_team(false){
     std::pair<std::string,Team*> teampair (teamname,this);
     teams.insert(teampair);
     lastTeam = this;
