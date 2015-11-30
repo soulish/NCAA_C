@@ -20,6 +20,33 @@ public:
                 int dthreea, float dthreep, int dfta, float dftp, int dora, float dorp, int ddra, float ddrp,
                 int dtoa, float dtop, int _num_games, float _spread);
     //Destructor
+    virtual ~TeamAverage(){
+        //delete pointers
+        delete date;
+        delete oor;
+        delete oefg;
+        delete oftmr;
+        delete oto;
+
+        delete dor;
+        delete defg;
+        delete dftmr;
+        delete dto;
+
+        delete ofg;
+        delete otwo;
+        delete othree;
+        delete oft;
+        delete odr;
+        delete otr;
+
+        delete dfg;
+        delete dtwo;
+        delete dthree;
+        delete dft;
+        delete ddr;
+        delete dtr;
+    }
     //Copy Constructor
     //Copy Assignment
 

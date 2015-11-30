@@ -17,7 +17,10 @@ public:
     //Constructor
     Team(std::string teamname);
     //Destructor
-    virtual ~Team() { teams.erase(this->name); } //make sure to remove this teamname from the Hash
+    virtual ~Team() {
+        //make sure to remove this teamname from the Hash
+        teams.erase(this->name);
+    }
     //Copy Constructor
     //Copy Assignment
 

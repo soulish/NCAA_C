@@ -20,6 +20,7 @@ public:
                  int dtoa, float dtop, float _rpi, float _srs, float _sos, float _pure_wp, float _alt_wp,
                  int _num_games, float _spread);
     //Destructor
+    virtual ~TeamWAverage(){ }
     //Copy Constructor
     //Copy Assignment
 
