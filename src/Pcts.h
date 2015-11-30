@@ -12,10 +12,16 @@ using namespace std;
 
 class Pcts {
 public:
-    vector<Pct> *pcts;
-
+    //Constructor
     Pcts() : pcts(new vector<Pct>) {  }
+    //Destructor
+    //Copy Constructor
+    //Copy Assignment
 
+    //Getters
+    //Note, no getter for pcts because I don't want people interacting with it
+
+    //Other methods
     void add_pct(Pct pct);
     int length();
     Pct last();
@@ -24,6 +30,9 @@ public:
     float average(char);
     float weighted_average();
     float weighted_average_alt();
+
+private:
+    vector<Pct> *pcts;
 };
 
 

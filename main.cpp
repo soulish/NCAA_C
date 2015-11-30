@@ -46,7 +46,7 @@ int main() {
 
     cout << a->getYear() << endl;
     cout << a->getName() << endl;
-    cout << endl << p->sdom << endl;
+    cout << endl << p->getSdom() << endl;
     cout << endl << pcts->p_bar() << "\t" << pcts->length() <<
             "\t" << pcts->average('m') << "\t" << pcts->weighted_average() <<
             "\t" << pcts->weighted_average_alt() <<  endl;
@@ -58,8 +58,8 @@ int main() {
 
     typedef std::unordered_map<string, TeamGame*> unordered_map2;
     std::unordered_map<string, TeamGame *> games = a->getGamesByDate();
-    cout << games["2014-11-16"]->opts << "-" << games["2014-11-16"]->dpts << endl;
-    cout << games["2014-11-16"]->ofg->m << "-" << games["2014-11-16"]->ofg->a << " = " << games["2014-11-16"]->ofg->p << endl;
+    cout << games["2014-11-16"]->getOpts() << "-" << games["2014-11-16"]->getDpts() << endl;
+    cout << games["2014-11-16"]->getOfg()->getM() << "-" << games["2014-11-16"]->getOfg()->getA() << " = " << games["2014-11-16"]->getOfg()->getP() << endl;
 
     Team *c;
     c = Team::findTeam("2015 alabama");
@@ -67,7 +67,7 @@ int main() {
     c->addGames(path);
     games = c->getGamesByDate();
     BOOST_FOREACH(unordered_map2::value_type &q, games) {
-                    std::cout << "From foreach_ " << q.first << ";" << q.second->opp << '\n';
+                    std::cout << "From foreach_ " << q.first << ";" << q.second->getOpp() << '\n';
                 }
 
 
@@ -78,7 +78,7 @@ int main() {
     e = Team::findTeam("2015 tulane");
     games = e->getGamesByDate();
     BOOST_FOREACH(unordered_map2::value_type &q, games) {
-                    std::cout << "From foreach_ " << q.first << ";" << q.second->opp << '\n';
+                    std::cout << "From foreach_ " << q.first << ";" << q.second->getOpp() << '\n';
                 }
 
     return 0;

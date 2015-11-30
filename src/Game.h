@@ -10,13 +10,35 @@
 #include "Pct.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-using namespace std;
-
 class Game {
-public://probably will go to protected later
-    string team;
-    string opp;
-    string loc;
+public:
+    //Constructor
+    Game(std::string,std::string,boost::gregorian::date*,std::string,int,int,int,int,int,int,int,int);
+    //Destructor
+    //Copy Constructor
+    //Copy Assignment
+
+    //Getters
+    std::string getTeam() const { return team; }
+    std::string getOpp() const { return opp; }
+    std::string getLoc() const { return loc; }
+    boost::gregorian::date *getDate() const { return date; }
+    int getOpts() const { return opts; }
+    Pct *getOfg() const { return ofg; }
+    Pct *getOtwo() const {  return otwo;  }
+    Pct *getOthree() const { return othree;  }
+    Pct *getOft() const {  return oft; }
+    Pct *getOefg() const { return oefg; }
+    Pct *getOts() const { return ots; }
+    Pct *getOftmr() const { return oftmr;  }
+    int getOpf() const { return opf; }
+
+    //Other Methods
+
+protected:
+    std::string team;
+    std::string opp;
+    std::string loc;
     boost::gregorian::date *date;
     int opts;
     Pct *ofg;
@@ -27,9 +49,6 @@ public://probably will go to protected later
     Pct *ots;
     Pct *oftmr;
     int opf;
-
-
-    Game(string,string,boost::gregorian::date*,string,int,int,int,int,int,int,int,int);
 };
 
 

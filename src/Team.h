@@ -16,11 +16,14 @@ using namespace std;
 
 class Team {
 public:
-    //constructor and destructor
+    //Constructor
     Team(string teamname);
+    //Destructor
     virtual ~Team() { teams.erase(this->name); } //make sure to remove this teamname from the Hash
+    //Copy Constructor
+    //Copy Assignment
 
-    //getters and setters
+    //Getters
     const string &getName() const {   return name;  }
     int getYear() const {  return year;  }
     void setTournament_team(bool tournament_team) { Team::tournament_team = tournament_team; }
@@ -29,6 +32,7 @@ public:
     const unordered_map<string, TeamAverage *> &getAveragesByDate() const  {  return averagesByDate;  }
     const unordered_map<string, TeamWAverage *> &getWaveragesByDate() const {  return waveragesByDate;  }
 
+    //Other methods
     //adding games and averages
     void addGame(TeamGame* g);
     void addAverage(TeamAverage* a);

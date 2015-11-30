@@ -8,12 +8,28 @@
 
 class Pct {
 public:
-    const int m,a;
-    float p, var, std_dev,sdom, sdosd,vofv;
-
+    //Constructors
     Pct(int makes, int attempts);
     Pct(int makes, int attempts, float pct);
+    //Destructor
+    //Copy Constructor
+    //Copy Assignment
 
+    //Getters
+    const int getM() const {   return m;  }
+    const int getA() const {   return a;  }
+    float getP() const {       return p;  }
+    float getVar() const {     return var;}
+    float getStd_dev() const { return std_dev; }
+    float getSdom() const {    return sdom;}
+    float getSdosd() const {   return sdosd;}
+    float getVofv() const {    return vofv; }
+
+    //Other methods
+
+private:
+    const int m,a;
+    float p, var, std_dev,sdom, sdosd,vofv;
 };
 
 

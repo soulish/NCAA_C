@@ -4,7 +4,8 @@
 
 #include "Game.h"
 
-Game::Game(string _team, string _opp, boost::gregorian::date *_date,string _loc, int _pts, int _fgm, int _fga, int _threem, int _threea,
+Game::Game(std::string _team, std::string _opp, boost::gregorian::date *_date,
+           std::string _loc, int _pts, int _fgm, int _fga, int _threem, int _threea,
            int _ftm, int _fta, int _pf)
         : team(_team),
           opp(_opp),
@@ -18,4 +19,4 @@ Game::Game(string _team, string _opp, boost::gregorian::date *_date,string _loc,
           oefg(new Pct(_fgm + (int)(0.5 * _threem), _fga)),
           ots(new Pct(_pts, (int)(_fga + 0.44 * _fta))),
           oftmr(new Pct(_ftm, _fga)),
-          opf(_pf){ }
+          opf(_pf)  {   }

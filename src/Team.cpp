@@ -24,21 +24,21 @@ Team::Team(string teamname)
 //Add TeamGame to the gamesByDate hash, using the date of
 //the game in the form YYYY-MM-DD as the key.
 void Team::addGame(TeamGame* g) {
-    string d = boost::gregorian::to_iso_extended_string(*(g->date));
+    string d = boost::gregorian::to_iso_extended_string(*(g->getDate()));
     std::pair<string,TeamGame*> gamePair (d,g);
     gamesByDate.insert(gamePair);
 }
 
 //Add TeamAverage to the averagesByDate hash.
 void Team::addAverage(TeamAverage *a) {
-    string d = boost::gregorian::to_iso_extended_string(*(a->date));
+    string d = boost::gregorian::to_iso_extended_string(*(a->getDate()));
     std::pair<string,TeamAverage*> averagePair (d,a);
     averagesByDate.insert(averagePair);
 }
 
 //Add TeamWAverage to the averagesByDate hash.
 void Team::addWAverage(TeamWAverage *w) {
-    string d = boost::gregorian::to_iso_extended_string(*(w->date));
+    string d = boost::gregorian::to_iso_extended_string(*(w->getDate()));
     std::pair<string,TeamWAverage*> waveragePair (d,w);
     waveragesByDate.insert(waveragePair);
 }
