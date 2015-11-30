@@ -12,25 +12,23 @@
 #include "TeamAverage.h"
 #include "TeamWAverage.h"
 
-using namespace std;
-
 class Team {
 public:
     //Constructor
-    Team(string teamname);
+    Team(std::string teamname);
     //Destructor
     virtual ~Team() { teams.erase(this->name); } //make sure to remove this teamname from the Hash
     //Copy Constructor
     //Copy Assignment
 
     //Getters
-    const string &getName() const {   return name;  }
+    const std::string &getName() const {   return name;  }
     int getYear() const {  return year;  }
     void setTournament_team(bool tournament_team) { Team::tournament_team = tournament_team; }
     bool isTournament_team() const {  return tournament_team;  }
-    const unordered_map<string, TeamGame *> &getGamesByDate() const {  return gamesByDate;  }
-    const unordered_map<string, TeamAverage *> &getAveragesByDate() const  {  return averagesByDate;  }
-    const unordered_map<string, TeamWAverage *> &getWaveragesByDate() const {  return waveragesByDate;  }
+    const std::unordered_map<std::string, TeamGame *> &getGamesByDate() const {  return gamesByDate;  }
+    const std::unordered_map<std::string, TeamAverage *> &getAveragesByDate() const  {  return averagesByDate;  }
+    const std::unordered_map<std::string, TeamWAverage *> &getWaveragesByDate() const {  return waveragesByDate;  }
 
     //Other methods
     //adding games and averages
@@ -38,23 +36,23 @@ public:
     void addAverage(TeamAverage* a);
     void addWAverage(TeamWAverage* w);
 
-    void addGames(string);
+    void addGames(std::string);
 
     //static functions
     static int getNumTeams(){  return (int)teams.size();  }
-    static const unordered_map<string, Team *> &getTeams() {  return teams; }
+    static const std::unordered_map<std::string, Team *> &getTeams() {  return teams; }
     static Team *getLastTeam() {  return lastTeam;  }
-    static Team *findTeam(string name){  return teams[name];  }
+    static Team *findTeam(std::string name){  return teams[name];  }
 
 private:
-    string name;
+    std::string name;
     bool tournament_team;
     int year;
-    unordered_map<string,TeamGame*>     gamesByDate;      //date strings are of form YYYY-MM-DD
-    unordered_map<string,TeamAverage*>  averagesByDate;
-    unordered_map<string,TeamWAverage*> waveragesByDate;
+    std::unordered_map<std::string,TeamGame*>     gamesByDate;      //date strings are of form YYYY-MM-DD
+    std::unordered_map<std::string,TeamAverage*>  averagesByDate;
+    std::unordered_map<std::string,TeamWAverage*> waveragesByDate;
 
-    static unordered_map<string, Team*> teams; //hash to store all the teams by name
+    static std::unordered_map<std::string, Team*> teams; //hash to store all the teams by name
     static Team *lastTeam;
 
 };

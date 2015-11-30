@@ -24,69 +24,69 @@ public:
     //Copy Assignment
 
     //Getters
-    std::string getTeamname() const {  return teamname;  }
-    std::string getTeam() const {      return teamname;  }
-    boost::gregorian::date *getDate() const {  return date;  }
-    int getNum_games() const {  return num_games;  }
-    float getSpread() const {   return spread;     }
-    Pct *getOor() const {   return oor;  }
-    Pct *getOefg() const {  return oefg; }
-    Pct *getOftmr() const { return oftmr;}
-    Pct *getOto() const {   return oto;  }
-    Pct *getDor() const {   return dor;  }
-    Pct *getDefg() const {  return defg; }
-    Pct *getDftmr() const { return dftmr;}
-    Pct *getDto() const {   return dto;  }
-    int getOpts() const {   return opts; }
-    Pct *getOfg() const {   return ofg;  }
-    Pct *getOtwo() const {  return otwo; }
-    Pct *getOthree() const {return othree;}
-    Pct *getOft() const {   return oft;  }
-    Pct *getOdr() const {   return odr;  }
-    Pct *getOtr() const {   return otr;  }
-    int getDpts() const {   return dpts; }
-    Pct *getDfg() const {   return dfg;  }
-    Pct *getDtwo() const {  return dtwo; }
-    Pct *getDthree() const {return dthree;}
-    Pct *getDft() const {   return dft;  }
-    Pct *getDdr() const {   return ddr;  }
-    Pct *getDtr() const {   return dtr;  }
+    const std::string getTeamname() const {  return teamname;  }
+    const std::string getTeam() const {      return teamname;  }
+    const boost::gregorian::date *getDate() const {  return date;  }
+    const int getNum_games() const {  return num_games;  }
+    const float getSpread() const {   return spread;     }
+    const Pct *getOor() const {   return oor;  }
+    const Pct *getOefg() const {  return oefg; }
+    const Pct *getOftmr() const { return oftmr;}
+    const Pct *getOto() const {   return oto;  }
+    const Pct *getDor() const {   return dor;  }
+    const Pct *getDefg() const {  return defg; }
+    const Pct *getDftmr() const { return dftmr;}
+    const Pct *getDto() const {   return dto;  }
+    const int getOpts() const {   return opts; }
+    const Pct *getOfg() const {   return ofg;  }
+    const Pct *getOtwo() const {  return otwo; }
+    const Pct *getOthree() const {return othree;}
+    const Pct *getOft() const {   return oft;  }
+    const Pct *getOdr() const {   return odr;  }
+    const Pct *getOtr() const {   return otr;  }
+    const int getDpts() const {   return dpts; }
+    const Pct *getDfg() const {   return dfg;  }
+    const Pct *getDtwo() const {  return dtwo; }
+    const Pct *getDthree() const {return dthree;}
+    const Pct *getDft() const {   return dft;  }
+    const Pct *getDdr() const {   return ddr;  }
+    const Pct *getDtr() const {   return dtr;  }
 
     //Other methods
 
 protected:
-    std::string teamname;
-    boost::gregorian::date *date;
-    int num_games;
-    float spread;
+    const std::string teamname;
+    const boost::gregorian::date *date;
+    const int num_games;
+    const float spread;
 
     //four factors***************
-    Pct *oor;
-    Pct *oefg;
-    Pct *oftmr;
-    Pct *oto;
+    const Pct *oor;
+    const Pct *oefg;
+    const Pct *oftmr;
+    const Pct *oto;
 
-    Pct *dor;
-    Pct *defg;
-    Pct *dftmr;
-    Pct *dto;
+    const Pct *dor;
+    const Pct *defg;
+    const Pct *dftmr;
+    const Pct *dto;
     //****************************
 
-    int opts;
-    Pct *ofg;
-    Pct *otwo;
-    Pct *othree;
-    Pct *oft;
-    Pct *odr;
-    Pct *otr;
+    const int opts;
+    const Pct *ofg;
+    const Pct *otwo;
+    const Pct *othree;
+    const Pct *oft;
+    const Pct *odr;
+    const Pct *otr;
 
-    int dpts;
-    Pct *dfg;
-    Pct *dtwo;
-    Pct *dthree;
-    Pct *dft;
-    Pct *ddr;
-    Pct *dtr;
+    const int dpts;
+    const Pct *dfg;
+    const Pct *dtwo;
+    const Pct *dthree;
+    const Pct *dft;
+    const Pct *ddr;
+    const Pct *dtr;
 };
 
 

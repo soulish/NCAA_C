@@ -6,13 +6,13 @@
 #include "Team.h"
 
 //declaring the static variables
-std::unordered_map<string,Team*> Team::teams;
+std::unordered_map<std::string,Team*> Team::teams;
 Team *Team::lastTeam;
 
 //Constructor.  All we need is the name of the team.
 //The year is determined from the name.
 //The team is put into the static hash of teams to be found later.
-Team::Team(string teamname)
+Team::Team(std::string teamname)
         : name (teamname),
           year(stoi(teamname.substr(0,4))),
           tournament_team(false){
@@ -24,35 +24,35 @@ Team::Team(string teamname)
 //Add TeamGame to the gamesByDate hash, using the date of
 //the game in the form YYYY-MM-DD as the key.
 void Team::addGame(TeamGame* g) {
-    string d = boost::gregorian::to_iso_extended_string(*(g->getDate()));
-    std::pair<string,TeamGame*> gamePair (d,g);
+    std::string d = boost::gregorian::to_iso_extended_string(*(g->getDate()));
+    std::pair<std::string,TeamGame*> gamePair (d,g);
     gamesByDate.insert(gamePair);
 }
 
 //Add TeamAverage to the averagesByDate hash.
 void Team::addAverage(TeamAverage *a) {
-    string d = boost::gregorian::to_iso_extended_string(*(a->getDate()));
-    std::pair<string,TeamAverage*> averagePair (d,a);
+    std::string d = boost::gregorian::to_iso_extended_string(*(a->getDate()));
+    std::pair<std::string,TeamAverage*> averagePair (d,a);
     averagesByDate.insert(averagePair);
 }
 
 //Add TeamWAverage to the averagesByDate hash.
 void Team::addWAverage(TeamWAverage *w) {
-    string d = boost::gregorian::to_iso_extended_string(*(w->getDate()));
-    std::pair<string,TeamWAverage*> waveragePair (d,w);
+    std::string d = boost::gregorian::to_iso_extended_string(*(w->getDate()));
+    std::pair<std::string,TeamWAverage*> waveragePair (d,w);
     waveragesByDate.insert(waveragePair);
 }
 
 //Add TeamGames via a file containing their games.
-void Team::addGames(string fileName) {
-    string team, opp, loc;
+void Team::addGames(std::string fileName) {
+    std::string team, opp, loc;
     unsigned short yy, mo, da;
     int game_no, win, pts, opp_pts, fgm, fga,threem, threea, ftm, fta, orb, trb, ast, stl, blk, tov, pf;
     int dfgm, dfga, dthreem, dthreea, dftm, dfta, dorb, dtrb, dast, dstl, dblk, dtov, dpf;
     float spread;
 
-    ifstream file(fileName);
-    string value;
+    std::ifstream file(fileName);
+    std::string value;
     while ( file.good() ){
         getline(file, team, ',' );
         getline(file, opp, ',' );

@@ -24,20 +24,20 @@ public:
     //Copy Assignment
 
     //Getters
-    float getRpi() const {  return rpi;  }
-    float getSrs() const {  return srs;  }
-    float getSos() const {  return sos;  }
-    float getPure_wp() const {return pure_wp;}
-    float getAlt_wp() const { return alt_wp; }
+    const float getRpi() const {  return rpi;  }
+    const float getSrs() const {  return srs;  }
+    const float getSos() const {  return sos;  }
+    const float getPure_wp() const {return pure_wp;}
+    const float getAlt_wp() const { return alt_wp; }
 
     //Other methods
 
 private:
-    float rpi;
-    float srs;
-    float sos;
-    float pure_wp;
-    float alt_wp;
+    const float rpi;
+    const float srs;
+    const float sos;
+    const float pure_wp;
+    const float alt_wp;
 };
 
 

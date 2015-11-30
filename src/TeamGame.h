@@ -24,68 +24,68 @@ public:
     //Copy Assignment
 
     //Getters
-    int getGame_no() const {  return game_no;  }
-    int getWin() const { return win; }
-    float getPoss() const { return poss;  }
-    float getSpread() const { return spread; }
+    const int getGame_no() const {  return game_no;  }
+    const int getWin() const { return win; }
+    const float getPoss() const { return poss;  }
+    const float getSpread() const { return spread; }
     std::string getOpp_loc() const { return opp_loc; }
-    Pct *getOor() const {  return oor;  }
-    Pct *getOdr() const {  return odr;  }
-    Pct *getOtr() const {  return otr;  }
-    Pct *getOas() const {  return oas;  }
-    Pct *getOst() const {  return ost;  }
-    Pct *getObl() const {  return obl;  }
-    Pct *getOto() const {  return oto;  }
-    int getDpts() const {  return dpts; }
-    Pct *getDfg() const {  return dfg;  }
-    Pct *getDtwo() const { return dtwo; }
-    Pct *getDthree() const {  return dthree;  }
-    Pct *getDft() const {  return dft;  }
-    Pct *getDor() const {  return dor;  }
-    Pct *getDdr() const {  return ddr;  }
-    Pct *getDtr() const {  return dtr;  }
-    Pct *getDas() const {  return das;  }
-    Pct *getDst() const {  return dst;  }
-    Pct *getDbl() const {  return dbl;  }
-    Pct *getDto() const {  return dto;  }
-    Pct *getDefg() const { return defg; }
-    Pct *getDftmr() const {  return dftmr;  }
-    int getDpf() const {   return dpf;  }
-    float getDposs() const { return dposs;  }
+    const Pct *getOor() const {  return oor;  }
+    const Pct *getOdr() const {  return odr;  }
+    const Pct *getOtr() const {  return otr;  }
+    const Pct *getOas() const {  return oas;  }
+    const Pct *getOst() const {  return ost;  }
+    const Pct *getObl() const {  return obl;  }
+    const Pct *getOto() const {  return oto;  }
+    const int getDpts() const {  return dpts; }
+    const Pct *getDfg() const {  return dfg;  }
+    const Pct *getDtwo() const { return dtwo; }
+    const Pct *getDthree() const {  return dthree;  }
+    const Pct *getDft() const {  return dft;  }
+    const Pct *getDor() const {  return dor;  }
+    const Pct *getDdr() const {  return ddr;  }
+    const Pct *getDtr() const {  return dtr;  }
+    const Pct *getDas() const {  return das;  }
+    const Pct *getDst() const {  return dst;  }
+    const Pct *getDbl() const {  return dbl;  }
+    const Pct *getDto() const {  return dto;  }
+    const Pct *getDefg() const { return defg; }
+    const Pct *getDftmr() const {  return dftmr;  }
+    const int getDpf() const {   return dpf;  }
+    const float getDposs() const { return dposs;  }
 
     //Other methods
 
 private:
-    int game_no;
-    int win;
-    float poss;
-    float spread;
-    std::string opp_loc;
+    const int game_no;
+    const int win;
+    const float poss;
+    const float spread;
+    std::string opp_loc; //not const b/c it must be set in constructor
 
-    Pct *oor;
-    Pct *odr;
-    Pct *otr;
-    Pct *oas;
-    Pct *ost;
-    Pct *obl;
-    Pct *oto;
+    const Pct *oor;
+    const Pct *odr;
+    const Pct *otr;
+    const Pct *oas;
+    const Pct *ost;
+    const Pct *obl;
+    const Pct *oto;
 
-    int dpts;
-    Pct *dfg;
-    Pct *dtwo;
-    Pct *dthree;
-    Pct *dft;
-    Pct *dor;
-    Pct *ddr;
-    Pct *dtr;
-    Pct *das;
-    Pct *dst;
-    Pct *dbl;
-    Pct *dto;
-    Pct *defg;
-    Pct *dftmr;
-    int dpf;
-    float dposs;
+    const int dpts;
+    const Pct *dfg;
+    const Pct *dtwo;
+    const Pct *dthree;
+    const Pct *dft;
+    const Pct *dor;
+    const Pct *ddr;
+    const Pct *dtr;
+    const Pct *das;
+    const Pct *dst;
+    const Pct *dbl;
+    const Pct *dto;
+    const Pct *defg;
+    const Pct *dftmr;
+    const int dpf;
+    const float dposs;
 };
 
 
