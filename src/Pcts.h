@@ -15,6 +15,9 @@ public:
     //Constructor
     Pcts() : pcts(new vector<Pct>) {  }
     //Destructor
+    virtual ~Pcts(){
+        delete pcts;
+    }
     //Copy Constructor
     //Copy Assignment
 

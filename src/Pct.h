@@ -12,6 +12,7 @@ public:
     Pct(int makes, int attempts);
     Pct(int makes, int attempts, float pct);
     //Destructor
+    virtual ~Pct(){};
     //Copy Constructor
     //Copy Assignment
 
