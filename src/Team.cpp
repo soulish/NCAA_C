@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include "Team.h"
+#include <boost/algorithm/string.hpp>
 
 //declaring the static variables
 std::unordered_map<std::string,Team*> Team::teams;
@@ -65,6 +66,7 @@ void Team::addGames(std::string fileName) {
         getline(file, value, ',' );
         da = (unsigned short)stoi(value);
         getline(file, loc, ',' );
+        boost::trim_if(loc,boost::is_any_of("\""));
         getline(file, value, ',' );
         win = stoi(value);
         getline(file, value, ',' );
