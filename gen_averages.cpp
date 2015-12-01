@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "src/Team.h"
+#include "src/TeamGame.h"
 #include "src/Pcts.h"
 #include "src/readTeams.h"
 #include <boost/foreach.hpp>
@@ -33,16 +34,26 @@ int main() {
     BOOST_FOREACH(unordered_map::value_type &p, teams) {
                     games = p.second->getGamesByDate();
                     BOOST_FOREACH(unordered_map2::value_type & q, games) {
-                                    pcts_total->add_pct(*(q.second->getOfg()));
                                     pcts_tot["fg"]->add_pct(*(q.second->getOfg()));
+                                    pcts_tot["two"]->add_pct(*(q.second->getOtwo()));
+                                    pcts_tot["three"]->add_pct(*(q.second->getOthree()));
+                                    pcts_tot["ft"]->add_pct(*(q.second->getOft()));
+                                    pcts_tot["or"]->add_pct(*(q.second->getOor()));
+                                    pcts_tot["dr"]->add_pct(*(q.second->getOdr()));
+                                    pcts_tot["tr"]->add_pct(*(q.second->getOtr()));
+                                    pcts_tot["as"]->add_pct(*(q.second->getOas()));
+                                    pcts_tot["st"]->add_pct(*(q.second->getOst()));
+                                    pcts_tot["bl"]->add_pct(*(q.second->getObl()));
+                                    pcts_tot["to"]->add_pct(*(q.second->getOto()));
+                                    pcts_tot["efg"]->add_pct(*(q.second->getOefg()));
+                                    pcts_tot["ftmr"]->add_pct(*(q.second->getOftmr()));
                                 }
                 }
 
-    std::cout << pcts_total->p_bar() << std::endl;
-    std::cout << pcts_tot["fg"]->p_bar() << std::endl;
-
-    Pct test(100,200);
-    std::cout << test.P() << "\t" << test.Variance() << "\t" << test.StandardDeviationOfStandardDeviation()<< std::endl;
+    BOOST_FOREACH(std::string &s,stats){
+                    std::cout << s << ": " << pcts_tot[s]->sum('m') << "/" << pcts_tot[s]->sum('a') <<
+                            " = " << pcts_tot[s]->p_bar() << std::endl;
+                }
 
     return 0;
 }
