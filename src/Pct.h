@@ -12,25 +12,24 @@ public:
     Pct(int makes, int attempts);
     Pct(int makes, int attempts, float pct);
     //Destructor
-    virtual ~Pct(){};
     //Copy Constructor
     //Copy Assignment
 
     //Getters
-    const int getM() const {   return m;  }
-    const int getA() const {   return a;  }
-    float getP() const {       return p;  }
-    float getVar() const {     return var;}
-    float getStd_dev() const { return std_dev; }
-    float getSdom() const {    return sdom;}
-    float getSdosd() const {   return sdosd;}
-    float getVofv() const {    return vofv; }
+    const int M() const {   return m;  }
+    const int A() const {   return a;  }
+    const float P() const { return p;  }
 
     //Other methods
+    float Variance() const;
+    float StandardDeviation() const;
+    float StandardDeviationOfTheMean() const;
+    float StandardDeviationOfStandardDeviation() const;
+    float VarianceOfVariance() const;
 
 private:
     const int m,a;
-    float p, var, std_dev,sdom, sdosd,vofv;
+    const float p;
 };
 
 

@@ -25,9 +25,9 @@ int Pcts::sum(char stat) {//this is only the sum over m or a
     vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
         if (stat == 'a')
-            sum += v->getA();
+            sum += v->A();
         else //stat == 'm'
-            sum += v->getM();
+            sum += v->M();
         v++;
     }
     return sum;
@@ -48,14 +48,14 @@ float Pcts::weighted_average() {
     float sum_weights = 0;
     vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
-        sum_weights += 1/v->getVar();
+        sum_weights += 1/ v->Variance();
         v++;
     }
 
     float s = 0;
     v = pcts->begin();
     while(v != pcts->end()) {
-        s += (v->getP()/v->getVar())/sum_weights;
+        s += (v->P() / v->Variance()) / sum_weights;
         v++;
     }
 
@@ -66,14 +66,14 @@ float Pcts::weighted_average_alt() {
     int sum_weights = 0;
     vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
-        sum_weights += v->getA();
+        sum_weights += v->A();
         v++;
     }
 
     float s = 0;
     v = pcts->begin();
     while(v != pcts->end()) {
-        s += (v->getA()*v->getP())/sum_weights;
+        s += (v->A() * v->P()) / sum_weights;
         v++;
     }
 
