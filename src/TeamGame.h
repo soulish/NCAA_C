@@ -51,7 +51,7 @@ public:
 //Getters
     const int getGame_no() const {  return game_no;  }
     const int getWin() const { return win; }
-    const float getPoss() const { return poss;  }
+    const float getOposs() const { return oposs;  }
     const float getSpread() const { return spread; }
     std::string getOpp_loc() const { return opp_loc; }
     const Pct *getOor() const {  return oor;  }
@@ -77,13 +77,14 @@ public:
     const Pct *getDftmr() const {  return dftmr;  }
     const int getDpf() const {   return dpf;  }
     const float getDposs() const { return dposs;  }
+    const Pct *getPct(std::string which) const;
 
     //Other methods
 
 private:
     const int game_no;
     const int win;
-    const float poss;
+    const float oposs;
     const float spread;
     std::string opp_loc; //not const b/c it must be set in constructor
 
@@ -100,6 +101,8 @@ private:
     const Pct *dtwo;
     const Pct *dthree;
     const Pct *dft;
+
+    const float dposs;
     const Pct *dor;
     const Pct *ddr;
     const Pct *dtr;
@@ -110,7 +113,6 @@ private:
     const Pct *defg;
     const Pct *dftmr;
     const int dpf;
-    const float dposs;
 };
 
 

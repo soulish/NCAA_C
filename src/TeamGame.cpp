@@ -13,25 +13,25 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
         : Game(_team,_opp,_date,_loc,_pts,_fgm,_fga,_threem,_threea,_ftm,_fta,_pf),
           game_no(_game_no),
           win(_win),
-          poss(_fga + _tov + 0.44f*_fta),
+          oposs(_fga + _tov + 0.44f * _fta),
           spread(_spread),
           oor(new Pct(_orb,_orb+(_opp_trb-_opp_orb))),
           odr(new Pct(_trb-_orb,(_trb-_orb)+_opp_orb)),
           otr(new Pct(_trb,_trb + _opp_trb)),
           oas(new Pct(_ast,_fgm)),
-          ost(new Pct(_stl,(int)poss)),
-          obl(new Pct(_blk,(int)poss)),
-          oto(new Pct(_tov,(int)poss)),
+          ost(new Pct(_stl,(int) oposs)),
+          obl(new Pct(_blk,(int) oposs)),
+          oto(new Pct(_tov,(int) oposs)),
           dpts(_opp_pts),
           dfg(new Pct(_opp_fgm,_opp_fga)),
           dtwo(new Pct(_opp_fgm-_opp_threem,_opp_fga-_opp_threea)),
           dthree(new Pct(_opp_threem,_opp_threea)),
           dft(new Pct(_opp_ftm,_opp_fta)),
+          dposs(_opp_fga + _opp_tov + 0.44f*_opp_fta),
           dor(new Pct(_opp_orb,_opp_orb+(_trb - _orb))),
           ddr(new Pct(_opp_trb - _opp_orb,(_opp_trb - _opp_orb) + _orb)),
           dtr(new Pct(_opp_trb,_opp_trb+_trb)),
           das(new Pct(_opp_ast,_opp_fga)),
-          dposs(_opp_fga + _opp_tov + 0.44f*_opp_fta),
           dst(new Pct(_opp_stl,(int)dposs)),
           dbl(new Pct(_opp_blk,(int)dposs)),
           dto(new Pct(_opp_tov,(int)dposs)),
@@ -41,4 +41,64 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
     if (_loc == "away") opp_loc = "home";
     else if (_loc == "home") opp_loc = "away";
     else if (_loc == "neutral") opp_loc = "neutral";
+}
+
+//generic Pct getter function. I can get any Pct stat with this one function.
+const Pct *TeamGame::getPct(std::string which) const {
+    if (which == "ofg")
+        return ofg;
+    else if (which == "otwo")
+        return otwo;
+    else if (which == "othree")
+        return othree;
+    else if (which == "oft")
+        return oft;
+    else if (which == "oor")
+        return oor;
+    else if (which == "odr")
+        return odr;
+    else if (which == "otr")
+        return otr;
+    else if (which == "oas")
+        return oas;
+    else if (which == "ost")
+        return ost;
+    else if (which == "obl")
+        return obl;
+    else if (which == "oto")
+        return oto;
+    else if (which == "oefg")
+        return oefg;
+    else if (which == "oftmr")
+        return oftmr;
+    else if (which == "dfg")
+        return dfg;
+    else if (which == "dtwo")
+        return dtwo;
+    else if (which == "dthree")
+        return dthree;
+    else if (which == "dft")
+        return dft;
+    else if (which == "dor")
+        return dor;
+    else if (which == "ddr")
+        return ddr;
+    else if (which == "dtr")
+        return dtr;
+    else if (which == "das")
+        return das;
+    else if (which == "dst")
+        return dst;
+    else if (which == "dbl")
+        return dbl;
+    else if (which == "dto")
+        return dto;
+    else if (which == "defg")
+        return defg;
+    else if (which == "dftmr")
+        return dftmr;
+    else {
+        std::cout << "Error " << which << std::endl;
+        return nullptr;
+    }
 }
