@@ -49,8 +49,9 @@ int readTeamsFromDir(std::string dir){
         team = Team::findTeam(teamName);
         team->addGames(filepath);
 
-        std::cout << filepath << std::endl;
+        std::cout << "Reading in games for " << teamName << "\r";//std::endl;
     }
+    std::cout << std::endl;
 
     return 0;
 }
