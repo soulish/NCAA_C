@@ -21,7 +21,6 @@ int readTeamsFromDir(std::string dir){
     struct stat filestat;
     std::vector<std::string> result;
     std::string teamName;
-    char* path = new char();
     std::string fileName;
     Team *team;
 
@@ -34,10 +33,10 @@ int readTeamsFromDir(std::string dir){
     while ((dirp = readdir(dp))){
         //make sure it's a file with a proper extension, and the games designation
         fileName = dirp->d_name;
-        if (!boost::contains(fileName,".d")) continue;
+        if (!boost::contains(fileName,".d"))     continue;
         if (!boost::contains(fileName,"games"))  continue;
 
-        filepath = dir + "/" + fileName;
+        filepath = dir + fileName;
 
         //Ignore subdirs and messed up files
         if (stat(filepath.c_str(), &filestat))   continue;
@@ -48,10 +47,9 @@ int readTeamsFromDir(std::string dir){
         boost::replace_all(teamName,"_"," ");
         new Team(teamName);
         team = Team::findTeam(teamName);
-        std::sprintf(path, "%s%s", dir.c_str(), fileName.c_str());
-        team->addGames(path);
+        team->addGames(filepath);
 
-        std::cout << path << std::endl;
+        std::cout << filepath << std::endl;
     }
 
     return 0;
