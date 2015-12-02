@@ -50,7 +50,7 @@ void Team::addGames(std::string fileName) {
     unsigned short yy, mo, da;
     int game_no, win, pts, opp_pts, fgm, fga,threem, threea, ftm, fta, orb, trb, ast, stl, blk, tov, pf;
     int dfgm, dfga, dthreem, dthreea, dftm, dfta, dorb, dtrb, dast, dstl, dblk, dtov, dpf;
-    float spread;
+    double spread;
 
     std::ifstream file(fileName);
     std::string value;
@@ -126,7 +126,7 @@ void Team::addGames(std::string fileName) {
         getline(file, value, ',' );
         dpf = stoi(value);
         getline(file, value, '\n' );
-        spread = stof(value);
+        spread = stod(value);
 
         if (file.good()) {
             this->addGame(

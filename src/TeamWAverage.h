@@ -12,33 +12,33 @@
 class TeamWAverage : public TeamAverage {
 public:
     //Constructor
-    TeamWAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, float twop,
-                 int threea, float threep, int fta, float ftp, int ora, float orp, int dra, float drp,
-                 int toa, float top,
-                 int _dpts, int dtwoa, float dtwop,
-                 int dthreea, float dthreep, int dfta, float dftp, int dora, float dorp, int ddra, float ddrp,
-                 int dtoa, float dtop, float _rpi, float _srs, float _sos, float _pure_wp, float _alt_wp,
-                 int _num_games, float _spread);
+    TeamWAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, double twop,
+                 int threea, double threep, int fta, double ftp, int ora, double orp, int dra, double drp,
+                 int toa, double top,
+                 int _dpts, int dtwoa, double dtwop,
+                 int dthreea, double dthreep, int dfta, double dftp, int dora, double dorp, int ddra, double ddrp,
+                 int dtoa, double dtop, double _rpi, double _srs, double _sos, double _pure_wp, double _alt_wp,
+                 int _num_games, double _spread);
     //Destructor
     virtual ~TeamWAverage(){ }
     //Copy Constructor
     //Copy Assignment
 
     //Getters
-    const float getRpi() const {  return rpi;  }
-    const float getSrs() const {  return srs;  }
-    const float getSos() const {  return sos;  }
-    const float getPure_wp() const {return pure_wp;}
-    const float getAlt_wp() const { return alt_wp; }
+    const double getRpi() const {  return rpi;  }
+    const double getSrs() const {  return srs;  }
+    const double getSos() const {  return sos;  }
+    const double getPure_wp() const {return pure_wp;}
+    const double getAlt_wp() const { return alt_wp; }
 
     //Other methods
 
 private:
-    const float rpi;
-    const float srs;
-    const float sos;
-    const float pure_wp;
-    const float alt_wp;
+    const double rpi;
+    const double srs;
+    const double sos;
+    const double pure_wp;
+    const double alt_wp;
 };
 
 

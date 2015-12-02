@@ -4,10 +4,10 @@
 
 #include "TeamAverage.h"
 
-TeamAverage::TeamAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, float twop, int threea,
-                         float threep, int fta, float ftp, int ora, float orp, int dra, float drp, int toa, float top,
-                         int _dpts, int dtwoa, float dtwop, int dthreea, float dthreep, int dfta, float dftp, int dora,
-                         float dorp, int ddra, float ddrp, int dtoa, float dtop, int _num_games, float _spread)
+TeamAverage::TeamAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, double twop, int threea,
+                         double threep, int fta, double ftp, int ora, double orp, int dra, double drp, int toa, double top,
+                         int _dpts, int dtwoa, double dtwop, int dthreea, double dthreep, int dfta, double dftp, int dora,
+                         double dorp, int ddra, double ddrp, int dtoa, double dtop, int _num_games, double _spread)
     : teamname(_teamname),
       date(_date),
       num_games(_num_games),

@@ -10,7 +10,7 @@ class Pct {
 public:
     //Constructors
     Pct(int makes, int attempts);
-    Pct(int makes, int attempts, float pct);
+    Pct(int makes, int attempts, double pct);
     //Destructor
     //Copy Constructor
     //Copy Assignment
@@ -18,18 +18,18 @@ public:
     //Getters
     const int M() const {   return m;  }
     const int A() const {   return a;  }
-    const float P() const { return p;  }
+    const double P() const { return p;  }
 
     //Other methods
-    float Variance() const;
-    float StandardDeviation() const;
-    float StandardDeviationOfTheMean() const;
-    float StandardDeviationOfStandardDeviation() const;
-    float VarianceOfVariance() const;
+    double Variance() const;
+    double StandardDeviation() const;
+    double StandardDeviationOfTheMean() const;
+    double StandardDeviationOfStandardDeviation() const;
+    double VarianceOfVariance() const;
 
 private:
     const int m,a;
-    const float p;
+    const double p;
 };
 
 

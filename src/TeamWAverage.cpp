@@ -4,13 +4,13 @@
 
 #include "TeamWAverage.h"
 
-TeamWAverage::TeamWAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, float twop,
-                 int threea, float threep, int fta, float ftp, int ora, float orp, int dra, float drp,
-                 int toa, float top,
-                 int _dpts, int dtwoa, float dtwop,
-                 int dthreea, float dthreep, int dfta, float dftp, int dora, float dorp, int ddra, float ddrp,
-                 int dtoa, float dtop, float _rpi, float _srs, float _sos, float _pure_wp, float _alt_wp,
-                 int _num_games, float _spread)
+TeamWAverage::TeamWAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, double twop,
+                 int threea, double threep, int fta, double ftp, int ora, double orp, int dra, double drp,
+                 int toa, double top,
+                 int _dpts, int dtwoa, double dtwop,
+                 int dthreea, double dthreep, int dfta, double dftp, int dora, double dorp, int ddra, double ddrp,
+                 int dtoa, double dtop, double _rpi, double _srs, double _sos, double _pure_wp, double _alt_wp,
+                 int _num_games, double _spread)
         : TeamAverage(_teamname,_date,_pts, twoa, twop,threea,threep,
                       fta,ftp,ora,orp,dra,drp, toa,top,
                       _dpts,dtwoa,dtwop,dthreea,dthreep,dfta,dftp,

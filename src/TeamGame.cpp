@@ -9,7 +9,7 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
                    int _orb, int _trb, int _ast, int _stl, int _blk, int _tov, int _pf,
                    int _opp_fgm, int _opp_fga, int _opp_threem, int _opp_threea, int _opp_ftm, int _opp_fta,
                    int _opp_orb, int _opp_trb, int _opp_ast, int _opp_stl, int _opp_blk, int _opp_tov, int _opp_pf,
-                   float _spread)
+                   double _spread)
         : Game(_team,_opp,_date,_loc,_pts,_fgm,_fga,_threem,_threea,_ftm,_fta,_pf),
           game_no(_game_no),
           win(_win),

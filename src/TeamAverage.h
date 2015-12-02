@@ -13,12 +13,12 @@
 class TeamAverage {
 public:
     //Constructor
-    TeamAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, float twop,
-                int threea, float threep, int fta, float ftp, int ora, float orp, int dra, float drp,
-                int toa, float top,
-                int _dpts, int dtwoa, float dtwop,
-                int dthreea, float dthreep, int dfta, float dftp, int dora, float dorp, int ddra, float ddrp,
-                int dtoa, float dtop, int _num_games, float _spread);
+    TeamAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, double twop,
+                int threea, double threep, int fta, double ftp, int ora, double orp, int dra, double drp,
+                int toa, double top,
+                int _dpts, int dtwoa, double dtwop,
+                int dthreea, double dthreep, int dfta, double dftp, int dora, double dorp, int ddra, double ddrp,
+                int dtoa, double dtop, int _num_games, double _spread);
     //Destructor
     virtual ~TeamAverage(){
         //delete pointers
@@ -55,7 +55,7 @@ public:
     const std::string getTeam() const {      return teamname;  }
     const boost::gregorian::date *getDate() const {  return date;  }
     const int getNum_games() const {  return num_games;  }
-    const float getSpread() const {   return spread;     }
+    const double getSpread() const {   return spread;     }
     const Pct *getOor() const {   return oor;  }
     const Pct *getOefg() const {  return oefg; }
     const Pct *getOftmr() const { return oftmr;}
@@ -85,7 +85,7 @@ protected:
     const std::string teamname;
     const boost::gregorian::date *date;
     const int num_games;
-    const float spread;
+    const double spread;
 
     //four factors***************
     const Pct *oor;

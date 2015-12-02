@@ -29,10 +29,10 @@ public:
     int length();
     Pct last();
     int sum(char);
-    float p_bar();
-    float average(char);
-    float weighted_average();
-    float weighted_average_alt();
+    double p_bar();
+    double average(char);
+    double weighted_average();
+    double weighted_average_alt();
 
 private:
     vector<Pct> *pcts;

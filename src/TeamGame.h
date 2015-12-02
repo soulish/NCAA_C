@@ -18,7 +18,7 @@ public:
              int _orb, int _trb, int _ast, int _stl, int _blk, int _tov, int _pf,
              int _opp_fgm, int _opp_fga, int _opp_threem, int _opp_threea, int _opp_ftm, int _opp_fta,
              int _opp_orb, int _opp_trb, int _opp_ast, int _opp_stl, int _opp_blk, int _opp_tov, int _opp_pf,
-             float _spread);
+             double _spread);
     //Destructor
     virtual ~TeamGame() {
         //delete pointers
@@ -51,8 +51,8 @@ public:
 //Getters
     const int getGame_no() const {  return game_no;  }
     const int getWin() const { return win; }
-    const float getOposs() const { return oposs;  }
-    const float getSpread() const { return spread; }
+    const double getOposs() const { return oposs;  }
+    const double getSpread() const { return spread; }
     std::string getOpp_loc() const { return opp_loc; }
     const Pct *getOor() const {  return oor;  }
     const Pct *getOdr() const {  return odr;  }
@@ -76,7 +76,7 @@ public:
     const Pct *getDefg() const { return defg; }
     const Pct *getDftmr() const {  return dftmr;  }
     const int getDpf() const {   return dpf;  }
-    const float getDposs() const { return dposs;  }
+    const double getDposs() const { return dposs;  }
     const Pct *getPct(std::string which) const;
 
     //Other methods
@@ -84,8 +84,8 @@ public:
 private:
     const int game_no;
     const int win;
-    const float oposs;
-    const float spread;
+    const double oposs;
+    const double spread;
     std::string opp_loc; //not const b/c it must be set in constructor
 
     const Pct *oor;
@@ -102,7 +102,7 @@ private:
     const Pct *dthree;
     const Pct *dft;
 
-    const float dposs;
+    const double dposs;
     const Pct *dor;
     const Pct *ddr;
     const Pct *dtr;
