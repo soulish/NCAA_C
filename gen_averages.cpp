@@ -58,7 +58,14 @@ int main() {
 
     //We look through the directory where the game files are,
     //add all the teams and their games.
-    readTeamsFromDir(path);
+    int years[] = {2006,2002,2003,2004,2005};
+    int outYear = 2007;
+
+    BOOST_FOREACH(int &year, years){
+                    sprintf(path, "%s/cpp/NCAA_C/teams/%i/", homePath,year);
+                    std::cout << "Doing " << year << std::endl;
+                    readTeamsFromDir(path);
+                }
 
     //containers for the teams and the teamgames
     teamHash teams = Team::getTeams();
@@ -172,6 +179,23 @@ int main() {
     std::cout << "Home    : " << doubleFormatter(0.5/(wins_home/(double)total_home),3) << std::endl;
     std::cout << "Away    : " << doubleFormatter(0.5/(wins_away/(double)total_away),3) << std::endl;
     std::cout << "Neutral : " << doubleFormatter(0.5/(wins_neutral/(double)total_neutral),3) << std::endl;
+
+
+
+
+
+
+    //version for text file
+    std::cout << outYear << ",";
+    std::cout << doubleFormatter(pcts_total["opts"]->average('m'),3) << ",";
+    std::cout << doubleFormatter(pcts_total["opf"]->average('m'),3) << ",";
+    BOOST_FOREACH(std::string &s,stats){
+                    std::cout << doubleFormatter(pcts_total[s]->average('m'),3) << ",";
+                    std::cout << doubleFormatter(pcts_total[s]->average('a'),3) << ",";
+                    std::cout << doubleFormatter(pcts_total[s]->p_bar(),3) << ",";
+                }
+    std::cout << outYear << std::endl;
+
 
     return 0;
 }
