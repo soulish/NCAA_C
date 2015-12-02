@@ -17,6 +17,7 @@
 #include "src/TeamGame.h"
 #include "src/Pcts.h"
 #include "src/readTeams.h"
+#include "helpers/doubleFormatter.h"
 #include <boost/foreach.hpp>
 
 int main() {
@@ -116,61 +117,61 @@ int main() {
     //These are the averages
     std::cout << "\n\nAverages" << std::endl;
     BOOST_FOREACH(std::string &s,basic_stats){
-                    std::cout << s << ": " << pcts_total[s]->average('m') << std::endl;
+                    std::cout << s << ": " << doubleFormatter(pcts_total[s]->average('m'),3) << std::endl;
                 }
     BOOST_FOREACH(std::string &s,stats){
-                    std::cout << s << ".m: " << pcts_total[s]->average('m') << std::endl;
-                    std::cout << s << ".a: " << pcts_total[s]->average('a') << std::endl;
-                    std::cout << s << ".p: " << pcts_total[s]->p_bar() << std::endl;
+                    std::cout << s << ".m: " << doubleFormatter(pcts_total[s]->average('m'),3) << std::endl;
+                    std::cout << s << ".a: " << doubleFormatter(pcts_total[s]->average('a'),3) << std::endl;
+                    std::cout << s << ".p: " << doubleFormatter(pcts_total[s]->p_bar(),3) << std::endl;
                 }
 
     //these are the ratios of the total average to the home averages, used for weighting later
     std::cout << "\n\nNeutral Ratios: home" << std::endl;
     BOOST_FOREACH(std::string &s,basic_stats){
-                    std::cout << s << ": " << pcts_total[s]->average('m') / pcts_home[s]->average('m') << std::endl;
+                    std::cout << s << ": " << doubleFormatter(pcts_total[s]->average('m') / pcts_home[s]->average('m'),3) << std::endl;
                 }
     BOOST_FOREACH(std::string &s,stats){
-                    std::cout << s << ".m: " << pcts_total[s]->average('m') / pcts_home[s]->average('m') << std::endl;
-                    std::cout << s << ".a: " << pcts_total[s]->average('a') / pcts_home[s]->average('a') << std::endl;
-                    std::cout << s << ".p: " << pcts_total[s]->p_bar() / pcts_home[s]->p_bar() << std::endl;
+                    std::cout << s << ".m: " << doubleFormatter(pcts_total[s]->average('m') / pcts_home[s]->average('m'),3) << std::endl;
+                    std::cout << s << ".a: " << doubleFormatter(pcts_total[s]->average('a') / pcts_home[s]->average('a'),3) << std::endl;
+                    std::cout << s << ".p: " << doubleFormatter(pcts_total[s]->p_bar() / pcts_home[s]->p_bar(),3) << std::endl;
                 }
 
     //these are the ratios of the total average to the away averages, used for weighting later
     std::cout << "\n\nNeutral Ratios: away" << std::endl;
     BOOST_FOREACH(std::string &s,basic_stats){
-                    std::cout << s << ": " << pcts_total[s]->average('m') / pcts_away[s]->average('m') << std::endl;
+                    std::cout << s << ": " << doubleFormatter(pcts_total[s]->average('m') / pcts_away[s]->average('m'),3) << std::endl;
                 }
     BOOST_FOREACH(std::string &s,stats){
-                    std::cout << s << ".m: " << pcts_total[s]->average('m') / pcts_away[s]->average('m') << std::endl;
-                    std::cout << s << ".a: " << pcts_total[s]->average('a') / pcts_away[s]->average('a') << std::endl;
-                    std::cout << s << ".p: " << pcts_total[s]->p_bar() / pcts_away[s]->p_bar() << std::endl;
+                    std::cout << s << ".m: " << doubleFormatter(pcts_total[s]->average('m') / pcts_away[s]->average('m'),3) << std::endl;
+                    std::cout << s << ".a: " << doubleFormatter(pcts_total[s]->average('a') / pcts_away[s]->average('a'),3) << std::endl;
+                    std::cout << s << ".p: " << doubleFormatter(pcts_total[s]->p_bar() / pcts_away[s]->p_bar(),3) << std::endl;
                 }
 
     //these are the ratios of the total average to the neutral site averages, used for weighting later
     //these really should be very close to 1
     std::cout << "\n\nNeutral Ratios: neutral" << std::endl;
     BOOST_FOREACH(std::string &s,basic_stats){
-                    std::cout << s << ": " << pcts_total[s]->average('m') / pcts_neutral[s]->average('m') << std::endl;
+                    std::cout << s << ": " << doubleFormatter(pcts_total[s]->average('m') / pcts_neutral[s]->average('m'),3) << std::endl;
                 }
     BOOST_FOREACH(std::string &s,stats){
-                    std::cout << s << ".m: " << pcts_total[s]->average('m') / pcts_neutral[s]->average('m') << std::endl;
-                    std::cout << s << ".a: " << pcts_total[s]->average('a') /  pcts_neutral[s]->average('a') << std::endl;
-                    std::cout << s << ".p: " << pcts_total[s]->p_bar() /  pcts_neutral[s]->p_bar() << std::endl;
+                    std::cout << s << ".m: " << doubleFormatter(pcts_total[s]->average('m') / pcts_neutral[s]->average('m'),3) << std::endl;
+                    std::cout << s << ".a: " << doubleFormatter(pcts_total[s]->average('a') /  pcts_neutral[s]->average('a'),3) << std::endl;
+                    std::cout << s << ".p: " << doubleFormatter(pcts_total[s]->p_bar() /  pcts_neutral[s]->p_bar(),3) << std::endl;
                 }
 
     //these are the point differentials at home vs away.
     std::cout << "\n\nPoint differentials" << std::endl;
-    std::cout << "Home    : " << pt_diff_home / (double)pcts_home["opts"]->length() <<
+    std::cout << "Home    : " << doubleFormatter(pt_diff_home / (double)pcts_home["opts"]->length(),3) <<
             "\t\t" << pcts_home["opts"]->length() << std::endl;
-    std::cout << "Away    : " << pt_diff_away / (double)pcts_away["opts"]->length() <<
+    std::cout << "Away    : " << doubleFormatter(pt_diff_away / (double)pcts_away["opts"]->length(),3) <<
             "\t\t" << pcts_away["opts"]->length() << std::endl;
-    std::cout << "Neutral : " << pt_diff_neutral / (double)pcts_neutral["opts"]->length() <<
+    std::cout << "Neutral : " << doubleFormatter(pt_diff_neutral / (double)pcts_neutral["opts"]->length(),3) <<
             "\t\t" << pcts_neutral["opts"]->length() << std::endl;
 
     std::cout << "\n\nWin Ratio" << std::endl;
-    std::cout << "Home    : " << 0.5/(wins_home/(double)total_home) << std::endl;
-    std::cout << "Away    : " << 0.5/(wins_away/(double)total_away) << std::endl;
-    std::cout << "Neutral : " << 0.5/(wins_neutral/(double)total_neutral) << std::endl;
+    std::cout << "Home    : " << doubleFormatter(0.5/(wins_home/(double)total_home),3) << std::endl;
+    std::cout << "Away    : " << doubleFormatter(0.5/(wins_away/(double)total_away),3) << std::endl;
+    std::cout << "Neutral : " << doubleFormatter(0.5/(wins_neutral/(double)total_neutral),3) << std::endl;
 
     return 0;
 }
