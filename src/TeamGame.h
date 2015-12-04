@@ -48,12 +48,12 @@ public:
     //Copy Assignment
 
 
-//Getters
+    //Getters
     const int getGame_no() const {  return game_no;  }
     const int getWin() const { return win; }
     const double getOposs() const { return oposs;  }
     const double getSpread() const { return spread; }
-    std::string getOpp_loc() const { return opp_loc; }
+    std::string getOppLoc() const { return opp_loc; }
     const Pct *getOor() const {  return oor;  }
     const Pct *getOdr() const {  return odr;  }
     const Pct *getOtr() const {  return otr;  }
@@ -78,6 +78,7 @@ public:
     const int getDpf() const {   return dpf;  }
     const double getDposs() const { return dposs;  }
     const Pct *getPct(std::string which) const;
+    const double getValue(std::string which) const;
 
     //Other methods
 

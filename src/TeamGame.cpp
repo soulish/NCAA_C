@@ -3,6 +3,7 @@
 //
 
 #include "TeamGame.h"
+#include <boost/algorithm/string.hpp>
 
 TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gregorian::date *_date, std::string _loc, int _win, int _pts, int _opp_pts,
                    int _fgm, int _fga, int _threem, int _threea, int _ftm, int _fta,
@@ -100,5 +101,27 @@ const Pct *TeamGame::getPct(std::string which) const {
     else {
         std::cout << "Error " << which << std::endl;
         return nullptr;
+    }
+}
+
+const double TeamGame::getValue(std::string which) const {
+    std::vector<std::string> statType;
+    boost::split(statType, which, boost::is_any_of("."));
+    if (statType[0] == "opts" && statType[1] == "m")
+        return (double)opts;
+    else if (statType[0] == "dpts" && statType[1] == "m")
+        return (double)dpts;
+    else if (statType[0] == "opf" && statType[1] == "m")
+        return (double)opf;
+    else if (statType[0] == "dpf" && statType[1] == "m")
+        return (double)dpf;
+    else{
+        const Pct *pct = getPct(statType[0]);
+        if (statType[1] == "m")
+            return (double) pct->M();
+        else if (statType[1] == "a")
+            return (double) pct->A();
+        else if (statType[1] == "p")
+            return pct->P();
     }
 }
