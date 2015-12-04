@@ -4,6 +4,8 @@
 
 #include <fstream>
 #include "Team.h"
+#include "ConstantTeamNeutralRatios.h"
+#include <boost/algorithm/string.hpp>
 
 //declaring the static variables
 std::unordered_map<std::string,Team*> Team::teams;
@@ -134,4 +136,230 @@ void Team::addGames(std::string fileName) {
                                  dorb, dtrb, dast, dstl, dblk, dtov, dpf, spread));
         }
     }
+}
+
+std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
+    //these are the stats we are going to be weighting
+    std::string stats[] = {"pts.m","two.a","two.p","three.a","three.p","ft.a","ft.p",
+                           "or.a","or.p","dr.a","dr.p","to.a","to.p"};
+    typedef std::unordered_map<std::string, TeamGame*> gamesByDateType;
+    typedef std::unordered_map<std::string, double> hashDoubleType;
+    typedef std::unordered_map<std::string, int> hashIntType;
+
+    std::unordered_map<std::string,double> totals, weighted_stats;
+    for (std::string &s : stats){
+        totals.emplace("o"+s,0);
+        totals.emplace("d"+s,0);
+        weighted_stats.emplace("o"+s, 0);
+        weighted_stats.emplace("d"+s, 0);
+    }
+    std::unordered_map<std::string,int> opp_wins, opp_losses, opp_opp_wins, opp_opp_losses, oo_wins, oo_losses;
+    int wins = 0, losses = 0, owins = 0, olosses = 0, oowins = 0, oolosses = 0;
+    int pure_wins = 0, pure_total = 0;
+    int pt_diff = 0;
+    double opp_avg_pt_diff = 0;
+    std::unordered_map<std::string, std::unordered_map<std::string, double> * > opp_sums, opp_opp_sums;
+    std::unordered_map<std::string, double> opp_pt_diff;
+    std::unordered_map<std::string, int> num_opp_games, num_opp_opp_games;
+
+    int num_games = 0;
+    for (gamesByDateType::value_type &game : gamesByDate){
+        if (*(game.second->getDate()) > date) continue; //only look at games that happened before this date
+        std::string oname = game.second->getOpp();
+        Team *opp = findTeam(oname);
+        if (!opp) continue; //skip games against non-Division-I opponents
+        for (std::string &s : stats){
+            totals["o"+s] += game.second->getValue("o"+s);
+            totals["d"+s] += game.second->getValue("d"+s);
+        }
+        num_games++;
+        pure_total++;
+        if (game.second->getWin()){
+            pure_wins++;
+            if (game.second->getLoc() == "home") wins += 1.4;
+            else if (game.second->getLoc() == "away") wins += 0.6;
+            else if (game.second->getLoc() == "neutral") wins += 1.0;
+        }
+        else{
+            if (game.second->getLoc() == "home") losses += 1.4;
+            else if (game.second->getLoc() == "away") losses += 0.6;
+            else if (game.second->getLoc() == "neutral") losses += 1.0;
+        }
+        pt_diff += game.second->getOpts() - game.second->getDpts();
+
+        //only go through this the first time for each opponent
+        if (opp_sums.find(oname) == opp_sums.end()){ //i.e. if there is no entry for this team
+            opp_sums.emplace(oname, new std::unordered_map<std::string, double>());
+
+            for (std::string &s : stats){
+                opp_sums[oname]->emplace("o"+s,0.0);
+                opp_sums[oname]->emplace("d"+s,0.0);
+            }
+            num_opp_games.emplace(oname,0);
+            opp_pt_diff.emplace(oname,0);
+            opp_wins.emplace(oname,0);
+            opp_losses.emplace(oname,0);
+            oo_wins.emplace(oname,0);
+            oo_losses.emplace(oname,0);
+
+            std::unordered_map<std::string, TeamGame *> games = opp->getGamesByDate();
+            for (gamesByDateType::value_type &opp_game : games){
+                if (*(opp_game.second->getDate()) > date) continue; //only look at games that happened before this date
+                if (opp_game.second->getOpp() == this->name) continue; //skip games against self
+
+                std::string ooname = opp_game.second->getOpp();
+                Team *opp_opp = findTeam(ooname);
+                if (!opp_opp) continue; //skip games against non-Division-I opponents
+                num_opp_games[oname]++;
+                if (opp_game.second->getWin()) opp_wins[oname]++;
+                else opp_losses[oname]++;
+                opp_pt_diff[oname] += opp_game.second->getOpts() - opp_game.second->getDpts();
+
+                //only go through this the first time for each opponents' opponent
+                if (opp_opp_sums.find(ooname) == opp_opp_sums.end()){ //i.e. if there is no entry for this team
+                    opp_opp_sums.emplace(ooname, new std::unordered_map<std::string, double>());
+                    for (std::string &s : stats){
+                        opp_opp_sums[ooname]->emplace("o"+s,0.0);
+                        opp_opp_sums[ooname]->emplace("d"+s,0.0);
+                    }
+                    num_opp_opp_games.emplace(ooname,0);
+                    opp_opp_wins.emplace(ooname,0);
+                    opp_opp_losses.emplace(ooname,0);
+
+                    std::unordered_map<std::string, TeamGame *> opp_games = opp_opp->getGamesByDate();
+                    for (gamesByDateType::value_type &opp_opp_game : opp_games){
+                        if (*(opp_opp_game.second->getDate()) > date) continue; //only look at games that happened before this date
+                        if (opp_opp_game.second->getOpp() == this->name) continue; //skip games against self
+                        if (!findTeam(opp_opp_game.second->getOpp())) continue; //skip games against non-Division-I opponents
+
+                        num_opp_opp_games[ooname]++;
+                        if (opp_opp_game.second->getWin()) opp_opp_wins[ooname]++;
+                        else opp_opp_losses[ooname]++;
+
+                        for (std::string &s : stats){
+                            //this sum, divided by the total number of games played by opp_opp, is what opp_opp would average offensively on a
+                            //neutral floor
+                            opp_opp_sums[ooname]->at("o"+s) += opp_opp_game.second->getValue("o"+s) *
+                                                               ConstantTeamNeutralRatios::Instance()->get(year, opp_opp_game.second->getLoc(), "o"+s);
+                            //this sum, divided by the total number of games played by opp_opp, is what opp_opp would average giving up
+                            //defensively on a neutral floor
+                            opp_opp_sums[ooname]->at("d"+s) += opp_opp_game.second->getValue("d"+s) *
+                                                               ConstantTeamNeutralRatios::Instance()->get(year, opp_opp_game.second->getOppLoc(), "o"+s);//note: all neutral ratios are offensive
+                        }
+                    }
+                }
+
+                oo_wins[oname] += opp_opp_wins[ooname];
+                oo_losses[oname] += opp_opp_losses[ooname];
+
+                for (std::string &s : stats){
+                    if (num_opp_opp_games[ooname] > 0 && opp_opp_sums[ooname]->at("o"+s) > 0){
+                        //this sum, divided by the number of games played by opp, is a weight. It says how much worse
+                        //opp performs offensively on a neutral floor compared to the league-wide average,
+                        //weighted by how well their opponents have performed.  This form is slightly misleading
+                        //because it looks like just a comparison of opp's offense and opp_opp's d (and vice versa),
+                        //but in fact it is (opp_sum[offensive stat]/league_average[offensive stat]) /
+                        //(opp_opp_sum[defensive stat]/league_average[defensive stat]).
+                        //Since the league average is the same for a stat whether for offense or defense
+                        //(it doesn't make sense that the league would give up more points than it scores
+                        //on average would it?), those two league averages cancel out and we're left with
+                        //this.
+                        //
+                        // Since it will be in the denominator of self's D equation, that means that
+                        //1 would mean they play exactly to the level of their opponents, and so self's D
+                        //would be unchaged;
+                        //greater than 1 means they overperform compared to what their opponents generally allow,
+                        //(they're better at offense) and so the weighted average for self will go down (meaning better d);
+                        //less than 1 means they underperform compared to what their opponents generally allow,
+                        //(they're worse at offense than the league average) and so the weighted average
+                        //for self will go up (meaning worse d).
+                        opp_sums[oname]->at("o"+s) += (opp_game.second->getValue("o"+s) * ConstantTeamNeutralRatios::Instance()->get(year, opp_game.second->getLoc(), "o"+s)) /
+                                                      (opp_opp_sums[ooname]->at("d"+s) / (double)num_opp_opp_games[ooname]);
+                        //this is the similar sum for offense.  It is how much they allow compared to how much the
+                        //opponents usually get. Greater than 1 means they give up more than usual (they're bad at
+                        //defense) and so self's offensive weighted avg will go down (it's not as impressive to score
+                        //well against a bad d); less than 1 means they're better than usual so self's offensive
+                        //numbers will go up.
+                        opp_sums[oname]->at("d"+s) += (opp_game.second->getValue("d"+s) * ConstantTeamNeutralRatios::Instance()->get(year, opp_game.second->getOppLoc(), "o"+s)) /
+                                                      (opp_opp_sums[ooname]->at("o"+s) / (double)num_opp_opp_games[ooname]);
+                    }
+                    else{
+                        //early in the season opp's opponents may not have played another game, so we can't tell how
+                        //they do on average, so we just treat them as average
+                        opp_sums[oname]->at("o"+s) += 1;
+                        opp_sums[oname]->at("d"+s) += 1;
+                    }
+                }
+            }
+        }
+
+        owins += opp_wins[oname];
+        olosses += opp_losses[oname];
+
+        oowins += oo_wins[oname];
+        oolosses += oo_losses[oname];
+
+        opp_avg_pt_diff += opp_pt_diff[oname] / (double) num_opp_games[oname];
+
+        for (std::string &s : stats){
+            if (num_opp_games[oname] > 0 && opp_sums[oname]->at("o"+s) > 0){
+                //this sum, divided by the number of games played by self, gives the weighted average for this team's
+                //offensive stats.
+                weighted_stats["o"+s] += (game.second->getValue("o"+s) * ConstantTeamNeutralRatios::Instance()->get(year, game.second->getLoc(), "o"+s)) /
+                                         (opp_sums[oname]->at("d"+s) / (double)num_opp_games[oname]);
+                //similar for the defensive stats
+                weighted_stats["d"+s] += (game.second->getValue("d"+s) * ConstantTeamNeutralRatios::Instance()->get(year, game.second->getOppLoc(), "o"+s)) /
+                                         (opp_sums[oname]->at("o"+s) / (double)num_opp_games[oname]);
+            }
+            else{
+                //when none of self's opponent's have played any other games we just treat them as unweighted.
+                weighted_stats["o"+s] += (game.second->getValue("o"+s) * ConstantTeamNeutralRatios::Instance()->get(year, game.second->getLoc(), "o"+s));
+                weighted_stats["d"+s] += (game.second->getValue("d"+s) * ConstantTeamNeutralRatios::Instance()->get(year, game.second->getOppLoc(), "o"+s));
+            }
+        }
+    }
+
+    double rpi = 0.25 * (wins/(double) (wins+losses)) + 0.5 * (owins/(double)(owins+olosses)) +
+                 0.25 * (oowins/(double)(oowins+oolosses));
+    double srs = (pt_diff + opp_avg_pt_diff)/(double)num_games;
+    double sos = opp_avg_pt_diff/(double)num_games;
+
+    for (std::string &s : stats){
+        if (boost::contains(s,".p") == 0) continue;
+        if (num_games > 0) {
+            weighted_stats["o"+s] /= (double) num_games;
+            weighted_stats["d"+s] /= (double) num_games;
+            totals["o"+s] /= (double) num_games;
+            totals["d"+s] /= (double) num_games;
+        }
+    }
+
+    std::vector<double> result;
+
+    for (std::string &s : stats){
+        std::cout << "o"+s << ":\t" << weighted_stats["o"+s] << std::endl;
+        result.push_back(weighted_stats["o"+s]);
+    }
+    for (std::string &s : stats){
+        std::cout << "d"+s << ":\t" << weighted_stats["d"+s] << std::endl;
+        result.push_back(weighted_stats["d"+s]);
+    }
+    for (std::string &s : stats){
+        std::cout << "o"+s << ":\t" << totals["o"+s] << std::endl;
+        result.push_back(totals["o"+s]);
+    }
+    for (std::string &s : stats){
+        std::cout << "d"+s << ":\t" << totals["d"+s] << std::endl;
+        result.push_back(totals["d"+s]);
+    }
+    std::cout << "rpi:\t" << rpi << std::endl;
+    std::cout << "srs:\t" << srs << std::endl;
+    std::cout << "sos:\t" << sos << std::endl;
+    std::cout << "num:\t" << num_games << std::endl;
+    result.push_back(rpi);
+    result.push_back(srs);
+    result.push_back(sos);
+    result.push_back((double)num_games);
+
+    return result;
 }
