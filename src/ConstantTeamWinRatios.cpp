@@ -25,13 +25,13 @@ void ConstantTeamWinRatios::initialize(std::string path) {
         getline(file, value, ',');
         if (value == "") break; //stops when reading last line
         year = stoi(value);
-        team_win_ratios.insert(std::pair<int, std::unordered_map<std::string, double> *>(year, new std::unordered_map<std::string, double>()));
+        team_win_ratios.emplace(year, new std::unordered_map<std::string, double>());
         getline(file, value, ',');
-        team_win_ratios[year]->insert(std::pair<std::string, double>("home", stod(value)));
+        team_win_ratios[year]->emplace("home", stod(value));
         getline(file, value, ',');
-        team_win_ratios[year]->insert(std::pair<std::string, double>("away", stod(value)));
+        team_win_ratios[year]->emplace("away", stod(value));
         getline(file, value, ',');
-        team_win_ratios[year]->insert(std::pair<std::string, double>("neutral", stod(value)));
+        team_win_ratios[year]->emplace("neutral", stod(value));
         getline(file, value, '\n');
     }
 }
