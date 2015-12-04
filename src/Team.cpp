@@ -18,31 +18,24 @@ Team::Team(std::string teamname)
         : name (teamname),
           year(stoi(teamname.substr(0,4))),
           tournament_team(false){
-    std::pair<std::string,Team*> teampair (teamname,this);
-    teams.insert(teampair);
+    teams.emplace(teamname,this);
     lastTeam = this;
 }
 
 //Add TeamGame to the gamesByDate hash, using the date of
 //the game in the form YYYY-MM-DD as the key.
 void Team::addGame(TeamGame* g) {
-    std::string d = boost::gregorian::to_iso_extended_string(*(g->getDate()));
-    std::pair<std::string,TeamGame*> gamePair (d,g);
-    gamesByDate.insert(gamePair);
+    gamesByDate.emplace(boost::gregorian::to_iso_extended_string(*(g->getDate())),g);
 }
 
 //Add TeamAverage to the averagesByDate hash.
 void Team::addAverage(TeamAverage *a) {
-    std::string d = boost::gregorian::to_iso_extended_string(*(a->getDate()));
-    std::pair<std::string,TeamAverage*> averagePair (d,a);
-    averagesByDate.insert(averagePair);
+    averagesByDate.emplace(boost::gregorian::to_iso_extended_string(*(a->getDate())),a);
 }
 
 //Add TeamWAverage to the averagesByDate hash.
 void Team::addWAverage(TeamWAverage *w) {
-    std::string d = boost::gregorian::to_iso_extended_string(*(w->getDate()));
-    std::pair<std::string,TeamWAverage*> waveragePair (d,w);
-    waveragesByDate.insert(waveragePair);
+    waveragesByDate.emplace(boost::gregorian::to_iso_extended_string(*(w->getDate())),w);
 }
 
 //Add TeamGames via a file containing their games.
