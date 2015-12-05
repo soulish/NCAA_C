@@ -169,8 +169,8 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
         pure_total++;
         if (game.second->getWin()){
             pure_wins++;
-            if (game.second->getLoc() == "home") wins += 1.4;
-            else if (game.second->getLoc() == "away") wins += 0.6;
+            if (game.second->getLoc() == "home") wins += 0.6;
+            else if (game.second->getLoc() == "away") wins += 1.4;
             else if (game.second->getLoc() == "neutral") wins += 1.0;
         }
         else{
@@ -330,29 +330,28 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
     std::vector<double> result;
 
     for (std::string &s : stats){
-        std::cout << "o"+s << ":\t" << weighted_stats["o"+s] << std::endl;
-        result.push_back(weighted_stats["o"+s]);
-    }
-    for (std::string &s : stats){
-        std::cout << "d"+s << ":\t" << weighted_stats["d"+s] << std::endl;
-        result.push_back(weighted_stats["d"+s]);
-    }
-    for (std::string &s : stats){
-        std::cout << "o"+s << ":\t" << totals["o"+s] << std::endl;
         result.push_back(totals["o"+s]);
     }
     for (std::string &s : stats){
-        std::cout << "d"+s << ":\t" << totals["d"+s] << std::endl;
         result.push_back(totals["d"+s]);
     }
-    std::cout << "rpi:\t" << rpi << std::endl;
-    std::cout << "srs:\t" << srs << std::endl;
-    std::cout << "sos:\t" << sos << std::endl;
-    std::cout << "num:\t" << num_games << std::endl;
+    for (std::string &s : stats){
+        result.push_back(weighted_stats["o"+s]);
+    }
+    for (std::string &s : stats){
+        result.push_back(weighted_stats["d"+s]);
+    }
     result.push_back(rpi);
     result.push_back(srs);
     result.push_back(sos);
     result.push_back((double)num_games);
 
     return result;
+}
+
+const TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
+    if (gamesByDate.find(boost::gregorian::to_iso_extended_string(d)) == gamesByDate.end())
+        return nullptr;
+    else
+        return gamesByDate.at(boost::gregorian::to_iso_extended_string(d));
 }
