@@ -54,15 +54,23 @@ int main(int argc,char *argv[]) {
 
     typedef std::unordered_map<std::string, Team *> teamHash;
     teamHash teams = Team::getTeams();
+    Team *a;
+    TeamGame *tg;
 
     BOOST_FOREACH(teamHash::value_type &team, teams) {
                     std::cout << team.first << std::endl;
-                    Team *a = team.second;
+                    a = team.second;
                     vector<double> x;
                     ofstream waveragesFile,averagesFile;
 
                     sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.averages.d",
                             homePath,year,boost::replace_all_copy(a->getName()," ","_").c_str());
+
+                    ///////////////////////
+                    struct stat buffer;
+                    if (stat(path, &buffer) == 0) continue;
+                    ///////////////////////
+
                     averagesFile.open(path);
                     sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.waverages.d",
                             homePath,year,boost::replace_all_copy(a->getName()," ","_").c_str());
@@ -75,7 +83,7 @@ int main(int argc,char *argv[]) {
                         std::fflush(stdout);
                         x = a->calcWeightedAverage(*ditr);
 
-                        const TeamGame *tg = a->GameOnDate(*ditr);
+                        tg = a->GameOnDate(*ditr);
 
                         averagesFile << a->getName();
                         averagesFile << "," << ditr->year() << "," << ditr->month().as_number() << "," << ditr->day();
