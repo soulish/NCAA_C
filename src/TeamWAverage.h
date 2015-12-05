@@ -17,7 +17,7 @@ public:
                  int toa, double top,
                  int _dpts, int dtwoa, double dtwop,
                  int dthreea, double dthreep, int dfta, double dftp, int dora, double dorp, int ddra, double ddrp,
-                 int dtoa, double dtop, double _rpi, double _srs, double _sos, double _pure_wp, double _alt_wp,
+                 int dtoa, double dtop, double _rpi, double _srs, double _sos,
                  int _num_games, double _spread);
     //Destructor
     virtual ~TeamWAverage(){ }
@@ -28,8 +28,6 @@ public:
     const double getRpi() const {  return rpi;  }
     const double getSrs() const {  return srs;  }
     const double getSos() const {  return sos;  }
-    const double getPure_wp() const {return pure_wp;}
-    const double getAlt_wp() const { return alt_wp; }
 
     //Other methods
 
@@ -37,8 +35,6 @@ private:
     const double rpi;
     const double srs;
     const double sos;
-    const double pure_wp;
-    const double alt_wp;
 };
 
 

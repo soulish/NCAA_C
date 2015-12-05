@@ -9,7 +9,7 @@ TeamWAverage::TeamWAverage(std::string _teamname, boost::gregorian::date *_date,
                  int toa, double top,
                  int _dpts, int dtwoa, double dtwop,
                  int dthreea, double dthreep, int dfta, double dftp, int dora, double dorp, int ddra, double ddrp,
-                 int dtoa, double dtop, double _rpi, double _srs, double _sos, double _pure_wp, double _alt_wp,
+                 int dtoa, double dtop, double _rpi, double _srs, double _sos,
                  int _num_games, double _spread)
         : TeamAverage(_teamname,_date,_pts, twoa, twop,threea,threep,
                       fta,ftp,ora,orp,dra,drp, toa,top,
@@ -17,6 +17,4 @@ TeamWAverage::TeamWAverage(std::string _teamname, boost::gregorian::date *_date,
                       dora,dorp,ddra,ddrp,dtoa,dtop,_num_games,_spread),
           rpi(_rpi),
           srs(_srs),
-          sos(_sos),
-          pure_wp(_pure_wp),
-          alt_wp(_alt_wp){    }
+          sos(_sos) {  }
