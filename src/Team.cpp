@@ -22,6 +22,14 @@ Team::Team(std::string teamname)
     lastTeam = this;
 }
 
+Team *Team::findTeam(std::string name) {
+    if (teams.find(name) == teams.end())
+        return nullptr;
+    else
+        return teams[name];
+
+}
+
 //Add TeamGame to the gamesByDate hash, using the date of
 //the game in the form YYYY-MM-DD as the key.
 void Team::addGame(TeamGame* g) {
@@ -127,6 +135,185 @@ void Team::addGames(std::string fileName) {
                                  fgm, fga, threem, threea, ftm, fta, orb, trb, ast, stl, blk, tov, pf,
                                  dfgm, dfga, dthreem, dthreea, dftm, dfta,
                                  dorb, dtrb, dast, dstl, dblk, dtov, dpf, spread));
+        }
+    }
+}
+
+void Team::addAverages(std::string fileName) {
+    std::string team;
+    unsigned short yy, mo, da;
+    int opts, otwoa, othreea, ofta, oora, odra, otoa, dpts, dtwoa, dthreea, dfta, dora, ddra, dtoa;
+    double otwop, othreep, oftp, oorp, odrp, otop, dtwop, dthreep, dftp, dorp, ddrp, dtop;
+    double spread;
+    int num_games;
+
+    std::ifstream file(fileName);
+    std::string value;
+    while ( file.good() ){
+        getline(file, team, ',' );
+        getline(file, value, ',' );
+        yy = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        mo = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        da = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        opts = stoi(value);
+        getline(file, value, ',' );
+        otwoa = stoi(value);
+        getline(file, value, ',' );
+        otwop = stod(value);
+        getline(file, value, ',' );
+        othreea = stoi(value);
+        getline(file, value, ',' );
+        othreep = stod(value);
+        getline(file, value, ',' );
+        ofta = stoi(value);
+        getline(file, value, ',' );
+        oftp = stod(value);
+        getline(file, value, ',' );
+        oora = stoi(value);
+        getline(file, value, ',' );
+        oorp = stod(value);
+        getline(file, value, ',' );
+        odra = stoi(value);
+        getline(file, value, ',' );
+        odrp = stod(value);
+        getline(file, value, ',' );
+        otoa = stoi(value);
+        getline(file, value, ',' );
+        otop = stod(value);
+        getline(file, value, ',' );
+
+        dpts = stoi(value);
+        getline(file, value, ',' );
+        dtwoa = stoi(value);
+        getline(file, value, ',' );
+        dtwop = stod(value);
+        getline(file, value, ',' );
+        dthreea = stoi(value);
+        getline(file, value, ',' );
+        dthreep = stod(value);
+        getline(file, value, ',' );
+        dfta = stoi(value);
+        getline(file, value, ',' );
+        dftp = stod(value);
+        getline(file, value, ',' );
+        dora = stoi(value);
+        getline(file, value, ',' );
+        dorp = stod(value);
+        getline(file, value, ',' );
+        ddra = stoi(value);
+        getline(file, value, ',' );
+        ddrp = stod(value);
+        getline(file, value, ',' );
+        dtoa = stoi(value);
+        getline(file, value, ',' );
+        dtop = stod(value);
+
+        getline(file, value, '\n' );
+        spread = stod(value);
+
+        if (file.good()) {
+            this->addAverage(
+                    new TeamAverage(team, new boost::gregorian::date(yy, mo, da),
+                                    opts, otwoa, otwop, othreea, othreep, ofta, oftp,
+                                    oora, oorp, odra, odrp, otoa, otop,
+                                    dpts, dtwoa, dtwop, dthreea, dthreep, dfta, dftp,
+                                    dora, dorp, ddra, ddrp, dtoa, dtop, num_games, spread));
+        }
+    }
+}
+
+void Team::addWAverages(std::string fileName) {
+    std::string team;
+    unsigned short yy, mo, da;
+    int opts, otwoa, othreea, ofta, oora, odra, otoa, dpts, dtwoa, dthreea, dfta, dora, ddra, dtoa;
+    double otwop, othreep, oftp, oorp, odrp, otop, dtwop, dthreep, dftp, dorp, ddrp, dtop;
+    double rpi, srs, sos, spread;
+    int num_games;
+
+    std::ifstream file(fileName);
+    std::string value;
+    while ( file.good() ){
+        getline(file, team, ',' );
+        getline(file, value, ',' );
+        yy = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        mo = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        da = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        opts = stoi(value);
+        getline(file, value, ',' );
+        otwoa = stoi(value);
+        getline(file, value, ',' );
+        otwop = stod(value);
+        getline(file, value, ',' );
+        othreea = stoi(value);
+        getline(file, value, ',' );
+        othreep = stod(value);
+        getline(file, value, ',' );
+        ofta = stoi(value);
+        getline(file, value, ',' );
+        oftp = stod(value);
+        getline(file, value, ',' );
+        oora = stoi(value);
+        getline(file, value, ',' );
+        oorp = stod(value);
+        getline(file, value, ',' );
+        odra = stoi(value);
+        getline(file, value, ',' );
+        odrp = stod(value);
+        getline(file, value, ',' );
+        otoa = stoi(value);
+        getline(file, value, ',' );
+        otop = stod(value);
+        getline(file, value, ',' );
+
+        dpts = stoi(value);
+        getline(file, value, ',' );
+        dtwoa = stoi(value);
+        getline(file, value, ',' );
+        dtwop = stod(value);
+        getline(file, value, ',' );
+        dthreea = stoi(value);
+        getline(file, value, ',' );
+        dthreep = stod(value);
+        getline(file, value, ',' );
+        dfta = stoi(value);
+        getline(file, value, ',' );
+        dftp = stod(value);
+        getline(file, value, ',' );
+        dora = stoi(value);
+        getline(file, value, ',' );
+        dorp = stod(value);
+        getline(file, value, ',' );
+        ddra = stoi(value);
+        getline(file, value, ',' );
+        ddrp = stod(value);
+        getline(file, value, ',' );
+        dtoa = stoi(value);
+        getline(file, value, ',' );
+        dtop = stod(value);
+
+        getline(file, value, ',' );
+        rpi = stod(value);
+        getline(file, value, ',' );
+        srs = stod(value);
+        getline(file, value, ',' );
+        sos = stod(value);
+
+        getline(file, value, '\n' );
+        spread = stod(value);
+
+        if (file.good()) {
+            this->addWAverage(
+                    new TeamWAverage(team, new boost::gregorian::date(yy, mo, da),
+                                    opts, otwoa, otwop, othreea, othreep, ofta, oftp,
+                                    oora, oorp, odra, odrp, otoa, otop,
+                                    dpts, dtwoa, dtwop, dthreea, dthreep, dfta, dftp,
+                                    dora, dorp, ddra, ddrp, dtoa, dtop, rpi, srs, sos, num_games, spread));
         }
     }
 }
@@ -355,3 +542,4 @@ const TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
     else
         return gamesByDate.at(boost::gregorian::to_iso_extended_string(d));
 }
+

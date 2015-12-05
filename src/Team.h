@@ -31,7 +31,7 @@ public:
     bool isTournament_team() const {  return tournament_team;  }
     const std::unordered_map<std::string, TeamGame *> &getGamesByDate() const {  return gamesByDate;  }
     const std::unordered_map<std::string, TeamAverage *> &getAveragesByDate() const  {  return averagesByDate;  }
-    const std::unordered_map<std::string, TeamWAverage *> &getWaveragesByDate() const {  return waveragesByDate;  }
+    const std::unordered_map<std::string, TeamWAverage *> &getWAveragesByDate() const {  return waveragesByDate;  }
     std::vector<double> calcWeightedAverage(boost::gregorian::date date);
     const TeamGame* GameOnDate(boost::gregorian::date d) const;
 
@@ -42,12 +42,14 @@ public:
     void addWAverage(TeamWAverage* w);
 
     void addGames(std::string);
+    void addAverages(std::string);
+    void addWAverages(std::string);
 
     //static functions
     static int getNumTeams(){  return (int)teams.size();  }
     static const std::unordered_map<std::string, Team *> &getTeams() {  return teams; }
     static Team *getLastTeam() {  return lastTeam;  }
-    static Team *findTeam(std::string name){  return teams[name];  }
+    static Team *findTeam(std::string name);
 
 private:
     std::string name;
