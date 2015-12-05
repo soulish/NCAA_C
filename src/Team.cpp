@@ -6,6 +6,7 @@
 #include "Team.h"
 #include "ConstantTeamNeutralRatios.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
 
 //declaring the static variables
 std::unordered_map<std::string,Team*> Team::teams;
@@ -325,28 +326,31 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
     typedef std::unordered_map<std::string, TeamGame*> gamesByDateType;
     typedef std::unordered_map<std::string, double> hashDoubleType;
     typedef std::unordered_map<std::string, int> hashIntType;
+    typedef std::unordered_map<std::string, hashDoubleType * > sumsType;
 
-    std::unordered_map<std::string,double> totals, weighted_stats;
+    hashDoubleType totals, weighted_stats;
     for (std::string &s : stats){
         totals.emplace("o"+s,0);
         totals.emplace("d"+s,0);
         weighted_stats.emplace("o"+s, 0);
         weighted_stats.emplace("d"+s, 0);
     }
-    std::unordered_map<std::string,int> opp_wins, opp_losses, opp_opp_wins, opp_opp_losses, oo_wins, oo_losses;
+    hashIntType opp_wins, opp_losses, opp_opp_wins, opp_opp_losses, oo_wins, oo_losses;
     int wins = 0, losses = 0, owins = 0, olosses = 0, oowins = 0, oolosses = 0;
     int pure_wins = 0, pure_total = 0;
     int pt_diff = 0;
     double opp_avg_pt_diff = 0;
-    std::unordered_map<std::string, std::unordered_map<std::string, double> * > opp_sums, opp_opp_sums;
-    std::unordered_map<std::string, double> opp_pt_diff;
-    std::unordered_map<std::string, int> num_opp_games, num_opp_opp_games;
+    sumsType opp_sums, opp_opp_sums;
+    hashDoubleType opp_pt_diff;
+    hashIntType num_opp_games, num_opp_opp_games;
+
+    Team *opp, *opp_opp;
 
     int num_games = 0;
     for (gamesByDateType::value_type &game : gamesByDate){
         if (*(game.second->getDate()) > date) continue; //only look at games that happened before this date
         std::string oname = game.second->getOpp();
-        Team *opp = findTeam(oname);
+        opp = findTeam(oname);
         if (!opp) continue; //skip games against non-Division-I opponents
         for (std::string &s : stats){
             totals["o"+s] += game.second->getValue("o"+s);
@@ -369,7 +373,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
 
         //only go through this the first time for each opponent
         if (opp_sums.find(oname) == opp_sums.end()){ //i.e. if there is no entry for this team
-            opp_sums.emplace(oname, new std::unordered_map<std::string, double>());
+            opp_sums.emplace(oname, new hashDoubleType());
 
             for (std::string &s : stats){
                 opp_sums[oname]->emplace("o"+s,0.0);
@@ -382,13 +386,13 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
             oo_wins.emplace(oname,0);
             oo_losses.emplace(oname,0);
 
-            std::unordered_map<std::string, TeamGame *> games = opp->getGamesByDate();
+            gamesByDateType games = opp->getGamesByDate();
             for (gamesByDateType::value_type &opp_game : games){
                 if (*(opp_game.second->getDate()) > date) continue; //only look at games that happened before this date
                 if (opp_game.second->getOpp() == this->name) continue; //skip games against self
 
                 std::string ooname = opp_game.second->getOpp();
-                Team *opp_opp = findTeam(ooname);
+                opp_opp = findTeam(ooname);
                 if (!opp_opp) continue; //skip games against non-Division-I opponents
                 num_opp_games[oname]++;
                 if (opp_game.second->getWin()) opp_wins[oname]++;
@@ -397,7 +401,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
 
                 //only go through this the first time for each opponents' opponent
                 if (opp_opp_sums.find(ooname) == opp_opp_sums.end()){ //i.e. if there is no entry for this team
-                    opp_opp_sums.emplace(ooname, new std::unordered_map<std::string, double>());
+                    opp_opp_sums.emplace(ooname, new hashDoubleType());
                     for (std::string &s : stats){
                         opp_opp_sums[ooname]->emplace("o"+s,0.0);
                         opp_opp_sums[ooname]->emplace("d"+s,0.0);
@@ -406,7 +410,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
                     opp_opp_wins.emplace(ooname,0);
                     opp_opp_losses.emplace(ooname,0);
 
-                    std::unordered_map<std::string, TeamGame *> opp_games = opp_opp->getGamesByDate();
+                    gamesByDateType opp_games = opp_opp->getGamesByDate();
                     for (gamesByDateType::value_type &opp_opp_game : opp_games){
                         if (*(opp_opp_game.second->getDate()) > date) continue; //only look at games that happened before this date
                         if (opp_opp_game.second->getOpp() == this->name) continue; //skip games against self
@@ -533,13 +537,19 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
     result.push_back(sos);
     result.push_back((double)num_games);
 
+    BOOST_FOREACH(sumsType::value_type &xx, opp_sums){
+                    delete xx.second;
+                }
+    BOOST_FOREACH(sumsType::value_type &xx, opp_opp_sums){
+                    delete xx.second;
+                }
+
     return result;
 }
 
-const TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
+TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
     if (gamesByDate.find(boost::gregorian::to_iso_extended_string(d)) == gamesByDate.end())
         return nullptr;
     else
         return gamesByDate.at(boost::gregorian::to_iso_extended_string(d));
 }
-
