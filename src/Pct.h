@@ -5,12 +5,14 @@
 #ifndef NCAA_C_PCT_H
 #define NCAA_C_PCT_H
 
+#include <math.h>
 
 class Pct {
 public:
     //Constructors
     Pct(int makes, int attempts);
     Pct(int makes, int attempts, double pct);
+    Pct(double makes, double attempts);
     //Destructor
     //Copy Constructor
     //Copy Assignment

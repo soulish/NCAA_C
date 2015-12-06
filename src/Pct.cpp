@@ -20,6 +20,11 @@ Pct::Pct(int makes, int attempts, double pct)
           a(attempts < 0 ? 0 : attempts),
           p(pct){   }
 
+Pct::Pct(double makes, double attempts)
+        : m((int)round(makes)),
+          a((int)round(attempts)),
+          p(a == 0 ? 0.0 : makes/attempts) {  }
+
 double Pct::Variance() const {
     return a == 0 ? 0 : p*(1-p)/a;
 }
