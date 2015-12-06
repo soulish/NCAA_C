@@ -211,6 +211,8 @@ void Team::addAverages(std::string fileName) {
         dtoa = stoi(value);
         getline(file, value, ',' );
         dtop = stod(value);
+        getline(file, value, ',' );
+        num_games = stoi(value);
 
         getline(file, value, '\n' );
         spread = stod(value);
@@ -305,6 +307,8 @@ void Team::addWAverages(std::string fileName) {
         getline(file, value, ',' );
         sos = stod(value);
 
+        getline(file, value, ',' );
+        num_games = stoi(value);
         getline(file, value, '\n' );
         spread = stod(value);
 
@@ -336,7 +340,8 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
         weighted_stats.emplace("d"+s, 0);
     }
     hashIntType opp_wins, opp_losses, opp_opp_wins, opp_opp_losses, oo_wins, oo_losses;
-    int wins = 0, losses = 0, owins = 0, olosses = 0, oowins = 0, oolosses = 0;
+    int owins = 0, olosses = 0, oowins = 0, oolosses = 0;
+    double wins = 0, losses = 0;
     int pure_wins = 0, pure_total = 0;
     int pt_diff = 0;
     double opp_avg_pt_diff = 0;
@@ -503,14 +508,27 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
         }
     }
 
-    double rpi = 0.25 * (wins/(double) (wins+losses)) + 0.5 * (owins/(double)(owins+olosses)) +
-                 0.25 * (oowins/(double)(oowins+oolosses));
-    double srs = (pt_diff + opp_avg_pt_diff)/(double)num_games;
-    double sos = opp_avg_pt_diff/(double)num_games;
+    double rpi = 0.0, srs = 0.0, sos = 0.0;
 
-    for (std::string &s : stats){
-        if (boost::contains(s,".p") == 0) continue;
-        if (num_games > 0) {
+    if (num_games > 0) {
+        if ((owins + olosses > 0) && (oowins + oolosses > 0)) {
+            rpi = 0.25 * (wins / (double) (wins + losses)) + 0.5 * (owins / (double) (owins + olosses)) +
+                  0.25 * (oowins / (double) (oowins + oolosses));
+        }
+        else{
+            rpi = wins/(double)(wins + losses);
+        }
+        if (opp_avg_pt_diff > 0) {
+            srs = (pt_diff + opp_avg_pt_diff) / (double) num_games;
+            sos = opp_avg_pt_diff / (double) num_games;
+        }
+        else{
+            srs = pt_diff/(double) num_games;
+            sos = 0.0;
+        }
+
+        for (std::string &s : stats){
+            if (boost::contains(s,".p") == 0) continue;
             weighted_stats["o"+s] /= (double) num_games;
             weighted_stats["d"+s] /= (double) num_games;
             totals["o"+s] /= (double) num_games;
@@ -520,18 +538,14 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
 
     std::vector<double> result;
 
-    for (std::string &s : stats){
+    for (std::string &s : stats)
         result.push_back(totals["o"+s]);
-    }
-    for (std::string &s : stats){
+    for (std::string &s : stats)
         result.push_back(totals["d"+s]);
-    }
-    for (std::string &s : stats){
+    for (std::string &s : stats)
         result.push_back(weighted_stats["o"+s]);
-    }
-    for (std::string &s : stats){
+    for (std::string &s : stats)
         result.push_back(weighted_stats["d"+s]);
-    }
     result.push_back(rpi);
     result.push_back(srs);
     result.push_back(sos);
