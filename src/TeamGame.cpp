@@ -20,9 +20,9 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
           odr(new Pct(_trb-_orb,(_trb-_orb)+_opp_orb)),
           otr(new Pct(_trb,_trb + _opp_trb)),
           oas(new Pct(_ast,_fgm)),
-          ost(new Pct(_stl,(int) oposs)),
-          obl(new Pct(_blk,(int) oposs)),
-          oto(new Pct(_tov,(int) oposs)),
+          ost(new Pct((double)_stl,oposs)),
+          obl(new Pct((double)_blk,oposs)),
+          oto(new Pct((double)_tov,oposs)),
           dpts(_opp_pts),
           dfg(new Pct(_opp_fgm,_opp_fga)),
           dtwo(new Pct(_opp_fgm-_opp_threem,_opp_fga-_opp_threea)),
@@ -33,11 +33,11 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
           ddr(new Pct(_opp_trb - _opp_orb,(_opp_trb - _opp_orb) + _orb)),
           dtr(new Pct(_opp_trb,_opp_trb+_trb)),
           das(new Pct(_opp_ast,_opp_fga)),
-          dst(new Pct(_opp_stl,(int)dposs)),
-          dbl(new Pct(_opp_blk,(int)dposs)),
-          dto(new Pct(_opp_tov,(int)dposs)),
+          dst(new Pct((double)_opp_stl,dposs)),
+          dbl(new Pct((double)_opp_blk,dposs)),
+          dto(new Pct((double)_opp_tov,dposs)),
           dpf(_opp_pf),
-          defg(new Pct(_opp_fgm+(int)(0.5*_opp_threem),_opp_fga)),
+          defg(new Pct(_opp_fgm+(0.5*_opp_threem),(double)_opp_fga)),
           dftmr(new Pct(_opp_ftm,_opp_fga)){
     if (_loc == "away") opp_loc = "home";
     else if (_loc == "home") opp_loc = "away";
