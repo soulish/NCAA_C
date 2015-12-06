@@ -4,10 +4,10 @@
 
 #include "Game.h"
 
-Game::Game(std::string _team, std::string _opp, boost::gregorian::date *_date,
+Game::Game(std::string _name, std::string _opp, boost::gregorian::date *_date,
            std::string _loc, int _pts, int _fgm, int _fga, int _threem, int _threea,
            int _ftm, int _fta, int _pf)
-        : team(_team),
+        : name(_name),
           opp(_opp),
           date(_date),
           loc(_loc),
@@ -16,7 +16,7 @@ Game::Game(std::string _team, std::string _opp, boost::gregorian::date *_date,
           otwo(new Pct(_fgm - _threem, _fga - _threea)),
           othree(new Pct(_threem, _threea)),
           oft(new Pct(_ftm, _fta)),
-          oefg(new Pct(_fgm + (int)(0.5 * _threem), _fga)),
-          ots(new Pct(_pts, (int)(_fga + 0.44 * _fta))),
+          oefg(new Pct(_fgm + (int)round(0.5 * _threem), _fga, (_fgm + 0.5*_threem)/(double)_fga)),
+          ots(new Pct(_pts, (int)round(_fga + 0.44 * _fta), _pts/(_fga + 0.44 * _fta))),
           oftmr(new Pct(_ftm, _fga)),
           opf(_pf)  {   }

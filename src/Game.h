@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <math.h>
 #include "Pct.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 
@@ -30,7 +31,7 @@ public:
     //Copy Assignment
 
     //Getters
-    const std::string getTeam() const { return team; }
+    const std::string Name() const { return name; }
     const std::string getOpp() const { return opp; }
     const std::string getLoc() const { return loc; }
     const boost::gregorian::date *getDate() const { return date; }
@@ -47,7 +48,7 @@ public:
     //Other Methods
 
 protected:
-    const std::string team;
+    const std::string name;
     const std::string opp;
     const std::string loc;
     const boost::gregorian::date *date;
