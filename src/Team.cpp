@@ -553,3 +553,17 @@ TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
     else
         return gamesByDate.at(boost::gregorian::to_iso_extended_string(d));
 }
+
+TeamAverage *Team::AverageOnDate(boost::gregorian::date d) const {
+    if (averagesByDate.find(boost::gregorian::to_iso_extended_string(d)) == averagesByDate.end())
+        return nullptr;
+    else
+        return averagesByDate.at(boost::gregorian::to_iso_extended_string(d));
+}
+
+TeamWAverage *Team::WAverageOnDate(boost::gregorian::date d) const {
+    if (waveragesByDate.find(boost::gregorian::to_iso_extended_string(d)) == waveragesByDate.end())
+        return nullptr;
+    else
+        return waveragesByDate.at(boost::gregorian::to_iso_extended_string(d));
+}

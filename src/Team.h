@@ -34,6 +34,8 @@ public:
     const std::unordered_map<std::string, TeamWAverage *> &getWAveragesByDate() const {  return waveragesByDate;  }
     std::vector<double> calcWeightedAverage(boost::gregorian::date date);
     TeamGame *GameOnDate(boost::gregorian::date d) const;
+    TeamAverage *AverageOnDate(boost::gregorian::date d) const;
+    TeamWAverage *WAverageOnDate(boost::gregorian::date d) const;
 
     //Other methods
     //adding games and averages
