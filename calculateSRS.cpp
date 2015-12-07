@@ -18,9 +18,9 @@ std::vector<double> calcSRS(std::unordered_map<std::string, double>*, std::strin
 int main(int argc,char *argv[]){
     int c;
     int year = 2015, numIterations = 3;
-    bool verbose = false;
+    bool verbose = false, writeOutput = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:vn:")) != -1){
+    while((c = getopt(argc,argv,"y:vn:o")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
@@ -30,6 +30,9 @@ int main(int argc,char *argv[]){
                 break;
             case 'v':
                 verbose = true;
+                break;
+            case 'o':
+                writeOutput = true;
                 break;
             default:
                 // not an option
@@ -82,8 +85,6 @@ int main(int argc,char *argv[]){
                     }
     }
 
-    std::cout << srsHash[0]->at("2014-12-31")->at("2015 north carolina") << std::endl;
-
     std::vector<double> srsSOS;
     for (int i = 1; i < numIterations; i++){
         srsHash.emplace(i, new dateHashType());
@@ -97,70 +98,114 @@ int main(int argc,char *argv[]){
                             srsHash[i]->at(date)->emplace(team.first,srsSOS[0]);
                         }
         }
-        std::cout << i << "\t" << srsHash[i]->at("2014-12-31")->at("2015 north carolina") << std::endl;
+
+        if (verbose) {
+            //this will show the srs for 3 different teams (a generally good team, a generally
+            //mediocre team, and a generally bad team, on four different dates throughout the
+            //season, the first date SRS is calculated (14 days after the season starts),
+            //then 50 days into the season, 100 days into the season, and the day the
+            //tournament starts.
+            char team1[256], team2[256], team3[256];
+            sprintf(team1, "%i north carolina", year);
+            sprintf(team2, "%i bradley", year);
+            sprintf(team3, "%i grambling state", year);
+            std::cout << i << "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(14)))->at(team1), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(14)))->at(team2), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(14)))->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(50)))->at(team1), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(50)))->at(team2), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(50)))->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(100)))->at(team1), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(100)))->at(team2), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "season start") +
+                    boost::gregorian::date_duration(100)))->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "tournament start")))->at(team1), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "tournament start")))->at(team2), 3) <<
+            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
+                    ConstantSeasonInfo::Instance()->get(year, "tournament start")))->at(team3), 3) << std::endl;
+        }
     }
 
-    TeamWAverage *wAverage;
+    if (writeOutput) {
+        TeamWAverage *wAverage;
 
-    boost::gregorian::day_iterator day(ConstantSeasonInfo::Instance()->get(year,"season start") +
-                                       boost::gregorian::date_duration(14));
-    BOOST_FOREACH(allTeamsHashType::value_type &team, allTeamsHash){
-                    //open up the file
-                    std::ofstream waveragesFile;
-                    sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.waverages2.d",
-                            homePath,year,boost::replace_all_copy(team.first," ","_").c_str());
-                    waveragesFile.open(path);
+        BOOST_FOREACH(allTeamsHashType::value_type & team, allTeamsHash)
+        {
+            //open up the file
+            std::ofstream waveragesFile;
+            sprintf(path, "%s/cpp/NCAA_C/teams/%i/teams.%s.waverages.d",
+                    homePath, year, boost::replace_all_copy(team.first, " ", "_").c_str());
+            waveragesFile.open(path);
 
-                    boost::gregorian::day_iterator day(ConstantSeasonInfo::Instance()->get(year,"season start") +
-                                                       boost::gregorian::date_duration(14));
-                    for (; day <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++day) {
-                        std::string date = boost::gregorian::to_iso_extended_string(*day);
-                        srsSOS = calcSRS(srsHash[numIterations-1]->at(date),team.first,*day);
+            boost::gregorian::day_iterator day(ConstantSeasonInfo::Instance()->get(year, "season start") +
+                                               boost::gregorian::date_duration(14));
+            for (; day <= ConstantSeasonInfo::Instance()->get(year, "tournament start"); ++day) {
+                std::string date = boost::gregorian::to_iso_extended_string(*day);
+                srsSOS = calcSRS(srsHash[numIterations - 1]->at(date), team.first, *day);
 
-                        wAverage = team.second->WAverageOnDate(*day);
+                wAverage = team.second->WAverageOnDate(*day);
 
-                        //write in the file
-                        waveragesFile << team.first;
-                        waveragesFile << "," << day->year();
-                        waveragesFile << "," << day->month().as_number();
-                        waveragesFile << "," << day->day();
-                        waveragesFile << "," << wAverage->getOpts();
-                        waveragesFile << "," << wAverage->getOtwo()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getOtwo()->P(),3);
-                        waveragesFile << "," << wAverage->getOthree()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getOthree()->P(),3);
-                        waveragesFile << "," << wAverage->getOft()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getOft()->P(),3);
-                        waveragesFile << "," << wAverage->getOor()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getOor()->P(),3);
-                        waveragesFile << "," << wAverage->getOdr()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getOdr()->P(),3);
-                        waveragesFile << "," << wAverage->getOto()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getOto()->P(),3);
-                        waveragesFile << "," << wAverage->getDpts();
-                        waveragesFile << "," << wAverage->getDtwo()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getDtwo()->P(),3);
-                        waveragesFile << "," << wAverage->getDthree()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getDthree()->P(),3);
-                        waveragesFile << "," << wAverage->getDft()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getDft()->P(),3);
-                        waveragesFile << "," << wAverage->getDor()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getDor()->P(),3);
-                        waveragesFile << "," << wAverage->getDdr()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getDdr()->P(),3);
-                        waveragesFile << "," << wAverage->getDto()->A();
-                        waveragesFile << "," << doubleFormatter(wAverage->getDto()->P(),3);
-                        waveragesFile << "," << doubleFormatter(wAverage->getRpi(),3);
-                        waveragesFile << "," << doubleFormatter(srsSOS[0],3);
-                        waveragesFile << "," << doubleFormatter(srsSOS[1],3);
-                        waveragesFile << "," << wAverage->getNum_games();
-                        waveragesFile << "," << doubleFormatter(wAverage->getSpread(),1) << std::endl;
-                    }
+                //write in the file
+                waveragesFile << team.first;
+                waveragesFile << "," << day->year();
+                waveragesFile << "," << day->month().as_number();
+                waveragesFile << "," << day->day();
+                waveragesFile << "," << wAverage->getOpts();
+                waveragesFile << "," << wAverage->getOtwo()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getOtwo()->P(), 3);
+                waveragesFile << "," << wAverage->getOthree()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getOthree()->P(), 3);
+                waveragesFile << "," << wAverage->getOft()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getOft()->P(), 3);
+                waveragesFile << "," << wAverage->getOor()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getOor()->P(), 3);
+                waveragesFile << "," << wAverage->getOdr()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getOdr()->P(), 3);
+                waveragesFile << "," << wAverage->getOto()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getOto()->P(), 3);
+                waveragesFile << "," << wAverage->getDpts();
+                waveragesFile << "," << wAverage->getDtwo()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getDtwo()->P(), 3);
+                waveragesFile << "," << wAverage->getDthree()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getDthree()->P(), 3);
+                waveragesFile << "," << wAverage->getDft()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getDft()->P(), 3);
+                waveragesFile << "," << wAverage->getDor()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getDor()->P(), 3);
+                waveragesFile << "," << wAverage->getDdr()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getDdr()->P(), 3);
+                waveragesFile << "," << wAverage->getDto()->A();
+                waveragesFile << "," << doubleFormatter(wAverage->getDto()->P(), 3);
+                waveragesFile << "," << doubleFormatter(wAverage->getRpi(), 3);
+                waveragesFile << "," << doubleFormatter(srsSOS[0], 3);
+                waveragesFile << "," << doubleFormatter(srsSOS[1], 3);
+                waveragesFile << "," << wAverage->getNum_games();
+                waveragesFile << "," << doubleFormatter(wAverage->getSpread(), 1) << std::endl;
+            }
 
-                    //close the file
-                    waveragesFile.close();
-                }
-
+            //close the file
+            waveragesFile.close();
+        }
+    }
 
     return 0;
 }
@@ -176,17 +221,25 @@ std::vector<double> calcSRS(std::unordered_map<std::string, double>* srsHash, st
 
     BOOST_FOREACH(gamesHashType::value_type &game,gamesHash){
                     if (*(game.second->getDate()) >= date) continue; //only use games before date
-                    if (srsHash->find(game.second->getOpp()) == srsHash->end()) continue;
+                    if (srsHash->find(game.second->getOpp()) == srsHash->end()) continue; //exclude non-Division-I schools
 
                     opp_srs += srsHash->at(game.second->getOpp());
                     pt_diff += game.second->getOpts() - game.second->getDpts();
                     num_opps++;
                 }
 
-    double srs = (pt_diff + opp_srs)/num_opps;
-    double sos = opp_srs/num_opps;
+    double srs = 0, sos = 0;
 
-//    if (sos != sos) std::cout << opp_srs << "\t" << num_opps << std::endl;
+    if (num_opps > 0) {
+        if (opp_srs != opp_srs){ //check for nan
+            srs = pt_diff/num_opps;
+            sos = 0;
+        }
+        else {
+            srs = (pt_diff + opp_srs) / num_opps;
+            sos = opp_srs / num_opps;
+        }
+    }
 
     std::vector<double> result = {srs,sos};
 
