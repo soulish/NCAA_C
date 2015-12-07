@@ -20,12 +20,15 @@
 int main(int argc,char *argv[]) {
     int c;
     int year = 0;
-
+    bool overWrite = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:")) != -1){
+    while((c = getopt(argc,argv,"y:o")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
+                break;
+            case 'o':
+                overWrite = true;
                 break;
             default:
                 // not an option
@@ -66,10 +69,10 @@ int main(int argc,char *argv[]) {
                     sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.averages.d",
                             homePath,year,boost::replace_all_copy(a->getName()," ","_").c_str());
 
-                    ///////////////////////
-                    struct stat buffer;
-                    if (stat(path, &buffer) == 0) continue;
-                    ///////////////////////
+                    if (!overWrite) {
+                        struct stat buffer;
+                        if (stat(path, &buffer) == 0) continue;
+                    }
 
                     averagesFile.open(path);
                     sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.waverages.d",
@@ -113,11 +116,11 @@ int main(int argc,char *argv[]) {
                             if (ii % 2 == 0) waveragesFile << "," << doubleFormatter(x[ii], 0);
                             if (ii % 2 == 1) waveragesFile << "," << doubleFormatter(x[ii], 3);
                         }
-                        waveragesFile << "," << doubleFormatter(x[52], 3);
-                        waveragesFile << "," << doubleFormatter(x[53], 3);
-                        waveragesFile << "," << doubleFormatter(x[54], 3);
-                        waveragesFile << "," << doubleFormatter(x[55], 0);
-                        if (tg) waveragesFile << "," << doubleFormatter(tg->getSpread(), 1);
+                        waveragesFile << "," << doubleFormatter(x[52], 3);//rpi
+                        waveragesFile << "," << doubleFormatter(x[53], 3);//srs
+                        waveragesFile << "," << doubleFormatter(x[54], 3);//sos
+                        waveragesFile << "," << doubleFormatter(x[55], 0);//num_games
+                        if (tg) waveragesFile << "," << doubleFormatter(tg->getSpread(), 1);//spread
                         else waveragesFile << "," << "0.0";
                         waveragesFile << std::endl;
                     }
