@@ -353,7 +353,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
 
     int num_games = 0;
     for (gamesByDateType::value_type &game : gamesByDate){
-        if (*(game.second->getDate()) > date) continue; //only look at games that happened before this date
+        if (*(game.second->getDate()) >= date) continue; //only look at games that happened before this date
         std::string oname = game.second->getOpp();
         opp = findTeam(oname);
         if (!opp) continue; //skip games against non-Division-I opponents
@@ -393,7 +393,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
 
             gamesByDateType games = opp->getGamesByDate();
             for (gamesByDateType::value_type &opp_game : games){
-                if (*(opp_game.second->getDate()) > date) continue; //only look at games that happened before this date
+                if (*(opp_game.second->getDate()) >= date) continue; //only look at games that happened before this date
                 if (opp_game.second->getOpp() == this->name) continue; //skip games against self
 
                 std::string ooname = opp_game.second->getOpp();
@@ -417,7 +417,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
 
                     gamesByDateType opp_games = opp_opp->getGamesByDate();
                     for (gamesByDateType::value_type &opp_opp_game : opp_games){
-                        if (*(opp_opp_game.second->getDate()) > date) continue; //only look at games that happened before this date
+                        if (*(opp_opp_game.second->getDate()) >= date) continue; //only look at games that happened before this date
                         if (opp_opp_game.second->getOpp() == this->name) continue; //skip games against self
                         if (!findTeam(opp_opp_game.second->getOpp())) continue; //skip games against non-Division-I opponents
 
