@@ -79,6 +79,9 @@ public:
     const Pct *getDdr() const {   return ddr;  }
     const Pct *getDtr() const {   return dtr;  }
 
+    const Pct *getPct(std::string which) const;
+    const double getValue(std::string which) const;
+
     //Other methods
 
 protected:
