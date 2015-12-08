@@ -22,7 +22,7 @@ int Pcts::sum(char stat) {//this is only the sum over m or a
         return 0;
 
     int sum = 0;
-    vector<Pct>::iterator v = pcts->begin();
+    std::vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
         if (stat == 'a')
             sum += v->A();
@@ -46,7 +46,7 @@ double Pcts::average(char stat) {
 
 double Pcts::weighted_average() {
     double sum_weights = 0.0;
-    vector<Pct>::iterator v = pcts->begin();
+    std::vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
         sum_weights += 1/ v->Variance();
         v++;
@@ -64,7 +64,7 @@ double Pcts::weighted_average() {
 
 double Pcts::weighted_average_alt() {
     int sum_weights = 0;
-    vector<Pct>::iterator v = pcts->begin();
+    std::vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
         sum_weights += v->A();
         v++;
@@ -78,4 +78,24 @@ double Pcts::weighted_average_alt() {
     }
 
     return s;
+}
+
+double Pcts::weighted_std_dev() {
+    double p_bar = this->p_bar();
+
+    double sum_weights = 0;
+    std::vector<Pct>::iterator v = pcts->begin();
+    while(v != pcts->end()) {
+        sum_weights += 1/ v->Variance();
+        v++;
+    }
+
+    double sum = 0;
+    v = pcts->begin();
+    while(v != pcts->end()) {
+        sum += ( pow(v->P() - p_bar, 2) / v->Variance()) / sum_weights;
+        v++;
+    }
+
+    return sqrt(sum);
 }

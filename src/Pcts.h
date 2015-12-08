@@ -7,13 +7,12 @@
 
 #include <vector>
 #include "Pct.h"
-
-using namespace std;
+#include "math.h"
 
 class Pcts {
 public:
     //Constructor
-    Pcts() : pcts(new vector<Pct>) {  }
+    Pcts() : pcts(new std::vector<Pct>) {  }
     //Destructor
     virtual ~Pcts(){
         delete pcts;
@@ -33,9 +32,10 @@ public:
     double average(char);
     double weighted_average();
     double weighted_average_alt();
+    double weighted_std_dev();
 
 private:
-    vector<Pct> *pcts;
+    std::vector<Pct> *pcts;
 };
 
 
