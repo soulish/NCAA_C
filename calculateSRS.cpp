@@ -80,9 +80,9 @@ int main(int argc,char *argv[]){
     for (; ditr <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++ditr) {
         std::string date = boost::gregorian::to_iso_extended_string(*ditr);
         srsHash[0]->emplace(date,new teamHashType());
-        BOOST_FOREACH(allTeamsHashType::value_type &team, allTeamsHash){
-                        srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getSrs());
-                    }
+        for (auto &team : allTeamsHash){
+            srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getSrs());
+        }
     }
 
     std::vector<double> srsSOS;
@@ -93,10 +93,10 @@ int main(int argc,char *argv[]){
         for (; day <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++day) {
             std::string date = boost::gregorian::to_iso_extended_string(*day);
             srsHash[i]->emplace(date, new teamHashType());
-            BOOST_FOREACH(allTeamsHashType::value_type &team, allTeamsHash){
-                            srsSOS = calcSRS(srsHash[i-1]->at(date),team.first,*day);
-                            srsHash[i]->at(date)->emplace(team.first,srsSOS[0]);
-                        }
+            for (auto &team : allTeamsHash){
+                srsSOS = calcSRS(srsHash[i-1]->at(date),team.first,*day);
+                srsHash[i]->at(date)->emplace(team.first,srsSOS[0]);
+            }
         }
 
         if (verbose) {
@@ -148,8 +148,7 @@ int main(int argc,char *argv[]){
     if (writeOutput) {
         TeamWAverage *wAverage;
 
-        BOOST_FOREACH(allTeamsHashType::value_type & team, allTeamsHash)
-        {
+        for (auto & team : allTeamsHash){
             //open up the file
             std::ofstream waveragesFile;
             sprintf(path, "%s/cpp/NCAA_C/teams/%i/teams.%s.waverages.d",
@@ -219,14 +218,14 @@ std::vector<double> calcSRS(std::unordered_map<std::string, double>* srsHash, st
     typedef std::unordered_map<std::string, TeamGame*> gamesHashType;
     gamesHashType gamesHash = team->getGamesByDate();
 
-    BOOST_FOREACH(gamesHashType::value_type &game,gamesHash){
-                    if (*(game.second->getDate()) >= date) continue; //only use games before date
-                    if (srsHash->find(game.second->getOpp()) == srsHash->end()) continue; //exclude non-Division-I schools
+    for (auto &game : gamesHash){
+        if (*(game.second->getDate()) >= date) continue; //only use games before date
+        if (srsHash->find(game.second->getOpp()) == srsHash->end()) continue; //exclude non-Division-I schools
 
-                    opp_srs += srsHash->at(game.second->getOpp());
-                    pt_diff += game.second->getOpts() - game.second->getDpts();
-                    num_opps++;
-                }
+        opp_srs += srsHash->at(game.second->getOpp());
+        pt_diff += game.second->getOpts() - game.second->getDpts();
+        num_opps++;
+    }
 
     double srs = 0, sos = 0;
 
