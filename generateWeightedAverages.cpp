@@ -60,7 +60,6 @@ int main(int argc,char *argv[]) {
     TeamGame *tg;
 
     for (auto &team : orderedTeams) {
-        std::cout << team.first << std::endl;
         a = team.second;
         std::vector<double> x;
         std::ofstream waveragesFile,averagesFile;
@@ -70,7 +69,10 @@ int main(int argc,char *argv[]) {
 
         if (!overWrite) {
             struct stat buffer;
-            if (stat(path, &buffer) == 0) continue;
+            if (stat(path, &buffer) == 0){
+                std::cout << team.first << std::endl;
+                continue;
+            }
         }
 
         averagesFile.open(path);
@@ -80,7 +82,7 @@ int main(int argc,char *argv[]) {
         boost::gregorian::day_iterator ditr(ConstantSeasonInfo::Instance()->get(year,"season start") +
                                             boost::gregorian::date_duration(14));//2 weeks after start of season
         for (; ditr <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++ditr) {
-            std::cout<< "Processing date: " <<
+            std::cout << "Processing " << team.first << " date: " <<
             boost::gregorian::to_iso_extended_string(*ditr) << "\r";
             std::fflush(stdout);
             x = a->calcWeightedAverage(*ditr);
