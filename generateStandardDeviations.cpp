@@ -17,15 +17,16 @@ int main(int argc,char *argv[]){
     int outYear = 0;
     bool verbose = false, writeOutput = false;
     std::vector<std::string> years;
-    std::string inYears;
+    std::string inYears = "";
+    std::string outFileName = "";
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:Y:vo")) != -1){
-        switch(c){
+    while ((c = getopt(argc, argv, "y:Y:vo:")) != -1) {
+        switch (c) {
             case 'y':
                 std::cout << "inYears: " << optarg << std::endl;
                 inYears.assign(optarg);
-                boost::split(years,inYears,boost::is_any_of(","));
+                boost::split(years, inYears, boost::is_any_of(","));
                 break;
             case 'Y':
                 outYear = atoi(optarg);
@@ -34,6 +35,7 @@ int main(int argc,char *argv[]){
                 verbose = true;
                 break;
             case 'o':
+                outFileName.assign(optarg);
                 writeOutput = true;
                 break;
             default:
@@ -43,11 +45,12 @@ int main(int argc,char *argv[]){
     }
 
     //ensure years and outYear are set
-    if (years.empty()){
-        std::cout << "You must set the input years using the -y switch and a comma-separated list of years" << std::endl;
+    if (years.empty()) {
+        std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
+        std::endl;
         return 0;
     }
-    if (outYear == 0){
+    if (outYear == 0) {
         std::cout << "You must set the output year using the -Y switch" << std::endl;
         return 0;
     }
@@ -59,17 +62,17 @@ int main(int argc,char *argv[]){
     ConstantSeasonInfo::Instance()->initialize(path);
 
 
-    for (std::string &year : years){
+    for (std::string &year : years) {
         sprintf(path, "%s/cpp/NCAA_C/teams/%s/", homePath, year.c_str());
         std::cout << "Doing " << year << std::endl;
-        readTeamsFromDir(path,"waverages");
+        readTeamsFromDir(path, "waverages");
     }
 
-    std::string stats[] = {"oor","oefg","oftmr","oto"};
+    std::string stats[] = {"oor", "oefg", "oftmr", "oto"};
 
-    std::unordered_map<int, std::unordered_map<std::string, Pcts* > * > pcts;
-    for (int i = 0; i < 155; i++) {
-        pcts.emplace(i, new std::unordered_map<std::string, Pcts*>());
+    std::unordered_map<int, std::unordered_map<std::string, Pcts *> *> pcts;
+    for (int i = 0; i < 120; i++) {
+        pcts.emplace(i, new std::unordered_map<std::string, Pcts *>());
         for (std::string &s : stats)
             pcts[i]->emplace(s, new Pcts());
     }
@@ -77,29 +80,53 @@ int main(int argc,char *argv[]){
     boost::gregorian::days indDuration;
     std::unordered_map<std::string, TeamWAverage *> teamWAverages;
     std::unordered_map<std::string, Team *> teams = Team::getTeams();
-    for (auto &team : teams){
+    for (auto &team : teams) {
         int year = team.second->getYear();
         teamWAverages = team.second->getWAveragesByDate();
 
-        for (auto &waverage : teamWAverages){
-            indDuration = ConstantSeasonInfo::Instance()->get(team.second->getYear(),"tournament start") -
-                    *(waverage.second->getDate());
-            int ind = 154 - (int)indDuration.days();
+        for (auto &waverage : teamWAverages) {
+            indDuration = ConstantSeasonInfo::Instance()->get(team.second->getYear(), "tournament start") -
+                          *(waverage.second->getDate());
+            int ind = 119 - (int) indDuration.days();
 
-            for (std::string &s : stats){
+            for (std::string &s : stats) {
                 pcts[ind]->at(s)->add_pct(*(waverage.second->getPct(s)));
             }
         }
     }
 
-    for (std::string &s : stats){
-        for (int i = 0; i < 155; i++){
-            double avg = pcts[i]->at(s)->p_bar();
-            double wstd = pcts[i]->at(s)->weighted_std_dev();
-            //consider what happens when there are no entries -> return 0 or 0.1 or something
-            std::cout << "std_devs[\"" << s << "\"][" << i << "] = " << doubleFormatter(avg,3) <<
-                    "\t" << doubleFormatter(wstd,3) << std::endl;
+    if (verbose) {
+        for (std::string &s : stats) {
+            for (int i = 0; i < 120; i++) {
+                double avg = pcts[i]->at(s)->p_bar();
+                double wstd = pcts[i]->at(s)->weighted_std_dev();
+                //consider what happens when there are no entries -> return 0 or 0.1 or something
+                if ((wstd != wstd) || (avg != avg)) {
+                    wstd = 0.1;
+                }
+                std::cout << "std_devs[\"" << s << ".p\"][" << i << "] = " << doubleFormatter(avg, 3) <<
+                "\t" << doubleFormatter(wstd, 3) << std::endl;
+            }
         }
+    }
+
+    if (writeOutput){
+        sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileName.c_str());
+        std::ofstream outFile(path, std::ios::app);
+        for (std::string &s : stats){
+            outFile << outYear << "," << s;
+            for (int i = 0; i < 120; i++){
+                double avg = pcts[i]->at(s)->p_bar();
+                double wstd = pcts[i]->at(s)->weighted_std_dev();
+                //consider what happens when there are no entries -> return 0 or 0.1 or something
+                if ((wstd != wstd) || (avg != avg)) {
+                    wstd = 0.1;
+                }
+                outFile << "," << doubleFormatter(wstd, 3);
+            }
+            outFile << std::endl;
+        }
+        outFile.close();
     }
 
     return 0;
