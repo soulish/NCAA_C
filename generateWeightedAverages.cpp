@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <boost/foreach.hpp>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -53,12 +54,12 @@ int main(int argc,char *argv[]) {
     std::cout << "Reading in " << year << std::endl;
     readTeamsFromDir(path);
 
-    typedef std::unordered_map<std::string, Team *> teamHash;
-    teamHash teams = Team::getTeams();
+    std::unordered_map<std::string, Team *> teams = Team::getTeams();
+    std::map<std::string, Team *> orderedTeams(teams.begin(), teams.end());
     Team *a;
     TeamGame *tg;
 
-    for (auto &team : teams) {
+    for (auto &team : orderedTeams) {
         std::cout << team.first << std::endl;
         a = team.second;
         std::vector<double> x;
@@ -98,6 +99,7 @@ int main(int argc,char *argv[]) {
                 if (ii % 2 == 0) averagesFile << "," << doubleFormatter(x[ii], 0);
                 if (ii % 2 == 1) averagesFile << "," << doubleFormatter(x[ii], 3);
             }
+            averagesFile << "," << doubleFormatter(x[55], 0);//num_games
             if (tg) averagesFile << "," << doubleFormatter(tg->getSpread(), 1);
             else averagesFile << "," << "0.0";
             averagesFile << std::endl;
