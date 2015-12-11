@@ -5,14 +5,13 @@
 #include "TeamAverage.h"
 #include <boost/algorithm/string.hpp>
 
-TeamAverage::TeamAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, double twop, int threea,
+TeamAverage::TeamAverage(std::string _teamname, boost::gregorian::date _date, int _pts, int twoa, double twop, int threea,
                          double threep, int fta, double ftp, int ora, double orp, int dra, double drp, int toa, double top,
                          int _dpts, int dtwoa, double dtwop, int dthreea, double dthreep, int dfta, double dftp, int dora,
-                         double dorp, int ddra, double ddrp, int dtoa, double dtop, int _num_games, double _spread)
+                         double dorp, int ddra, double ddrp, int dtoa, double dtop, int _num_games)
     : teamname(_teamname),
       date(_date),
       num_games(_num_games),
-      spread(_spread),
 
       oor(new Pct((int)round(orp*ora),ora,orp)),
       oefg(new Pct(twop*twoa+1.5*(threep*threea),(double)twoa+threea)),
