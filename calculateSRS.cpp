@@ -19,8 +19,9 @@ int main(int argc,char *argv[]){
     int c;
     int year = 2015, numIterations = 3;
     bool verbose = false, writeOutput = false;
+    bool startFromOriginalSRS = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:vn:o")) != -1){
+    while((c = getopt(argc,argv,"y:vn:oO")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
@@ -33,6 +34,9 @@ int main(int argc,char *argv[]){
                 break;
             case 'o':
                 writeOutput = true;
+                break;
+            case 'O':
+                startFromOriginalSRS = true;
                 break;
             default:
                 // not an option
@@ -53,10 +57,6 @@ int main(int argc,char *argv[]){
     char *homePath, path[256];
     homePath = getenv("HOME");
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/team_5yr_averages.d", homePath);
-    ConstantTeam5YearAverages::Instance()->initialize(path);
-    sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
-    ConstantTeamNeutralRatios::Instance()->initialize(path);
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
     ConstantSeasonInfo::Instance()->initialize(path);
 
@@ -81,7 +81,10 @@ int main(int argc,char *argv[]){
         std::string date = boost::gregorian::to_iso_extended_string(*ditr);
         srsHash[0]->emplace(date,new teamHashType());
         for (auto &team : allTeamsHash){
-            srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getSrs());
+            if (startFromOriginalSRS)
+                srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getOrigSRS());
+            else
+                srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getSrs());
         }
     }
 
@@ -195,10 +198,10 @@ int main(int argc,char *argv[]){
                 waveragesFile << "," << wAverage->getDto()->A();
                 waveragesFile << "," << doubleFormatter(wAverage->getDto()->P(), 3);
                 waveragesFile << "," << doubleFormatter(wAverage->getRpi(), 3);
+                waveragesFile << "," << doubleFormatter(wAverage->getOrigSRS(), 3);
                 waveragesFile << "," << doubleFormatter(srsSOS[0], 3);
                 waveragesFile << "," << doubleFormatter(srsSOS[1], 3);
-                waveragesFile << "," << wAverage->getNum_games();
-                waveragesFile << "," << doubleFormatter(wAverage->getSpread(), 1) << std::endl;
+                waveragesFile << "," << wAverage->getNum_games() << std::endl;
             }
 
             //close the file
@@ -219,7 +222,7 @@ std::vector<double> calcSRS(std::unordered_map<std::string, double>* srsHash, st
     gamesHashType gamesHash = team->getGamesByDate();
 
     for (auto &game : gamesHash){
-        if (*(game.second->getDate()) >= date) continue; //only use games before date
+        if (game.second->getDate() >= date) continue; //only use games before date
         if (srsHash->find(game.second->getOpp()) == srsHash->end()) continue; //exclude non-Division-I schools
 
         opp_srs += srsHash->at(game.second->getOpp());
