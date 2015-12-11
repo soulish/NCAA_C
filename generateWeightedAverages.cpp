@@ -7,7 +7,6 @@
 #include <boost/foreach.hpp>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
-#include "src/ConstantTeam5YearAverages.h"
 #include "src/ConstantTeamNeutralRatios.h"
 #include "src/Team.h"
 #include "src/TeamGame.h"
@@ -43,8 +42,6 @@ int main(int argc,char *argv[]) {
     char *homePath, path[256];
     homePath = getenv("HOME");
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/team_5yr_averages.d", homePath);
-    ConstantTeam5YearAverages::Instance()->initialize(path);
     sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
     ConstantTeamNeutralRatios::Instance()->initialize(path);
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
@@ -87,8 +84,6 @@ int main(int argc,char *argv[]) {
             std::fflush(stdout);
             x = a->calcWeightedAverage(*ditr);
 
-            tg = a->GameOnDate(*ditr);
-
             averagesFile << a->getName();
             averagesFile << "," << ditr->year() << "," << ditr->month().as_number() << "," << ditr->day();
             averagesFile << "," << doubleFormatter(x[0], 0);
@@ -102,8 +97,6 @@ int main(int argc,char *argv[]) {
                 if (ii % 2 == 1) averagesFile << "," << doubleFormatter(x[ii], 3);
             }
             averagesFile << "," << doubleFormatter(x[55], 0);//num_games
-            if (tg) averagesFile << "," << doubleFormatter(tg->getSpread(), 1);
-            else averagesFile << "," << "0.0";
             averagesFile << std::endl;
 
             waveragesFile << a->getName();
@@ -119,11 +112,10 @@ int main(int argc,char *argv[]) {
                 if (ii % 2 == 1) waveragesFile << "," << doubleFormatter(x[ii], 3);
             }
             waveragesFile << "," << doubleFormatter(x[52], 3);//rpi
+            waveragesFile << "," << doubleFormatter(x[53], 3);//origSRS, same as srs at the moment
             waveragesFile << "," << doubleFormatter(x[53], 3);//srs
             waveragesFile << "," << doubleFormatter(x[54], 3);//sos
             waveragesFile << "," << doubleFormatter(x[55], 0);//num_games
-            if (tg) waveragesFile << "," << doubleFormatter(tg->getSpread(), 1);//spread
-            else waveragesFile << "," << "0.0";
             waveragesFile << std::endl;
         }
         averagesFile.close();
