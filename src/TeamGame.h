@@ -13,7 +13,7 @@ class TeamGame : public Game {
 
 public:
     //Constructor
-    TeamGame(std::string _team, std::string _opp, int _game_no, boost::gregorian::date *_date, std::string _loc, int _win, int _pts, int _opp_pts,
+    TeamGame(std::string _team, std::string _opp, int _game_no, boost::gregorian::date _date, std::string _loc, int _win, int _pts, int _opp_pts,
              int _fgm, int _fga, int _threem, int _threea, int _ftm, int _fta,
              int _orb, int _trb, int _ast, int _stl, int _blk, int _tov, int _pf,
              int _opp_fgm, int _opp_fga, int _opp_threem, int _opp_threea, int _opp_ftm, int _opp_fta,
