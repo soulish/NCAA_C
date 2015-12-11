@@ -86,7 +86,7 @@ int main(int argc,char *argv[]){
 
         for (auto &waverage : teamWAverages) {
             indDuration = ConstantSeasonInfo::Instance()->get(team.second->getYear(), "tournament start") -
-                          *(waverage.second->getDate());
+                          waverage.second->getDate();
             int ind = 119 - (int) indDuration.days();
 
             for (std::string &s : stats) {
