@@ -12,13 +12,12 @@
 class TeamWAverage : public TeamAverage {
 public:
     //Constructor
-    TeamWAverage(std::string _teamname, boost::gregorian::date *_date, int _pts, int twoa, double twop,
+    TeamWAverage(std::string _teamname, boost::gregorian::date _date, int _pts, int twoa, double twop,
                  int threea, double threep, int fta, double ftp, int ora, double orp, int dra, double drp,
                  int toa, double top,
                  int _dpts, int dtwoa, double dtwop,
                  int dthreea, double dthreep, int dfta, double dftp, int dora, double dorp, int ddra, double ddrp,
-                 int dtoa, double dtop, double _rpi, double _srs, double _sos,
-                 int _num_games, double _spread);
+                 int dtoa, double dtop, double _rpi, double _origSRS, double _srs, double _sos, int _num_games);
     //Destructor
     virtual ~TeamWAverage(){ }
     //Copy Constructor
@@ -27,6 +26,7 @@ public:
     //Getters
     const double getRpi() const {  return rpi;  }
     const double getSrs() const {  return srs;  }
+    const double getOrigSRS() const {  return origSRS;  }
     const double getSos() const {  return sos;  }
 
     //Other methods
@@ -34,6 +34,7 @@ public:
 private:
     const double rpi;
     const double srs;
+    const double origSRS;
     const double sos;
 };
 
