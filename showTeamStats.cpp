@@ -116,13 +116,13 @@ int main(int argc,char *argv[]){
 
     //cycle through the averages hash
     for (auto &average : averageHash){
-        last_average = team->AverageOnDate(*(average.second->getDate()) - dateDuration);
+        last_average = team->AverageOnDate(average.second->getDate() - dateDuration);
         if (!last_average) continue; //skip the first date
-        waverage = team->WAverageOnDate(*(average.second->getDate()));
-        last_waverage = team->WAverageOnDate(*(average.second->getDate()) - dateDuration);
+        waverage = team->WAverageOnDate(average.second->getDate());
+        last_waverage = team->WAverageOnDate(average.second->getDate() - dateDuration);
 
         int last_num_games = last_average->getNum_games();
-        indDuration = *(waverage->getDate()) -
+        indDuration = average.second->getDate() -
                       ConstantSeasonInfo::Instance()->get(team->getYear(),"season start");
         int ind = (int)indDuration.days();
 
@@ -154,7 +154,7 @@ int main(int argc,char *argv[]){
             else if (boost::contains(s, ".m") == 1){
                 //makes have to take into account the fact that I store the total number of makes
                 //(or total number of weighted attempts) for each day, not the average.
-                //So we have to divide by the number of games played to that point.
+
                 if (average.second->getNum_games() != last_num_games) {
                     avgs_per_game[s]->SetBinContent(ind,average.second->getValue(s) -
                             last_average->getValue(s));
@@ -165,6 +165,7 @@ int main(int argc,char *argv[]){
                 wavgs_per_time[s]->SetBinContent(ind,waverage->getValue(s) / (double)waverage->getNum_games());
             }
             else if (s == "srs") {
+                avgs_per_time[s]->SetBinContent(ind,waverage->getOrigSRS());
                 wavgs_per_time[s]->SetBinContent(ind,waverage->getSrs());
             }
             else if (s == "rpi") {
