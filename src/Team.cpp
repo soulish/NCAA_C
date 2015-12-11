@@ -6,7 +6,6 @@
 #include "Team.h"
 #include "ConstantTeamNeutralRatios.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
 
 //declaring the static variables
 std::unordered_map<std::string,Team*> Team::teams;
@@ -34,17 +33,17 @@ Team *Team::findTeam(std::string name) {
 //Add TeamGame to the gamesByDate hash, using the date of
 //the game in the form YYYY-MM-DD as the key.
 void Team::addGame(TeamGame* g) {
-    gamesByDate.emplace(boost::gregorian::to_iso_extended_string(*(g->getDate())),g);
+    gamesByDate.emplace(boost::gregorian::to_iso_extended_string(g->getDate()) + g->getOpp(),g);
 }
 
 //Add TeamAverage to the averagesByDate hash.
 void Team::addAverage(TeamAverage *a) {
-    averagesByDate.emplace(boost::gregorian::to_iso_extended_string(*(a->getDate())),a);
+    averagesByDate.emplace(boost::gregorian::to_iso_extended_string(a->getDate()),a);
 }
 
 //Add TeamWAverage to the averagesByDate hash.
 void Team::addWAverage(TeamWAverage *w) {
-    waveragesByDate.emplace(boost::gregorian::to_iso_extended_string(*(w->getDate())),w);
+    waveragesByDate.emplace(boost::gregorian::to_iso_extended_string(w->getDate()),w);
 }
 
 //Add TeamGames via a file containing their games.
@@ -132,7 +131,7 @@ void Team::addGames(std::string fileName) {
 
         if (file.good()) {
             this->addGame(
-                    new TeamGame(team, opp, game_no, new boost::gregorian::date(yy, mo, da), loc, win, pts, opp_pts,
+                    new TeamGame(team, opp, game_no, boost::gregorian::date(yy, mo, da), loc, win, pts, opp_pts,
                                  fgm, fga, threem, threea, ftm, fta, orb, trb, ast, stl, blk, tov, pf,
                                  dfgm, dfga, dthreem, dthreea, dftm, dfta,
                                  dorb, dtrb, dast, dstl, dblk, dtov, dpf, spread));
@@ -145,7 +144,6 @@ void Team::addAverages(std::string fileName) {
     unsigned short yy, mo, da;
     int opts, otwoa, othreea, ofta, oora, odra, otoa, dpts, dtwoa, dthreea, dfta, dora, ddra, dtoa;
     double otwop, othreep, oftp, oorp, odrp, otop, dtwop, dthreep, dftp, dorp, ddrp, dtop;
-    double spread;
     int num_games;
 
     std::ifstream file(fileName);
@@ -211,19 +209,16 @@ void Team::addAverages(std::string fileName) {
         dtoa = stoi(value);
         getline(file, value, ',' );
         dtop = stod(value);
-        getline(file, value, ',' );
-        num_games = stoi(value);
-
         getline(file, value, '\n' );
-        spread = stod(value);
+        num_games = stoi(value);
 
         if (file.good()) {
             this->addAverage(
-                    new TeamAverage(team, new boost::gregorian::date(yy, mo, da),
+                    new TeamAverage(team, boost::gregorian::date(yy, mo, da),
                                     opts, otwoa, otwop, othreea, othreep, ofta, oftp,
                                     oora, oorp, odra, odrp, otoa, otop,
                                     dpts, dtwoa, dtwop, dthreea, dthreep, dfta, dftp,
-                                    dora, dorp, ddra, ddrp, dtoa, dtop, num_games, spread));
+                                    dora, dorp, ddra, ddrp, dtoa, dtop, num_games));
         }
     }
 }
@@ -233,7 +228,7 @@ void Team::addWAverages(std::string fileName) {
     unsigned short yy, mo, da;
     int opts, otwoa, othreea, ofta, oora, odra, otoa, dpts, dtwoa, dthreea, dfta, dora, ddra, dtoa;
     double otwop, othreep, oftp, oorp, odrp, otop, dtwop, dthreep, dftp, dorp, ddrp, dtop;
-    double rpi, srs, sos, spread;
+    double rpi, origSRS, srs, sos;
     int num_games;
 
     std::ifstream file(fileName);
@@ -272,8 +267,8 @@ void Team::addWAverages(std::string fileName) {
         otoa = stoi(value);
         getline(file, value, ',' );
         otop = stod(value);
-        getline(file, value, ',' );
 
+        getline(file, value, ',' );
         dpts = stoi(value);
         getline(file, value, ',' );
         dtwoa = stoi(value);
@@ -303,22 +298,23 @@ void Team::addWAverages(std::string fileName) {
         getline(file, value, ',' );
         rpi = stod(value);
         getline(file, value, ',' );
+        origSRS = stod(value);
+        getline(file, value, ',' );
         srs = stod(value);
         getline(file, value, ',' );
         sos = stod(value);
 
-        getline(file, value, ',' );
-        num_games = stoi(value);
         getline(file, value, '\n' );
-        spread = stod(value);
+        num_games = stoi(value);
 
         if (file.good()) {
             this->addWAverage(
-                    new TeamWAverage(team, new boost::gregorian::date(yy, mo, da),
-                                    opts, otwoa, otwop, othreea, othreep, ofta, oftp,
-                                    oora, oorp, odra, odrp, otoa, otop,
-                                    dpts, dtwoa, dtwop, dthreea, dthreep, dfta, dftp,
-                                    dora, dorp, ddra, ddrp, dtoa, dtop, rpi, srs, sos, num_games, spread));
+                    new TeamWAverage(team, boost::gregorian::date(yy, mo, da),
+                                     opts, otwoa, otwop, othreea, othreep, ofta, oftp,
+                                     oora, oorp, odra, odrp, otoa, otop,
+                                     dpts, dtwoa, dtwop, dthreea, dthreep, dfta, dftp,
+                                     dora, dorp, ddra, ddrp, dtoa, dtop,
+                                     rpi, origSRS, srs, sos, num_games));
         }
     }
 }
@@ -332,6 +328,10 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
     typedef std::unordered_map<std::string, int> hashIntType;
     typedef std::unordered_map<std::string, hashDoubleType * > sumsType;
 
+    //totals will contain the raw totals that will be used for the averages file.
+    //weighted_stats will contain the weighted totals used for the waverages file.
+    //Each is initialized with a key-set from the stats array (offense and defense)
+    //where the values are set to 0 and we will add to them.
     hashDoubleType totals, weighted_stats;
     for (std::string &s : stats){
         totals.emplace("o"+s,0);
@@ -339,21 +339,28 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
         weighted_stats.emplace("o"+s, 0);
         weighted_stats.emplace("d"+s, 0);
     }
+
+    //opp_wins/losses and opp_opp_wins/losses contain the total number of wins/losses
+    //by self's opp's and their opp's opps.  oo_wins/losses is stored so we don't have
+    //to run through opp_opps that we have already seen before.
     hashIntType opp_wins, opp_losses, opp_opp_wins, opp_opp_losses, oo_wins, oo_losses;
+    //these are the total wins and losses for the opps and the opps' opps, not separated by team
     int owins = 0, olosses = 0, oowins = 0, oolosses = 0;
-    double wins = 0, losses = 0;
-    int pure_wins = 0, pure_total = 0;
-    int pt_diff = 0;
+    double wins = 0, losses = 0;//self's wins and losses, weighted for rpi.
+    int pure_wins = 0, pure_total = 0;//self's wins and losses, unweighted
+    int pt_diff = 0;//self's point differential for the season to date
     double opp_avg_pt_diff = 0;
     sumsType opp_sums, opp_opp_sums;
     hashDoubleType opp_pt_diff;
     hashIntType num_opp_games, num_opp_opp_games;
 
-    Team *opp, *opp_opp;
+    Team *opp, *opp_opp;//placeholders
 
     int num_games = 0;
-    for (gamesByDateType::value_type &game : gamesByDate){
-        if (*(game.second->getDate()) >= date) continue; //only look at games that happened before this date
+
+    //cycle through self's games
+    for (auto &game : gamesByDate){
+        if (game.second->getDate() >= date) continue; //only look at games that happened before this date
         std::string oname = game.second->getOpp();
         opp = findTeam(oname);
         if (!opp) continue; //skip games against non-Division-I opponents
@@ -365,6 +372,7 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
         pure_total++;
         if (game.second->getWin()){
             pure_wins++;
+            //weighted for RPI
             if (game.second->getLoc() == "home") wins += 0.6;
             else if (game.second->getLoc() == "away") wins += 1.4;
             else if (game.second->getLoc() == "neutral") wins += 1.0;
@@ -391,14 +399,15 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
             oo_wins.emplace(oname,0);
             oo_losses.emplace(oname,0);
 
-            gamesByDateType games = opp->getGamesByDate();
-            for (gamesByDateType::value_type &opp_game : games){
-                if (*(opp_game.second->getDate()) >= date) continue; //only look at games that happened before this date
+            gamesByDateType oppGames = opp->getGamesByDate();
+            for (auto &opp_game : oppGames){
+                if (opp_game.second->getDate() >= date) continue; //only look at games that happened before this date
                 if (opp_game.second->getOpp() == this->name) continue; //skip games against self
 
                 std::string ooname = opp_game.second->getOpp();
                 opp_opp = findTeam(ooname);
                 if (!opp_opp) continue; //skip games against non-Division-I opponents
+
                 num_opp_games[oname]++;
                 if (opp_game.second->getWin()) opp_wins[oname]++;
                 else opp_losses[oname]++;
@@ -415,9 +424,9 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
                     opp_opp_wins.emplace(ooname,0);
                     opp_opp_losses.emplace(ooname,0);
 
-                    gamesByDateType opp_games = opp_opp->getGamesByDate();
-                    for (gamesByDateType::value_type &opp_opp_game : opp_games){
-                        if (*(opp_opp_game.second->getDate()) >= date) continue; //only look at games that happened before this date
+                    gamesByDateType oppOppGames = opp_opp->getGamesByDate();
+                    for (auto &opp_opp_game : oppOppGames){
+                        if (opp_opp_game.second->getDate() >= date) continue; //only look at games that happened before this date
                         if (opp_opp_game.second->getOpp() == this->name) continue; //skip games against self
                         if (!findTeam(opp_opp_game.second->getOpp())) continue; //skip games against non-Division-I opponents
 
@@ -426,12 +435,14 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
                         else opp_opp_losses[ooname]++;
 
                         for (std::string &s : stats){
-                            //this sum, divided by the total number of games played by opp_opp, is what opp_opp would average offensively on a
-                            //neutral floor
+                            //this sum, divided by the total number of games played by opp_opp, is what opp_opp would
+                            //average offensively on a neutral floor.
                             opp_opp_sums[ooname]->at("o"+s) += opp_opp_game.second->getValue("o"+s) *
                                                                ConstantTeamNeutralRatios::Instance()->get(year, opp_opp_game.second->getLoc(), "o"+s);
                             //this sum, divided by the total number of games played by opp_opp, is what opp_opp would average giving up
                             //defensively on a neutral floor
+                            //Note that neutralRatio[home][offensive stat] = neutralRatio[away][defensive stat], which
+                            //is why we use oppLoc here
                             opp_opp_sums[ooname]->at("d"+s) += opp_opp_game.second->getValue("d"+s) *
                                                                ConstantTeamNeutralRatios::Instance()->get(year, opp_opp_game.second->getOppLoc(), "o"+s);//note: all neutral ratios are offensive
                         }
@@ -462,14 +473,18 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
                         //less than 1 means they underperform compared to what their opponents generally allow,
                         //(they're worse at offense than the league average) and so the weighted average
                         //for self will go up (meaning worse d).
-                        opp_sums[oname]->at("o"+s) += (opp_game.second->getValue("o"+s) * ConstantTeamNeutralRatios::Instance()->get(year, opp_game.second->getLoc(), "o"+s)) /
+                        opp_sums[oname]->at("o"+s) += (opp_game.second->getValue("o"+s) *
+                                                       ConstantTeamNeutralRatios::Instance()->get(year, opp_game.second->getLoc(), "o"+s)) /
                                                       (opp_opp_sums[ooname]->at("d"+s) / (double)num_opp_opp_games[ooname]);
                         //this is the similar sum for offense.  It is how much they allow compared to how much the
                         //opponents usually get. Greater than 1 means they give up more than usual (they're bad at
                         //defense) and so self's offensive weighted avg will go down (it's not as impressive to score
                         //well against a bad d); less than 1 means they're better than usual so self's offensive
                         //numbers will go up.
-                        opp_sums[oname]->at("d"+s) += (opp_game.second->getValue("d"+s) * ConstantTeamNeutralRatios::Instance()->get(year, opp_game.second->getOppLoc(), "o"+s)) /
+                        //Note that neutralRatio[home][offensive stat] = neutralRatio[away][defensive stat], which
+                        //is why we use oppLoc here
+                        opp_sums[oname]->at("d"+s) += (opp_game.second->getValue("d"+s) *
+                                                       ConstantTeamNeutralRatios::Instance()->get(year, opp_game.second->getOppLoc(), "o"+s)) /
                                                       (opp_opp_sums[ooname]->at("o"+s) / (double)num_opp_opp_games[ooname]);
                     }
                     else{
@@ -488,7 +503,8 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
         oowins += oo_wins[oname];
         oolosses += oo_losses[oname];
 
-        opp_avg_pt_diff += opp_pt_diff[oname] / (double) num_opp_games[oname];
+        if (num_opp_games[oname] > 0)
+            opp_avg_pt_diff += opp_pt_diff[oname] / (double) num_opp_games[oname];
 
         for (std::string &s : stats){
             if (num_opp_games[oname] > 0 && opp_sums[oname]->at("o"+s) > 0){
@@ -497,6 +513,8 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
                 weighted_stats["o"+s] += (game.second->getValue("o"+s) * ConstantTeamNeutralRatios::Instance()->get(year, game.second->getLoc(), "o"+s)) /
                                          (opp_sums[oname]->at("d"+s) / (double)num_opp_games[oname]);
                 //similar for the defensive stats
+                //Note that neutralRatio[home][offensive stat] = neutralRatio[away][defensive stat], which
+                //is why we use oppLoc here
                 weighted_stats["d"+s] += (game.second->getValue("d"+s) * ConstantTeamNeutralRatios::Instance()->get(year, game.second->getOppLoc(), "o"+s)) /
                                          (opp_sums[oname]->at("o"+s) / (double)num_opp_games[oname]);
             }
@@ -516,16 +534,11 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
                   0.25 * (oowins / (double) (oowins + oolosses));
         }
         else{
-            rpi = wins/(double)(wins + losses);
+            rpi = wins/(wins + losses);
         }
-        if (opp_avg_pt_diff > 0) {
-            srs = (pt_diff + opp_avg_pt_diff) / (double) num_games;
-            sos = opp_avg_pt_diff / (double) num_games;
-        }
-        else{
-            srs = pt_diff/(double) num_games;
-            sos = 0.0;
-        }
+
+        srs = (pt_diff + opp_avg_pt_diff) / (double) num_games;
+        sos = opp_avg_pt_diff / (double) num_games;
 
         for (std::string &s : stats){
             if (boost::contains(s,".p") == 0) continue;
@@ -551,21 +564,19 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
     result.push_back(sos);
     result.push_back((double)num_games);
 
-    BOOST_FOREACH(sumsType::value_type &xx, opp_sums){
-                    delete xx.second;
-                }
-    BOOST_FOREACH(sumsType::value_type &xx, opp_opp_sums){
-                    delete xx.second;
-                }
+    for (auto &xx : opp_sums)
+        delete xx.second;
+    for (auto &xx : opp_opp_sums)
+        delete xx.second;
 
     return result;
 }
 
-TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
-    if (gamesByDate.find(boost::gregorian::to_iso_extended_string(d)) == gamesByDate.end())
+TeamGame *Team::GameOnDate(boost::gregorian::date d, std::string opponent) const {
+    if (gamesByDate.find(boost::gregorian::to_iso_extended_string(d) + opponent) == gamesByDate.end())
         return nullptr;
     else
-        return gamesByDate.at(boost::gregorian::to_iso_extended_string(d));
+        return gamesByDate.at(boost::gregorian::to_iso_extended_string(d) + opponent);
 }
 
 TeamAverage *Team::AverageOnDate(boost::gregorian::date d) const {

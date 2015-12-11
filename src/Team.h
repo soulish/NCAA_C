@@ -32,7 +32,7 @@ public:
     const std::unordered_map<std::string, TeamGame *> &getGamesByDate() const {  return gamesByDate;  }
     const std::unordered_map<std::string, TeamAverage *> &getAveragesByDate() const  {  return averagesByDate;  }
     const std::unordered_map<std::string, TeamWAverage *> &getWAveragesByDate() const {  return waveragesByDate;  }
-    TeamGame *GameOnDate(boost::gregorian::date d) const;
+    TeamGame *GameOnDate(boost::gregorian::date d, std::string opponent) const;
     TeamAverage *AverageOnDate(boost::gregorian::date d) const;
     TeamWAverage *WAverageOnDate(boost::gregorian::date d) const;
 
