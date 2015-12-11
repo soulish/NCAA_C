@@ -14,11 +14,10 @@
 class Game {
 public:
     //Constructor
-    Game(std::string,std::string,boost::gregorian::date*,std::string,int,int,int,int,int,int,int,int);
+    Game(std::string,std::string,boost::gregorian::date,std::string,int,int,int,int,int,int,int,int);
     //Destructor
     virtual ~Game() {
         //delete pointers
-        delete date;
         delete ofg;
         delete otwo;
         delete othree;
@@ -34,7 +33,7 @@ public:
     const std::string Name() const { return name; }
     const std::string getOpp() const { return opp; }
     const std::string getLoc() const { return loc; }
-    const boost::gregorian::date *getDate() const { return date; }
+    const boost::gregorian::date getDate() const { return date; }
     const int getOpts() const { return opts; }
     const Pct *getOfg() const { return ofg; }
     const Pct *getOtwo() const {  return otwo;  }
@@ -51,7 +50,7 @@ protected:
     const std::string name;
     const std::string opp;
     const std::string loc;
-    const boost::gregorian::date *date;
+    const boost::gregorian::date date;
     const int opts;
     const Pct *ofg;
     const Pct *otwo;

@@ -4,7 +4,7 @@
 
 #include "Game.h"
 
-Game::Game(std::string _name, std::string _opp, boost::gregorian::date *_date,
+Game::Game(std::string _name, std::string _opp, boost::gregorian::date _date,
            std::string _loc, int _pts, int _fgm, int _fga, int _threem, int _threea,
            int _ftm, int _fta, int _pf)
         : name(_name),
