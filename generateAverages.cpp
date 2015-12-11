@@ -105,7 +105,7 @@ int main(int argc,char *argv[]) {
     //add all the teams and their games.
     for (std::string &year : years){
         sprintf(path, "%s/cpp/NCAA_C/teams/%s/", homePath, year.c_str());
-        std::cout << "Doing " << year << std::endl;
+        std::cout << "Reading in games for " << year << std::endl;
         readTeamsFromDir(path);
     }
 
@@ -274,8 +274,11 @@ int main(int argc,char *argv[]) {
         averagesFile.close();
 
         //these "neutral ratios" are actually ratios to the totals, not the ratio to the neutral
-        //site values.  It is somewhat arbitrary which to use (totals or neutral site values),
-        //and this provides more stable values.
+        //site values.  The reason I chose to use these instead of the average in neutral-site
+        //games is that neutral-site games are most likely to be at the very beginning of the season
+        //and at the very end of the season (conference tournaments and end-of-year tournaments).
+        //Those games can therefore be a bit skewed and it seems safest to use the average
+        //of all games together to properly "neutralize" our results.
         sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileNames[1].c_str());
         std::ofstream ratiosFile(path, std::ios::app);
         ratiosFile << outYear << ",";
