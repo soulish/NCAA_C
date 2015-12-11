@@ -6,7 +6,7 @@ gStyle.SetPalette(1,0)
 
 fileName = nil
 drawGames = false
-teamName = ""
+teamName = nil
 #command line switcher
 ARGV.each_with_index do |entry, index|
   case entry
@@ -20,15 +20,23 @@ ARGV.each_with_index do |entry, index|
 end
 
 file = nil
-if (teamName.nil? and fileName)
-  file = TFile.new(fileName)
-elsif (!teamName.nil?)
-  `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\"`
-  sleep 3
-  file = TFile.new("rootFiles/temp.root")
+if teamName.nil?
+  if fileName.nil?
+    puts "Must enter a teamName or a fileName"
+    exit
+  else
+    file = TFile.new(fileName)
+  end
 else
-  puts "Either input a team name using the -t switch, or a file name using the -F switch"
-  exit
+  if fileName.nil?
+    `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\"`
+    #sleep 3
+    file = TFile.new("rootFiles/temp.root")
+  else
+    `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\"`
+    #sleep 3
+    file = TFile.new("rootFiles/#{fileName}")
+  end
 end
 
 avgs_per_time = {}
@@ -87,6 +95,10 @@ ss.each_with_index do |s,i|
   # lines[s] = TLine.new(0,league_avgs[s],180,league_avgs[s])
   realLines[s].SetLineColor(2)
   realLines[s].Draw("same")
+end
+
+if (!teamName.nil? and fileName.nil?)
+  `rm rootFiles/temp.root`
 end
 
 ##This sets it so that the application ends when a canvas is closed. 
