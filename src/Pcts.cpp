@@ -36,12 +36,12 @@ int Pcts::sum(char stat) {//this is only the sum over m or a
 double Pcts::p_bar() {
     int sumM = sum('m');
     int sumA = sum('a');
-    return sumM/(double)sumA;
+    return sumA > 0 ? sumM/(double)sumA : 0;
 }
 
 double Pcts::average(char stat) {
     int s = sum(stat);
-    return s/(double)length();
+    return length() > 0 ? s/(double)length() : 0;
 }
 
 double Pcts::weighted_average() {
