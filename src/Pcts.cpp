@@ -83,6 +83,9 @@ double Pcts::weighted_average_alt() {
 double Pcts::weighted_std_dev() {
     //based off of formula at:
     //http://www.itl.nist.gov/div898/software/dataplot/refman2/ch2/weightsd.pdf
+    if (this->length() == 0)
+        return 0;
+
     double p_bar = this->weighted_average();
     int nonZeroWeights = 0;
 
@@ -96,16 +99,17 @@ double Pcts::weighted_std_dev() {
         v++;
     }
 
+    if (nonZeroWeights == 0)
+        return 0;
+
     double sum = 0;
     v = pcts->begin();
     while(v != pcts->end()) {
-        sum += pow(v->P() - p_bar, 2) / v->Variance();
+        sum += v->Variance() > 0 ? pow(v->P() - p_bar, 2) / v->Variance() : 0;
         v++;
     }
 
-    if (nonZeroWeights > 0) {
-        sum = sum / (((nonZeroWeights - 1) / (double)nonZeroWeights) * sum_weights);
-    }
+    sum = sum / (((nonZeroWeights - 1) / (double)nonZeroWeights) * sum_weights);
 
     return sqrt(sum);
 }
