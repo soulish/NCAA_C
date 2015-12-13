@@ -15,9 +15,10 @@
 #include "helpers/doubleFormatter.h"
 #include "src/ConstantSeasonInfo.h"
 
+std::vector<double> weightedAverageAndError(std::vector<double> values, std::vector<double> errors);
+
 int main(int argc,char *argv[]) {
     int c;
-    int outYear = 0;
     bool verbose = false, writeOutput = false;
     std::vector<std::string> years;
     std::string inYears = "";
@@ -25,15 +26,12 @@ int main(int argc,char *argv[]) {
     double nbins = 165;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Y:vo:n:")) != -1) {
+    while ((c = getopt(argc, argv, "y:vo:n:")) != -1) {
         switch (c) {
             case 'y':
                 std::cout << "inYears: " << optarg << std::endl;
                 inYears.assign(optarg);
                 boost::split(years, inYears, boost::is_any_of(","));
-                break;
-            case 'Y':
-                outYear = atoi(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -51,18 +49,14 @@ int main(int argc,char *argv[]) {
         }
     }
 
-    //ensure years and outYear are set
+    //ensure years are set
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
         return 0;
     }
-    if (outYear == 0) {
-        std::cout << "You must set the output year using the -Y switch" << std::endl;
-        return 0;
-    }
 
-    char *homePath, path[256], name[256];
+    char *homePath, path[256], name[256], title[256];
     homePath = getenv("HOME");
 
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
@@ -100,19 +94,20 @@ int main(int argc,char *argv[]) {
     range["to"]->at(2) = nbins;
 
     std::unordered_map<std::string, TH2F*> hist;
-    std::unordered_map<std::string, std::vector<TH2F*> *> hist_slices;
+//    std::unordered_map<std::string, std::vector<TH2F*> *> hist_slices;
     std::unordered_map<std::string, std::vector<std::vector<Pcts*> *> *> pcts;
 
     //initialize the hashes
     for (auto &s : stats){
         sprintf(name,"hist_%s",s.c_str());
-        hist.emplace(s, new TH2F(name,"",range[s]->at(2),0,1,range[s]->at(2),0,1));
+        sprintf(title,"d%s vs o%s",s.c_str(),s.c_str());
+        hist.emplace(s, new TH2F(name,title,range[s]->at(2),0,1,range[s]->at(2),0,1));
 
-        hist_slices.emplace(s, new std::vector<TH2F*>());
+//        hist_slices.emplace(s, new std::vector<TH2F*>());
         pcts.emplace(s, new std::vector<std::vector<Pcts*>*>());
         for (int i = 0; i < range[s]->at(2); i++){
-            sprintf(name,"hist_slices_%s_%i",s.c_str(),i);
-            hist_slices[s]->push_back(new TH2F(name,"",range[s]->at(2), 0, 1, range[s]->at(2), 0, 1));
+//            sprintf(name,"hist_slices_%s_%i",s.c_str(),i);
+//            hist_slices[s]->push_back(new TH2F(name,"",range[s]->at(2), 0, 1, range[s]->at(2), 0, 1));
             pcts[s]->push_back(new std::vector<Pcts*>());
             for (int j = 0; j < range[s]->at(2); j++){
                 pcts[s]->at(i)->push_back(new Pcts());
@@ -152,13 +147,14 @@ int main(int argc,char *argv[]) {
                 hist[s]->Fill(waverage->getValue("o"+s+".p"), oppWaverage->getValue("d"+s+".p"));
                 int i = (int)floor(waverage->getValue("o"+s+".p") * range[s]->at(2));
                 int j = (int)floor(oppWaverage->getValue("d"+s+".p") * range[s]->at(2));
-                hist_slices[s]->at(i)->Fill(oppWaverage->getValue("d"+s+".p"),game.second->getValue("o"+s+".p"));
+//                hist_slices[s]->at(i)->Fill(oppWaverage->getValue("d"+s+".p"),game.second->getValue("o"+s+".p"));
                 pcts[s]->at(i)->at(j)->add_pct(*(game.second->getPct("o"+s)));
             }
         }
     }
 
     std::unordered_map<std::string, TGraphErrors*> graphs;
+    std::unordered_map<std::string, TGraphErrors*> averagedGraphs;
 //    std::unordered_map<std::string, std::vector<TGraphErrors*> *> grs;
     std::unordered_map<std::string, TF1*> fns;
 
@@ -176,6 +172,9 @@ int main(int argc,char *argv[]) {
 
         bool used[size];
 
+        std::vector<double> allYAtX[2*size];
+        std::vector<double> allYerrAtX[2*size];
+
         for (int i = 0; i < size; i++){
             used[0] = 0;
             for (int j = 0; j < size; j++){
@@ -184,10 +183,15 @@ int main(int argc,char *argv[]) {
                 x_err[i][j] = 0;
                 y_err[i][j] = 0;
 
-                if (pcts[s]->at(i)->at(j)->length() > 20) {
+                if (pcts[s]->at(i)->at(j)->length() > 5) {
                     used[i] = true;
 
                     x[i][j] = j / range[s]->at(2) - i / range[s]->at(2);
+                    //the denominator here is the middle of the bin that i represents.
+                    //so, a value of 1 for y[i][j] means that p_bar is the same as you would
+                    //expect without considering the defense.  A number below 1 means that
+                    //the defense is lowering the result, and a number above 1 means that
+                    //the defense is causing a higher result than expected.
                     y[i][j] = pcts[s]->at(i)->at(j)->p_bar() / (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
                     y_err[i][j] = pcts[s]->at(i)->at(j)->weighted_std_dev() /
                                   (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
@@ -196,6 +200,9 @@ int main(int argc,char *argv[]) {
                     allY.push_back(y[i][j]);
                     allX_err.push_back(0);
                     allY_err.push_back(y_err[i][j]);
+
+                    allYAtX[j - i + ((int)(range[s]->at(2)) - 1)].push_back(y[i][j]);
+                    allYerrAtX[j - i + ((int)(range[s]->at(2)) - 1)].push_back(y_err[i][j]);
                 }
             }
 //            if (used[i]) {
@@ -217,13 +224,53 @@ int main(int argc,char *argv[]) {
         graphs.emplace(s, new TGraphErrors(allSize, allXarr, allYarr, allX_err_arr, allY_err_arr));
         sprintf(name,"graph_%s",s.c_str());
         graphs[s]->SetName(name);
+        sprintf(title,"%s result vs difference",s.c_str());
+        graphs[s]->SetTitle(title);
+
+        std::vector<double> averagedX;
+        std::vector<double> averagedY;
+        std::vector<double> averagedXerr;
+        std::vector<double> averagedYerr;
+
+        for (int i = 0; i < 2*size; i++){
+            if (allYAtX[i].size() > 0){
+                std::vector<double> averageAndError = weightedAverageAndError(allYAtX[i], allYerrAtX[i]);
+                if (averageAndError.size() == 0) continue;
+                if (averageAndError[0] != averageAndError[0]) continue;//check for nans
+                averagedX.push_back((i - range[s]->at(2)) / range[s]->at(2));
+                averagedXerr.push_back(0);
+                averagedY.push_back(averageAndError[0]);
+                averagedYerr.push_back(averageAndError[1]);
+//                if (s == "or"){
+//                    std::cout << averagedX.back() << "\t" << averagedY.back() << "\t" <<
+//                         averagedYerr.back() << std::endl;
+//                }
+            }
+        }
+
+        int averagedSize = (int) averagedX.size();
+        double averagedXarr[averagedSize];
+        std::copy(averagedX.begin(), averagedX.end(), averagedXarr);
+        double averagedYarr[averagedSize];
+        std::copy(averagedY.begin(), averagedY.end(), averagedYarr);
+        double averagedX_err_arr[averagedSize];
+        std::copy(averagedXerr.begin(), averagedXerr.end(), averagedX_err_arr);
+        double averagedY_err_arr[averagedSize];
+        std::copy(averagedYerr.begin(), averagedYerr.end(), averagedY_err_arr);
+
+        averagedGraphs.emplace(s, new TGraphErrors(averagedSize, averagedXarr, averagedYarr,
+                                                   averagedX_err_arr, averagedY_err_arr));
+        sprintf(name,"averaged_graph_%s",s.c_str());
+        averagedGraphs[s]->SetName(name);
+        sprintf(title,"%s result vs difference averaged",s.c_str());
+        averagedGraphs[s]->SetTitle(title);
 
         sprintf(name,"fn_%s",s.c_str());
         fns.emplace(s, new TF1(name,"pol1"));
-        graphs[s]->Fit(fns[s], "eq");
+        averagedGraphs[s]->Fit(fns[s], "eq");
 
-        std::cout << "fn for " << s << " parameters are\t\t" << fns[s]->GetParameter(0) << ",\t" <<
-        fns[s]->GetParameter(1) << std::endl;
+//        std::cout << "fn for " << s << " parameters are\t\t" << fns[s]->GetParameter(0) << ",\t" <<
+//        fns[s]->GetParameter(1) << std::endl;
     }
 
     outFile.Append(graphs["or"]);
@@ -231,13 +278,42 @@ int main(int argc,char *argv[]) {
     outFile.Append(graphs["ftmr"]);
     outFile.Append(graphs["to"]);
 
-    outFile.Append(fns["or"]);
-    outFile.Append(fns["efg"]);
-    outFile.Append(fns["ftmr"]);
-    outFile.Append(fns["to"]);
+    outFile.Append(averagedGraphs["or"]);
+    outFile.Append(averagedGraphs["efg"]);
+    outFile.Append(averagedGraphs["ftmr"]);
+    outFile.Append(averagedGraphs["to"]);
 
     outFile.Write();
     outFile.Close();
 
     return 0;
+}
+
+std::vector<double> weightedAverageAndError(std::vector<double> values, std::vector<double> errors){
+    //based off Taylor's definitions.  Note that we care about the Error on
+    //the average here, not the standard deviation, hence we return 1/sqrt(sum_weights) as error.
+    //see Taylor chapter 7
+    std::vector<double> result;
+    if (values.size() <= 1 || values.size() != errors.size())
+        return result;
+
+    int size = (int)values.size();
+    double sum_weights = 0.0;
+    for (int i = 0; i < size; i++){
+        sum_weights += errors[i] == 0 ? 0 : 1/ pow(errors[i],2);
+    }
+
+    if (sum_weights == 0)
+        return result;
+
+    double average = 0.0;
+    for (int i = 0; i < size; i++){
+        average += errors[i] == 0 ? 0 : (values[i] / pow(errors[i],2)) / sum_weights;
+    }
+
+    double error = sum_weights == 0 ? 0 : 1 / sqrt(sum_weights);
+
+    result.push_back(average);
+    result.push_back(error);
+    return result;
 }
