@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <fstream>
 #include "ConstantFunctions.h"
+#include "ConstantTeam5YearAverages.h"
 
 ConstantFunctions* ConstantFunctions::uniqueInstance = NULL;
 
@@ -75,6 +76,31 @@ std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage 
         double factor;
         factor = functions[year]->at("o" + s)->Eval(w1->getValue("o" + s) - w2->getValue("d" + s));
         result.emplace("o"+s, factor * w1->getValue("o" + s));
+    }
+
+    return result;
+}
+
+//this function predicts assuming the opponent is completely average, thus we use
+//the 5 year averages as the opponent's stats.  We can choose whether to calculate
+//how w1 will do on offense or on defense with the offOrDef option, which defaults to offense
+std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage *w1, int year, std::string offOrDef) {
+    std::unordered_map<std::string, double> result;
+
+    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
+
+    for (std::string &s : stats){
+        double factor;
+        if (offOrDef == "offense") {
+            factor = functions[year]->at("o" + s)->Eval(w1->getValue("o" + s) -
+                                                        ConstantTeam5YearAverages::Instance()->get(year, "o" + s));
+            result.emplace("o" + s, factor * w1->getValue("o" + s));
+        }
+        else if (offOrDef == "defense"){
+            factor = functions[year]->at("o" + s)->Eval(ConstantTeam5YearAverages::Instance()->get(year, "o" + s) -
+                                                        w1->getValue("d" + s));
+            result.emplace("o" + s, factor * ConstantTeam5YearAverages::Instance()->get(year, "o" + s));
+        }
     }
 
     return result;

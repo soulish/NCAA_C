@@ -23,6 +23,7 @@ public:
 
     void initialize(std::string path);
     std::unordered_map<std::string, double> predict(TeamWAverage *w1, TeamWAverage *w2, int year);
+    std::unordered_map<std::string, double> predict(TeamWAverage *w1, int year, std::string offOrDef = "offense");
 
 private:
     ConstantFunctions(){};
