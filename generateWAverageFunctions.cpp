@@ -186,7 +186,14 @@ int main(int argc,char *argv[]) {
                 if (pcts[s]->at(i)->at(j)->length() > 5) {
                     used[i] = true;
 
-                    x[i][j] = j / range[s]->at(2) - i / range[s]->at(2);
+                    //the convention here is that negative values on the x-axis
+                    //means the offense averages less than the defense usually gives up
+                    //while positive values means the offense averages more than the
+                    //defense gives up.  So as we increase in x, the defense is getting better
+                    //compared to the offense.  This convention was chosen so that we can
+                    //evaluate the functions with team A's offense minus team B's defense.
+                    x[i][j] = i / range[s]->at(2) - j / range[s]->at(2);
+
                     //the denominator here is the middle of the bin that i represents.
                     //so, a value of 1 for y[i][j] means that p_bar is the same as you would
                     //expect without considering the defense.  A number below 1 means that
@@ -201,8 +208,8 @@ int main(int argc,char *argv[]) {
                     allX_err.push_back(0);
                     allY_err.push_back(y_err[i][j]);
 
-                    allYAtX[j - i + ((int)(range[s]->at(2)) - 1)].push_back(y[i][j]);
-                    allYerrAtX[j - i + ((int)(range[s]->at(2)) - 1)].push_back(y_err[i][j]);
+                    allYAtX[i - j + ((int)(range[s]->at(2)) - 1)].push_back(y[i][j]);
+                    allYerrAtX[i - j + ((int)(range[s]->at(2)) - 1)].push_back(y_err[i][j]);
                 }
             }
 //            if (used[i]) {
@@ -237,7 +244,7 @@ int main(int argc,char *argv[]) {
                 std::vector<double> averageAndError = weightedAverageAndError(allYAtX[i], allYerrAtX[i]);
                 if (averageAndError.size() == 0) continue;
                 if (averageAndError[0] != averageAndError[0]) continue;//check for nans
-                averagedX.push_back((i - range[s]->at(2)) / range[s]->at(2));
+                averagedX.push_back((i - (range[s]->at(2) - 1)) / range[s]->at(2));
                 averagedXerr.push_back(0);
                 averagedY.push_back(averageAndError[0]);
                 averagedYerr.push_back(averageAndError[1]);
