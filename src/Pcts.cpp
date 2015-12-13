@@ -48,14 +48,14 @@ double Pcts::weighted_average() {
     double sum_weights = 0.0;
     std::vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
-        sum_weights += 1/ v->Variance();
+        sum_weights += v->Variance() > 0 ? 1/ v->Variance() : 0;
         v++;
     }
 
     double s = 0.0;
     v = pcts->begin();
     while(v != pcts->end()) {
-        s += (v->P() / v->Variance()) / sum_weights;
+        s += v->Variance() > 0 ? (v->P() / v->Variance()) / sum_weights : 0;
         v++;
     }
 
@@ -81,20 +81,30 @@ double Pcts::weighted_average_alt() {
 }
 
 double Pcts::weighted_std_dev() {
-    double p_bar = this->p_bar();
+    //based off of formula at:
+    //http://www.itl.nist.gov/div898/software/dataplot/refman2/ch2/weightsd.pdf
+    double p_bar = this->weighted_average();
+    int nonZeroWeights = 0;
 
     double sum_weights = 0;
     std::vector<Pct>::iterator v = pcts->begin();
     while(v != pcts->end()) {
-        sum_weights += 1/ v->Variance();
+        if (v->Variance() > 0) {
+            sum_weights += 1 / v->Variance();
+            nonZeroWeights++;
+        }
         v++;
     }
 
     double sum = 0;
     v = pcts->begin();
     while(v != pcts->end()) {
-        sum += ( pow(v->P() - p_bar, 2) / v->Variance()) / sum_weights;
+        sum += pow(v->P() - p_bar, 2) / v->Variance();
         v++;
+    }
+
+    if (nonZeroWeights > 0) {
+        sum = sum / (((nonZeroWeights - 1) / (double)nonZeroWeights) * sum_weights);
     }
 
     return sqrt(sum);
