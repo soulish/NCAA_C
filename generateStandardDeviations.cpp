@@ -64,7 +64,7 @@ int main(int argc,char *argv[]){
 
     for (std::string &year : years) {
         sprintf(path, "%s/cpp/NCAA_C/teams/%s/", homePath, year.c_str());
-        std::cout << "Doing " << year << std::endl;
+        std::cout << "Reading in waverages for " << year << std::endl;
         readTeamsFromDir(path, "waverages");
     }
 
@@ -98,8 +98,15 @@ int main(int argc,char *argv[]){
     if (verbose) {
         for (std::string &s : stats) {
             for (int i = 0; i < 120; i++) {
-                double avg = pcts[i]->at(s)->p_bar();
-                double wstd = pcts[i]->at(s)->weighted_std_dev();
+                double avg, wstd;
+                if (pcts[i]->at(s)->length() > 0) {
+                    avg = pcts[i]->at(s)->weighted_average();
+                    wstd = pcts[i]->at(s)->weighted_std_dev();
+                }
+                else{
+                    avg = 0;
+                    wstd = 0.1;
+                }
                 //consider what happens when there are no entries -> return 0 or 0.1 or something
                 if ((wstd != wstd) || (avg != avg)) {
                     wstd = 0.1;
@@ -116,8 +123,15 @@ int main(int argc,char *argv[]){
         for (std::string &s : stats){
             outFile << outYear << "," << s;
             for (int i = 0; i < 120; i++){
-                double avg = pcts[i]->at(s)->p_bar();
-                double wstd = pcts[i]->at(s)->weighted_std_dev();
+                double avg, wstd;
+                if (pcts[i]->at(s)->length() > 0) {
+                    avg = pcts[i]->at(s)->weighted_average();
+                    wstd = pcts[i]->at(s)->weighted_std_dev();
+                }
+                else{
+                    avg = 0;
+                    wstd = 0.1;
+                }
                 //consider what happens when there are no entries -> return 0 or 0.1 or something
                 if ((wstd != wstd) || (avg != avg)) {
                     wstd = 0.1;
