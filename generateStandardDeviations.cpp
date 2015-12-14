@@ -12,6 +12,8 @@
 #include "src/Pcts.h"
 #include "helpers/doubleFormatter.h"
 
+double standardDeviationOfVector(std::vector<double> *values);
+
 int main(int argc,char *argv[]){
     int c;
     int outYear = 0;
@@ -61,20 +63,23 @@ int main(int argc,char *argv[]){
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
     ConstantSeasonInfo::Instance()->initialize(path);
 
-
     for (std::string &year : years) {
         sprintf(path, "%s/cpp/NCAA_C/teams/%s/", homePath, year.c_str());
         std::cout << "Reading in waverages for " << year << std::endl;
         readTeamsFromDir(path, "waverages");
     }
 
-    std::string stats[] = {"oor", "oefg", "oftmr", "oto"};
+    std::string stats[] = {"or", "efg", "ftmr", "to"};
 
     std::unordered_map<int, std::unordered_map<std::string, Pcts *> *> pcts;
-    for (int i = 0; i < 120; i++) {
+    std::unordered_map<int, std::vector<double> *> srses;
+    for (int i = 0; i < 130; i++) {
         pcts.emplace(i, new std::unordered_map<std::string, Pcts *>());
-        for (std::string &s : stats)
-            pcts[i]->emplace(s, new Pcts());
+        srses.emplace(i, new std::vector<double>());
+        for (std::string &s : stats) {
+            pcts[i]->emplace("o"+s, new Pcts());
+            pcts[i]->emplace("d"+s, new Pcts());
+        }
     }
 
     boost::gregorian::days indDuration;
@@ -87,31 +92,48 @@ int main(int argc,char *argv[]){
         for (auto &waverage : teamWAverages) {
             indDuration = ConstantSeasonInfo::Instance()->get(team.second->getYear(), "tournament start") -
                           waverage.second->getDate();
-            int ind = 119 - (int) indDuration.days();
+            int ind = 129 - (int) indDuration.days();
 
             for (std::string &s : stats) {
-                pcts[ind]->at(s)->add_pct(*(waverage.second->getPct(s)));
+                pcts[ind]->at("o"+s)->add_pct(*(waverage.second->getPct("o"+s)));
+                pcts[ind]->at("d"+s)->add_pct(*(waverage.second->getPct("d"+s)));
             }
+            srses[ind]->push_back(waverage.second->getSrs());
         }
     }
 
     if (verbose) {
         for (std::string &s : stats) {
-            for (int i = 0; i < 120; i++) {
-                double avg, wstd;
-                if (pcts[i]->at(s)->length() > 0) {
-                    avg = pcts[i]->at(s)->p_bar();
-                    wstd = pcts[i]->at(s)->weighted_std_dev();
+            for (int i = 0; i < 130; i++) {
+                double avgO, wstdO;
+                if (pcts[i]->at("o"+s)->length() > 0) {
+                    avgO = pcts[i]->at("o"+s)->p_bar();
+                    wstdO = pcts[i]->at("o"+s)->weighted_std_dev();
                 }
                 else{
-                    avg = 0;
-                    wstd = 0.1;
+                    avgO = 0;
+                    wstdO = 0.1;
                 }
                 //consider what happens when there are no entries -> return 0 or 0.1 or something
-                if ((wstd != wstd) || (avg != avg)) {
-                    wstd = 0.1;
+                if ((wstdO != wstdO) || (avgO != avgO)) {
+                    wstdO = 0.1;
                 }
-                std::cout << "std_devs[\"" << s << ".p\"][" << i << "] = " << doubleFormatter(avg, 3) <<
+
+                double avgD, wstdD;
+                if (pcts[i]->at("d"+s)->length() > 0) {
+                    avgD = pcts[i]->at("d"+s)->p_bar();
+                    wstdD = pcts[i]->at("d"+s)->weighted_std_dev();
+                }
+                else{
+                    avgD = 0;
+                    wstdD = 0.1;
+                }
+                //consider what happens when there are no entries -> return 0 or 0.1 or something
+                if ((wstdD != wstdD) || (avgD != avgD)) {
+                    wstdD = 0.1;
+                }
+                double wstd = sqrt(wstdO*wstdO + wstdD*wstdD);
+                std::cout << "std_devs[\"" << s << ".p\"][" << i << "] = " << doubleFormatter(avgO, 3) <<
                 "\t" << doubleFormatter(wstd, 3) << std::endl;
             }
         }
@@ -121,27 +143,68 @@ int main(int argc,char *argv[]){
         sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileName.c_str());
         std::ofstream outFile(path, std::ios::app);
         for (std::string &s : stats){
-            outFile << outYear << "," << s;
-            for (int i = 0; i < 120; i++){
-                double avg, wstd;
-                if (pcts[i]->at(s)->length() > 0) {
-                    avg = pcts[i]->at(s)->p_bar();
-                    wstd = pcts[i]->at(s)->weighted_std_dev();
+            outFile << outYear << "," << "o" << s;
+            for (int i = 0; i < 130; i++){
+                double avgO, wstdO;
+                if (pcts[i]->at("o"+s)->length() > 0) {
+                    avgO = pcts[i]->at("o"+s)->p_bar();
+                    wstdO = pcts[i]->at("o"+s)->weighted_std_dev();
                 }
                 else{
-                    avg = 0;
-                    wstd = 0.1;
+                    avgO = 0;
+                    wstdO = 0.1;
                 }
                 //consider what happens when there are no entries -> return 0 or 0.1 or something
-                if ((wstd != wstd) || (avg != avg)) {
-                    wstd = 0.1;
+                if ((wstdO != wstdO) || (avgO != avgO)) {
+                    wstdO = 0.1;
                 }
+
+                double avgD, wstdD;
+                if (pcts[i]->at("d"+s)->length() > 0) {
+                    avgD = pcts[i]->at("d"+s)->p_bar();
+                    wstdD = pcts[i]->at("d"+s)->weighted_std_dev();
+                }
+                else{
+                    avgD = 0;
+                    wstdD = 0.1;
+                }
+                //consider what happens when there are no entries -> return 0 or 0.1 or something
+                if ((wstdD != wstdD) || (avgD != avgD)) {
+                    wstdD = 0.1;
+                }
+                double wstd = sqrt(wstdO*wstdO + wstdD*wstdD);
                 outFile << "," << doubleFormatter(wstd, 3);
             }
             outFile << std::endl;
         }
+
+        //now deal with SRS
+        outFile << outYear << "," << "srs";
+        for (int i = 0; i < 130; i++){
+            double stdDevOfSRS = standardDeviationOfVector(srses[i]);
+            if (stdDevOfSRS == 0) stdDevOfSRS = 20.0;
+            outFile << "," << doubleFormatter(stdDevOfSRS, 3);
+        }
+        outFile << std::endl;
+
         outFile.close();
     }
 
     return 0;
+}
+
+double standardDeviationOfVector(std::vector<double> *values){
+    if (values->size() <= 1) return 0;
+    double average = 0;
+    for (int i = 0; i < values->size(); i++)
+        average += values->at(i);
+    average /= values->size();
+
+    double stdDev = 0;
+    for (int i = 0; i < values->size(); i++)
+        stdDev += pow(values->at(i) - average,2);
+
+    stdDev /= (values->size() - 1);
+
+    return sqrt(stdDev);
 }
