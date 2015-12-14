@@ -100,7 +100,7 @@ int main(int argc,char *argv[]){
             for (int i = 0; i < 120; i++) {
                 double avg, wstd;
                 if (pcts[i]->at(s)->length() > 0) {
-                    avg = pcts[i]->at(s)->weighted_average();
+                    avg = pcts[i]->at(s)->p_bar();
                     wstd = pcts[i]->at(s)->weighted_std_dev();
                 }
                 else{
@@ -125,7 +125,7 @@ int main(int argc,char *argv[]){
             for (int i = 0; i < 120; i++){
                 double avg, wstd;
                 if (pcts[i]->at(s)->length() > 0) {
-                    avg = pcts[i]->at(s)->weighted_average();
+                    avg = pcts[i]->at(s)->p_bar();
                     wstd = pcts[i]->at(s)->weighted_std_dev();
                 }
                 else{
