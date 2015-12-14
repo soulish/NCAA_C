@@ -14,6 +14,7 @@
 #include "src/readTeams.h"
 #include "helpers/doubleFormatter.h"
 #include "src/ConstantSeasonInfo.h"
+#include "src/ConstantTeamNeutralRatios.h"
 
 std::vector<double> weightedAverageAndError(std::vector<double> values, std::vector<double> errors);
 
@@ -59,6 +60,9 @@ int main(int argc,char *argv[]) {
     char *homePath, path[256], name[256], title[256];
     homePath = getenv("HOME");
 
+    sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
+    ConstantTeamNeutralRatios::Instance()->initialize(path);
+    ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
     ConstantSeasonInfo::Instance()->initialize(path);
 
@@ -93,21 +97,22 @@ int main(int argc,char *argv[]) {
     range["to"]->at(1) = 0.4;
     range["to"]->at(2) = nbins;
 
-    std::unordered_map<std::string, TH2F*> hist;
-//    std::unordered_map<std::string, std::vector<TH2F*> *> hist_slices;
+    std::unordered_map<std::string, TH2F*> defVsOffHists;
+    std::unordered_map<std::string, TH2F*> gameResultsVsDiffHists;
     std::unordered_map<std::string, std::vector<std::vector<Pcts*> *> *> pcts;
 
     //initialize the hashes
     for (auto &s : stats){
         sprintf(name,"hist_%s",s.c_str());
         sprintf(title,"d%s vs o%s",s.c_str(),s.c_str());
-        hist.emplace(s, new TH2F(name,title,range[s]->at(2),0,1,range[s]->at(2),0,1));
+        defVsOffHists.emplace(s, new TH2F(name, title, range[s]->at(2), 0, 1, range[s]->at(2), 0, 1));
 
-//        hist_slices.emplace(s, new std::vector<TH2F*>());
+        sprintf(name,"gameResultsVsDiff_%s",s.c_str());
+        sprintf(title,"Result vs Diff %s",s.c_str());
+        gameResultsVsDiffHists.emplace(s, new TH2F(name, title, 2*range[s]->at(2), -1, 1, 2*range[s]->at(2), 0, 2));
+
         pcts.emplace(s, new std::vector<std::vector<Pcts*>*>());
         for (int i = 0; i < range[s]->at(2); i++){
-//            sprintf(name,"hist_slices_%s_%i",s.c_str(),i);
-//            hist_slices[s]->push_back(new TH2F(name,"",range[s]->at(2), 0, 1, range[s]->at(2), 0, 1));
             pcts[s]->push_back(new std::vector<Pcts*>());
             for (int j = 0; j < range[s]->at(2); j++){
                 pcts[s]->at(i)->push_back(new Pcts());
@@ -144,11 +149,15 @@ int main(int argc,char *argv[]) {
             if (!oppWaverage) continue;
 
             for (std::string &s : stats){
-                hist[s]->Fill(waverage->getValue("o"+s+".p"), oppWaverage->getValue("d"+s+".p"));
+                defVsOffHists[s]->Fill(waverage->getValue("o" + s + ".p"), oppWaverage->getValue("d" + s + ".p"));
                 int i = (int)floor(waverage->getValue("o"+s+".p") * range[s]->at(2));
                 int j = (int)floor(oppWaverage->getValue("d"+s+".p") * range[s]->at(2));
-//                hist_slices[s]->at(i)->Fill(oppWaverage->getValue("d"+s+".p"),game.second->getValue("o"+s+".p"));
-                pcts[s]->at(i)->at(j)->add_pct(*(game.second->getPct("o"+s)));
+                gameResultsVsDiffHists[s]->Fill((i-j)/range[s]->at(2),
+                        game.second->getPct("o"+s)->P() * ratios->get(year,game.second->getLoc(),"o"+s+".p") /
+                        waverage->getValue("o"+s+".p"));
+                //neutralize the results
+                pcts[s]->at(i)->at(j)->add_pct(Pct(game.second->getPct("o"+s)->M() * ratios->get(year,game.second->getLoc(),"o"+s+".m"),
+                                                   game.second->getPct("o"+s)->A() * ratios->get(year,game.second->getLoc(),"o"+s+".a")));
             }
         }
     }
@@ -199,7 +208,8 @@ int main(int argc,char *argv[]) {
                     //expect without considering the defense.  A number below 1 means that
                     //the defense is lowering the result, and a number above 1 means that
                     //the defense is causing a higher result than expected.
-                    y[i][j] = pcts[s]->at(i)->at(j)->p_bar() / (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
+                    y[i][j] = pcts[s]->at(i)->at(j)->p_bar() /
+                              (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
                     y_err[i][j] = pcts[s]->at(i)->at(j)->weighted_std_dev() /
                                   (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
 
@@ -212,10 +222,6 @@ int main(int argc,char *argv[]) {
                     allYerrAtX[i - j + ((int)(range[s]->at(2)) - 1)].push_back(y_err[i][j]);
                 }
             }
-//            if (used[i]) {
-//                grs[s]->push_back(new TGraphErrors(range[s]->at(2), x[i], y[i], x_err[i], y_err[i]));
-//                sprintf(name, "");
-//            }
         }
 
         int allSize = (int) allX.size();
@@ -248,10 +254,6 @@ int main(int argc,char *argv[]) {
                 averagedXerr.push_back(0);
                 averagedY.push_back(averageAndError[0]);
                 averagedYerr.push_back(averageAndError[1]);
-//                if (s == "or"){
-//                    std::cout << averagedX.back() << "\t" << averagedY.back() << "\t" <<
-//                         averagedYerr.back() << std::endl;
-//                }
             }
         }
 
@@ -275,9 +277,6 @@ int main(int argc,char *argv[]) {
         sprintf(name,"fn_%s",s.c_str());
         fns.emplace(s, new TF1(name,"pol1"));
         averagedGraphs[s]->Fit(fns[s], "eq");
-
-//        std::cout << "fn for " << s << " parameters are\t\t" << fns[s]->GetParameter(0) << ",\t" <<
-//        fns[s]->GetParameter(1) << std::endl;
     }
 
     outFile.Append(graphs["or"]);
