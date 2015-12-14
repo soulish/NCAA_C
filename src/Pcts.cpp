@@ -86,7 +86,7 @@ double Pcts::weighted_std_dev() {
     if (this->length() == 0)
         return 0;
 
-    double p_bar = this->weighted_average();
+    double p_bar = this->p_bar();
     int nonZeroWeights = 0;
 
     double sum_weights = 0;
