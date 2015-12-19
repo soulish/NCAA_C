@@ -4,19 +4,19 @@
 
 #include <stddef.h>
 #include <fstream>
-#include "ConstantFunctions.h"
+#include "ConstantWAverageFunctions.h"
 #include "ConstantTeam5YearAverages.h"
 
-ConstantFunctions* ConstantFunctions::uniqueInstance = NULL;
+ConstantWAverageFunctions *ConstantWAverageFunctions::uniqueInstance = NULL;
 
-ConstantFunctions *ConstantFunctions::Instance() {
+ConstantWAverageFunctions *ConstantWAverageFunctions::Instance() {
     if (!uniqueInstance){
-        uniqueInstance = new ConstantFunctions;
+        uniqueInstance = new ConstantWAverageFunctions;
     }
     return uniqueInstance;
 }
 
-void ConstantFunctions::initialize(std::string path) {
+void ConstantWAverageFunctions::initialize(std::string path) {
     int year;
     std::string stat;
 
@@ -67,7 +67,8 @@ void ConstantFunctions::initialize(std::string path) {
     }
 }
 
-std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage *w1, TeamWAverage *w2, int year) {
+std::unordered_map<std::string, double> ConstantWAverageFunctions::predictStats(TeamWAverage *w1, TeamWAverage *w2,
+                                                                                int year) {
     std::unordered_map<std::string, double> result;
 
     std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
@@ -83,7 +84,8 @@ std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage 
 //this function predicts assuming the opponent is completely average, thus we use
 //the 5 year averages as the opponent's stats.  We can choose whether to calculate
 //how w1 will do on offense or on defense with the offOrDef option, which defaults to offense
-std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage *w1, int year, std::string offOrDef) {
+std::unordered_map<std::string, double> ConstantWAverageFunctions::predictStats(TeamWAverage *w1, int year,
+                                                                                std::string offOrDef) {
     std::unordered_map<std::string, double> result;
 
     std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
@@ -105,6 +107,6 @@ std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage 
     return result;
 }
 
-TF1 *ConstantFunctions::getFunction(int year, std::string stat) {
+TF1 *ConstantWAverageFunctions::getFunction(int year, std::string stat) {
     return functions[year]->at(stat);
 }
