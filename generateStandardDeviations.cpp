@@ -8,7 +8,7 @@
 #include "src/TeamWAverage.h"
 #include "src/readTeams.h"
 #include "helpers/doubleFormatter.h"
-#include "src/ConstantFunctions.h"
+#include "src/ConstantWAverageFunctions.h"
 #include "TF1.h"
 #include "TH1F.h"
 #include "src/ConstantTeamNeutralRatios.h"
@@ -61,7 +61,7 @@ int main(int argc,char *argv[]){
     homePath = getenv("HOME");
 
     sprintf(path, "%s/cpp/NCAA_C/constants/waverage_functions.d", homePath);
-    ConstantFunctions *functions = ConstantFunctions::Instance();
+    ConstantWAverageFunctions *functions = ConstantWAverageFunctions::Instance();
     functions->initialize(path);
 
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
@@ -114,10 +114,8 @@ int main(int argc,char *argv[]){
 
             std::string loc = game.second->getLoc();
 
-            std::unordered_map<std::string, double> predictions1 =
-                    functions->predict(wa1, wa2, outYear);
-            std::unordered_map<std::string, double> predictions2 =
-                    functions->predict(wa2, wa1, outYear);
+            std::unordered_map<std::string, double> predictions1 = functions->predictStats(wa1, wa2, outYear);
+            std::unordered_map<std::string, double> predictions2 = functions->predictStats(wa2, wa1, outYear);
 
             for (std::string &s : stats){
                 hists[s]->Fill(predictions1["o"+s] * wa1->getValue("o"+s) / ratios->get(outYear,game.second->getLoc(),"o"+s) -

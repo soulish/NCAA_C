@@ -18,12 +18,12 @@
 #include "helpers/doubleFormatter.h"
 #include "src/ConstantSeasonInfo.h"
 #include "src/ConstantStandardDeviations.h"
-#include "src/ConstantFunctions.h"
+#include "src/ConstantWAverageFunctions.h"
 #include "TH1F.h"
 #include "TRandom3.h"
 #include "src/ConstantSRSadditions.h"
 #include "helpers/vectorMinMax.h"
-#include "src/ConstantGameFunctionWeights.h"
+#include "src/ConstantGameFunction.h"
 
 std::vector<int> win;
 std::vector<double> oor;
@@ -97,7 +97,7 @@ int main(int argc,char *argv[]) {
     seasonInfo->initialize(path);
 
     sprintf(path, "%s/cpp/NCAA_C/constants/waverage_functions.d", homePath);
-    ConstantFunctions *functions = ConstantFunctions::Instance();
+    ConstantWAverageFunctions *functions = ConstantWAverageFunctions::Instance();
     functions->initialize(path);
 
     sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
@@ -139,10 +139,8 @@ int main(int argc,char *argv[]) {
             std::string loc = game.second->getLoc();
             std::string oppLoc = game.second->getOppLoc();
 
-            std::unordered_map<std::string, double> predictions1 =
-                    ConstantFunctions::Instance()->predict(wa1,wa2,outYear);
-            std::unordered_map<std::string, double> predictions2 =
-                    ConstantFunctions::Instance()->predict(wa2,wa1,outYear);
+            std::unordered_map<std::string, double> predictions1 = functions->predictStats(wa1, wa2, outYear);
+            std::unordered_map<std::string, double> predictions2 = functions->predictStats(wa2, wa1, outYear);
 
             win.push_back(game.second->getWin());
             oor.push_back((predictions1["oor.p"] * wa1->getValue("oor.p") / ratios->get(outYear,loc,"oor.p") -
@@ -222,12 +220,12 @@ int main(int argc,char *argv[]) {
     }
     else{
         sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, seededLocation.c_str());
-        ConstantGameFunctionWeights *weights = ConstantGameFunctionWeights::Instance();
-        weights->initialize(path);
+        ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
+        gameFunction->initialize(path);
 
-        std::vector<int> keys = weights->getKeys();
+        std::vector<int> keys = gameFunction->getKeys();
         for (int &year : keys){
-            std::vector<double> initialValuesVec = weights->getWeights(year);
+            std::vector<double> initialValuesVec = gameFunction->getWeights(year);
 
             temp_ary = run_fit(initialValuesVec[0],initialValuesVec[1],initialValuesVec[2],
                                initialValuesVec[3],initialValuesVec[4]);
