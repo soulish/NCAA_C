@@ -67,19 +67,6 @@ void ConstantFunctions::initialize(std::string path) {
     }
 }
 
-//std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage *w1, TeamWAverage *w2, int year) {
-//    std::unordered_map<std::string, double> result;
-//
-//    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
-//
-//    for (std::string &s : stats){
-//        double factor;
-//        factor = functions[year]->at("o" + s)->Eval(w1->getValue("o" + s) - w2->getValue("d" + s));
-//        result.emplace("o"+s, factor * w1->getValue("o" + s));
-//    }
-//
-//    return result;
-//}
 std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage *w1, TeamWAverage *w2, int year) {
     std::unordered_map<std::string, double> result;
 
@@ -116,4 +103,8 @@ std::unordered_map<std::string, double> ConstantFunctions::predict(TeamWAverage 
     }
 
     return result;
+}
+
+TF1 *ConstantFunctions::getFunction(int year, std::string stat) {
+    return functions[year]->at(stat);
 }
