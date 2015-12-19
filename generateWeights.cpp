@@ -38,7 +38,8 @@ std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
 
 int main(int argc,char *argv[]) {
     int c;
-    bool verbose = false;
+    bool writeOutput = false;
+    std::string outFileName = "";
     std::vector<std::string> years;
     std::string inYears = "";
     int numIterations = 1;
@@ -46,7 +47,7 @@ int main(int argc,char *argv[]) {
     bool useSeededValues = false;
     std::string seededLocation = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Y:vi:S:")) != -1) {
+    while ((c = getopt(argc, argv, "y:Y:o:i:S:")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -55,8 +56,9 @@ int main(int argc,char *argv[]) {
             case 'Y':
                 outYear = atoi(optarg);
                 break;
-            case 'v':
-                verbose = true;
+            case 'o':
+                outFileName.assign(optarg);
+                writeOutput = true;
                 break;
             case 'i':
                 numIterations = atoi(optarg);
@@ -265,6 +267,16 @@ int main(int argc,char *argv[]) {
     std::cout << "Minimum = " << doubleFormatter(fcn_mins[indexOfMin],4) << std::endl;
     for (int i = 0; i < 5; i++)
         std::cout << i << "\t" << doubleFormatter(params_ary[indexOfMin]->at(i),4) << std::endl;
+
+    if (writeOutput) {
+        sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileName.c_str());
+        std::ofstream outFile(path, std::ios::app);
+        outFile << outYear;
+        for (int i = 0; i < 6; i++)
+            outFile << "," << doubleFormatter(params_ary[indexOfMin]->at(i),4);
+        outFile << std::endl;
+        outFile.close();
+    }
 
     return 0;
 }
