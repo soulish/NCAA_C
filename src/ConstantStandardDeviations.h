@@ -21,7 +21,7 @@ public:
     static ConstantStandardDeviations* Instance();
 
     void initialize(std::string path);
-    double get(int year, std::string stat, int day);
+    double get(int year, std::string stat);
 
 private:
     ConstantStandardDeviations(){};
@@ -30,7 +30,7 @@ private:
 
     static ConstantStandardDeviations* uniqueInstance;
 
-    std::unordered_map< int, std::unordered_map<std::string, std::vector<double> *> *> standardDeviations;
+    std::unordered_map< int, std::unordered_map<std::string, double> *> standardDeviations;
 };
 
 
