@@ -2,8 +2,8 @@
 // Created by soulish on 12/19/15.
 //
 
-#ifndef NCAA_C_CONSTANTGAMEFUNCTIONWEIGHTS_H
-#define NCAA_C_CONSTANTGAMEFUNCTIONWEIGHTS_H
+#ifndef NCAA_C_CONSTANTGAMEFUNCTION_H
+#define NCAA_C_CONSTANTGAMEFUNCTION_H
 
 #include <iostream>
 #include <unordered_map>
@@ -17,23 +17,23 @@
 //    ConstantGameFunctionWeights::Instance()->getKeys();
 //    ConstantGameFunctionWeights::Instance()->getWeights(year);
 
-class ConstantGameFunctionWeights {
+class ConstantGameFunction {
 public:
-    static ConstantGameFunctionWeights* Instance();
+    static ConstantGameFunction * Instance();
 
     void initialize(std::string path);
     std::vector<int> getKeys();
     std::vector<double> getWeights(int year);
 
 private:
-    ConstantGameFunctionWeights(){};
-    ConstantGameFunctionWeights(ConstantGameFunctionWeights const&){};
-    ConstantGameFunctionWeights& operator=(ConstantGameFunctionWeights const&){};
+    ConstantGameFunction(){};
+    ConstantGameFunction(ConstantGameFunction const&){};
+    ConstantGameFunction & operator=(ConstantGameFunction const&){};
 
-    static ConstantGameFunctionWeights* uniqueInstance;
+    static ConstantGameFunction * uniqueInstance;
 
     std::unordered_map< int, std::unordered_map<std::string, double> *> weights;
 };
 
 
-#endif //NCAA_C_CONSTANTGAMEFUNCTIONWEIGHTS_H
+#endif //NCAA_C_CONSTANTGAMEFUNCTION_H

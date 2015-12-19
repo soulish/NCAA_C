@@ -5,17 +5,17 @@
 #include <stddef.h>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
-#include "ConstantGameFunctionWeights.h"
+#include "ConstantGameFunction.h"
 
-ConstantGameFunctionWeights* ConstantGameFunctionWeights::uniqueInstance = NULL;
+ConstantGameFunction *ConstantGameFunction::uniqueInstance = NULL;
 
-ConstantGameFunctionWeights *ConstantGameFunctionWeights::Instance() {
+ConstantGameFunction *ConstantGameFunction::Instance() {
     if (!uniqueInstance)
-        uniqueInstance = new ConstantGameFunctionWeights;
+        uniqueInstance = new ConstantGameFunction;
     return uniqueInstance;
 }
 
-void ConstantGameFunctionWeights::initialize(std::string path) {
+void ConstantGameFunction::initialize(std::string path) {
     int year;
     std::string stat;
 
@@ -41,7 +41,7 @@ void ConstantGameFunctionWeights::initialize(std::string path) {
     }
 }
 
-std::vector<int> ConstantGameFunctionWeights::getKeys() {
+std::vector<int> ConstantGameFunction::getKeys() {
     std::vector<int> keys;
     for (auto &w : weights)
         keys.push_back(w.first);
@@ -49,7 +49,7 @@ std::vector<int> ConstantGameFunctionWeights::getKeys() {
     return keys;
 }
 
-std::vector<double> ConstantGameFunctionWeights::getWeights(int year) {
+std::vector<double> ConstantGameFunction::getWeights(int year) {
     std::vector<double> values;
     values.push_back(weights[year]->at("oor.p"));
     values.push_back(weights[year]->at("oefg.p"));
