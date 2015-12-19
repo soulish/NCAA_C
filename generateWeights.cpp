@@ -23,6 +23,7 @@
 #include "TRandom3.h"
 #include "src/ConstantSRSadditions.h"
 #include "helpers/vectorMinMax.h"
+#include "src/ConstantGameFunctionWeights.h"
 
 std::vector<int> win;
 std::vector<double> oor;
@@ -41,18 +42,28 @@ int main(int argc,char *argv[]) {
     std::vector<std::string> years;
     std::string inYears = "";
     int numIterations = 1;
+    int outYear = 0;
+    bool useSeededValues = false;
+    std::string seededLocation = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:vi:")) != -1) {
+    while ((c = getopt(argc, argv, "y:Y:vi:S:")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
                 boost::split(years, inYears, boost::is_any_of(","));
+                break;
+            case 'Y':
+                outYear = atoi(optarg);
                 break;
             case 'v':
                 verbose = true;
                 break;
             case 'i':
                 numIterations = atoi(optarg);
+                break;
+            case 'S':
+                useSeededValues = true;
+                seededLocation.assign(optarg);
                 break;
             default:
                 // not an option
@@ -64,6 +75,10 @@ int main(int argc,char *argv[]) {
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
+        return 0;
+    }
+    if (outYear == 0) {
+        std::cout << "You must set the output year using the -Y switch" << std::endl;
         return 0;
     }
 
@@ -119,36 +134,34 @@ int main(int argc,char *argv[]) {
             wa1 = team.second->WAverageOnDate(game.second->getDate());
             wa2 = opp->WAverageOnDate(game.second->getDate());
 
-            boost::gregorian::days indDuration = seasonInfo->get(team.second->getYear(), "tournament start") -
-                                                 wa1->getDate();
-            int ind = 129 - (int) indDuration.days();
-            int gameYear =team.second->getYear();
             std::string loc = game.second->getLoc();
+            std::string oppLoc = game.second->getOppLoc();
 
             std::unordered_map<std::string, double> predictions1 =
-                    ConstantFunctions::Instance()->predict(wa1,wa2,gameYear);
+                    ConstantFunctions::Instance()->predict(wa1,wa2,outYear);
             std::unordered_map<std::string, double> predictions2 =
-                    ConstantFunctions::Instance()->predict(wa2,wa1,gameYear);
+                    ConstantFunctions::Instance()->predict(wa2,wa1,outYear);
 
             win.push_back(game.second->getWin());
-            oor.push_back((predictions1["oor.p"] / ratios->get(gameYear,loc,"oor.p") -
-                           predictions2["oor.p"] / ratios->get(gameYear, loc,"oor.p")) /
-                          stdDevs->get(gameYear,"oor",ind));
+            oor.push_back((predictions1["oor.p"] * wa1->getValue("oor.p") / ratios->get(outYear,loc,"oor.p") -
+                           predictions2["oor.p"] * wa2->getValue("oor.p") / ratios->get(outYear,oppLoc,"oor.p")) /
+                          stdDevs->get(outYear,"oor.p"));
 
-            oefg.push_back((predictions1["oefg.p"] / ratios->get(gameYear,loc,"oefg.p") -
-                            predictions2["oefg.p"] / ratios->get(gameYear, loc,"oefg.p")) /
-                           stdDevs->get(gameYear,"oefg",ind));
+            oefg.push_back((predictions1["oefg.p"] * wa1->getValue("oefg.p") / ratios->get(outYear,loc,"oefg.p") -
+                            predictions2["oefg.p"] * wa2->getValue("oefg.p") / ratios->get(outYear,oppLoc,"oefg.p")) /
+                           stdDevs->get(outYear,"oefg.p"));
 
-            oftmr.push_back((predictions1["oftmr.p"] / ratios->get(gameYear,loc,"oftmr.p") -
-                             predictions2["oftmr.p"] / ratios->get(gameYear, loc,"oftmr.p")) /
-                            stdDevs->get(gameYear,"oftmr",ind));
+            oftmr.push_back((predictions1["oftmr.p"] * wa1->getValue("oftmr.p") / ratios->get(outYear,loc,"oftmr.p") -
+                             predictions2["oftmr.p"] * wa2->getValue("oftmr.p") / ratios->get(outYear,oppLoc,"oftmr.p")) /
+                            stdDevs->get(outYear,"oftmr.p"));
 
-            oto.push_back((predictions1["oto.p"] / ratios->get(gameYear,loc,"oto.p") -
-                           predictions2["oto.p"] / ratios->get(gameYear, loc,"oto.p")) /
-                          stdDevs->get(gameYear,"oto",ind));
+            //This guy is reversed because turnovers are bad.
+            oto.push_back((-predictions1["oto.p"] * wa1->getValue("oto.p") / ratios->get(outYear,loc,"oto.p") +
+                           predictions2["oto.p"] * wa2->getValue("oto.p") / ratios->get(outYear,oppLoc,"oto.p")) /
+                          stdDevs->get(outYear,"oto.p"));
 
-            srs.push_back((wa1->getSrs() - wa2->getSrs() + additions->get(gameYear,loc)) /
-                          stdDevs->get(gameYear,"srs",ind));
+            srs.push_back((wa1->getSrs() - wa2->getSrs() + additions->get(outYear,loc)) /
+                          stdDevs->get(outYear,"srs"));
         }
     }
 
@@ -158,49 +171,93 @@ int main(int argc,char *argv[]) {
     std::vector<double> fcn_mins;
     std::vector< std::vector<double>*> params_ary;
 
-    //random number generator, using Mersenne Twister method
-    //the 0 means we use a unique seed each time
-    TRandom3 rand(0);
 
-    for (int i = 0; i < numIterations; i++){
-        double randoms[5];
-        rand.RndmArray(5,randoms);
+    if (!useSeededValues) {
+        //random number generator, using Mersenne Twister method
+        //the 0 means we use a unique seed each time
+        TRandom3 rand(0);
 
-        double rand_norm = 0;
-        for (int j = 0; j < 5; j++)
-            rand_norm += randoms[j];
+        for (int i = 0; i < numIterations; i++) {
+            double randoms[5];
+            rand.RndmArray(5, randoms);
 
-        temp_ary = run_fit(randoms[0]/rand_norm, randoms[1]/rand_norm, randoms[2]/rand_norm,
-                           randoms[3]/rand_norm, randoms[4]/rand_norm);
-
-        double temp_fcn_min = temp_ary.back();
-        double temp_fcn_min2;
-
-        double temp_norm = 0;
-        int num_times_through = 0;
-        for (int k = 0; k < 100; k++){
-            num_times_through++;
-            temp_norm = 0;
+            double rand_norm = 0;
             for (int j = 0; j < 5; j++)
-                temp_norm += temp_ary[j];
-            temp_ary2 = run_fit(temp_ary[0] / temp_norm, temp_ary[1] / temp_norm, temp_ary[2] / temp_norm,
-                                temp_ary[3] / temp_norm, temp_ary[4] / temp_norm);
-            temp_fcn_min2 = temp_ary2.back();
-            if (temp_fcn_min2 == temp_fcn_min && temp_ary == temp_ary2) break;
+                rand_norm += randoms[j];
 
-            temp_ary = temp_ary2;
-            temp_fcn_min = temp_fcn_min2;
+            temp_ary = run_fit(randoms[0] / rand_norm, randoms[1] / rand_norm, randoms[2] / rand_norm,
+                               randoms[3] / rand_norm, randoms[4] / rand_norm);
+
+            double temp_fcn_min = temp_ary.back();
+            double temp_fcn_min2;
+
+            double temp_norm = 0;
+            int num_times_through = 0;
+            for (int k = 0; k < 100; k++) {
+                num_times_through++;
+                temp_norm = 0;
+                for (int j = 0; j < 5; j++)
+                    temp_norm += temp_ary[j];
+                temp_ary2 = run_fit(temp_ary[0] / temp_norm, temp_ary[1] / temp_norm, temp_ary[2] / temp_norm,
+                                    temp_ary[3] / temp_norm, temp_ary[4] / temp_norm);
+                temp_fcn_min2 = temp_ary2.back();
+                if (temp_fcn_min2 == temp_fcn_min && temp_ary == temp_ary2) break;
+
+                temp_ary = temp_ary2;
+                temp_fcn_min = temp_fcn_min2;
+            }
+
+            fcn_mins.push_back(temp_fcn_min);
+            params_ary.push_back(new std::vector<double>());
+            for (int ii = 0; ii < temp_ary.size(); ii++)
+                params_ary.back()->push_back(temp_ary[ii]);
+
+            int indexOfMin = indexOfVectorMin(fcn_mins);
+            std::cout << "  " << i << "\t" << doubleFormatter(fcn_mins.back(), 4) << "\t" <<
+            doubleFormatter(fcn_mins[indexOfMin], 4) << "\t" << indexOfMin << "\r";
+            fflush(stdout);
         }
+    }
+    else{
+        sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, seededLocation.c_str());
+        ConstantGameFunctionWeights *weights = ConstantGameFunctionWeights::Instance();
+        weights->initialize(path);
 
-        fcn_mins.push_back(temp_fcn_min);
-        params_ary.push_back(new std::vector<double>());
-        for (int ii = 0; ii < temp_ary.size(); ii++)
-            params_ary.back()->push_back(temp_ary[ii]);
+        std::vector<int> keys = weights->getKeys();
+        for (int &year : keys){
+            std::vector<double> initialValuesVec = weights->getWeights(year);
 
-        int indexOfMin = indexOfVectorMin(fcn_mins);
-        std::cout << "  " << i << "\t" << doubleFormatter(fcn_mins.back(),4) << "\t" <<
-                doubleFormatter(fcn_mins[indexOfMin],4) << "\t" << indexOfMin << "\r";
-        fflush(stdout);
+            temp_ary = run_fit(initialValuesVec[0],initialValuesVec[1],initialValuesVec[2],
+                               initialValuesVec[3],initialValuesVec[4]);
+
+            double temp_fcn_min = temp_ary.back();
+            double temp_fcn_min2;
+
+            double temp_norm = 0;
+            int num_times_through = 0;
+            for (int k = 0; k < 100; k++) {
+                num_times_through++;
+                temp_norm = 0;
+                for (int j = 0; j < 5; j++)
+                    temp_norm += temp_ary[j];
+                temp_ary2 = run_fit(temp_ary[0] / temp_norm, temp_ary[1] / temp_norm, temp_ary[2] / temp_norm,
+                                    temp_ary[3] / temp_norm, temp_ary[4] / temp_norm);
+                temp_fcn_min2 = temp_ary2.back();
+                if (temp_fcn_min2 == temp_fcn_min && temp_ary == temp_ary2) break;
+
+                temp_ary = temp_ary2;
+                temp_fcn_min = temp_fcn_min2;
+            }
+
+            fcn_mins.push_back(temp_fcn_min);
+            params_ary.push_back(new std::vector<double>());
+            for (int ii = 0; ii < temp_ary.size(); ii++)
+                params_ary.back()->push_back(temp_ary[ii]);
+
+            int indexOfMin = indexOfVectorMin(fcn_mins);
+            std::cout << "  " << year << "\t" << doubleFormatter(fcn_mins.back(), 4) << "\t" <<
+            doubleFormatter(fcn_mins[indexOfMin], 4) << "\t" << indexOfMin << std::endl;
+        }
     }
 
     std::cout << "\n\n\nFinal Results";
