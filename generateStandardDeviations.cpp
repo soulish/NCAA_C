@@ -3,16 +3,16 @@
 #include <getopt.h>
 #include <unordered_map>
 #include <vector>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/algorithm/string.hpp>
 #include "src/ConstantSeasonInfo.h"
 #include "src/Team.h"
 #include "src/TeamWAverage.h"
 #include "src/readTeams.h"
-#include "src/Pcts.h"
 #include "helpers/doubleFormatter.h"
-
-double standardDeviationOfVector(std::vector<double> *values);
+#include "src/ConstantFunctions.h"
+#include "TF1.h"
+#include "TH1F.h"
+#include "src/ConstantTeamNeutralRatios.h"
+#include "src/ConstantSRSadditions.h"
 
 int main(int argc,char *argv[]){
     int c;
@@ -60,151 +60,101 @@ int main(int argc,char *argv[]){
     char *homePath, path[256];
     homePath = getenv("HOME");
 
+    sprintf(path, "%s/cpp/NCAA_C/constants/waverage_functions.d", homePath);
+    ConstantFunctions *functions = ConstantFunctions::Instance();
+    functions->initialize(path);
+
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
-    ConstantSeasonInfo::Instance()->initialize(path);
+    ConstantSeasonInfo *seasonInfo = ConstantSeasonInfo::Instance();
+    seasonInfo->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
+    ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
+    ratios->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/srs_additions.d", homePath);
+    ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
+    additions->initialize(path);
 
     for (std::string &year : years) {
         sprintf(path, "%s/cpp/NCAA_C/teams/%s/", homePath, year.c_str());
         std::cout << "Reading in waverages for " << year << std::endl;
+        readTeamsFromDir(path, "games");
         readTeamsFromDir(path, "waverages");
     }
 
-    std::string stats[] = {"or", "efg", "ftmr", "to"};
+    std::unordered_map<std::string, Team*> teams = Team::getTeams();
+    std::unordered_map<std::string, TeamGame*> games;
+    Team *opp;
+    TeamWAverage *wa1, *wa2;
 
-    std::unordered_map<int, std::unordered_map<std::string, Pcts *> *> pcts;
-    std::unordered_map<int, std::vector<double> *> srses;
-    for (int i = 0; i < 130; i++) {
-        pcts.emplace(i, new std::unordered_map<std::string, Pcts *>());
-        srses.emplace(i, new std::vector<double>());
-        for (std::string &s : stats) {
-            pcts[i]->emplace("o"+s, new Pcts());
-            pcts[i]->emplace("d"+s, new Pcts());
-        }
+    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
+    std::unordered_map<std::string, TH1F*> hists;
+    for (std::string &s : stats){
+        hists.emplace(s, new TH1F(("hist_"+s).c_str(),"",200,-0.5,0.5));
     }
+    hists.emplace("srs", new TH1F("hist_srs","",200,-50,50));
 
     boost::gregorian::days indDuration;
-    std::unordered_map<std::string, TeamWAverage *> teamWAverages;
-    std::unordered_map<std::string, Team *> teams = Team::getTeams();
+
     for (auto &team : teams) {
-        int year = team.second->getYear();
-        teamWAverages = team.second->getWAveragesByDate();
+        games = team.second->getGamesByDate();
+        for (auto &game : games) {
+            opp = Team::findTeam(game.second->getOpp());
+            if (!opp) continue;
+            if (game.second->getDate() >= seasonInfo->get(team.second->getYear(), "tournament start")) continue;
+            if (game.second->getDate().month().as_number() == 11) continue;
 
-        for (auto &waverage : teamWAverages) {
-            indDuration = ConstantSeasonInfo::Instance()->get(team.second->getYear(), "tournament start") -
-                          waverage.second->getDate();
-            int ind = 129 - (int) indDuration.days();
+            wa1 = team.second->WAverageOnDate(game.second->getDate());
+            wa2 = opp->WAverageOnDate(game.second->getDate());
 
-            for (std::string &s : stats) {
-                pcts[ind]->at("o"+s)->add_pct(*(waverage.second->getPct("o"+s)));
-                pcts[ind]->at("d"+s)->add_pct(*(waverage.second->getPct("d"+s)));
+            indDuration = seasonInfo->get(team.second->getYear(), "tournament start") -
+                          game.second->getDate();
+            int ind = 124 - (int) indDuration.days();
+
+            std::string loc = game.second->getLoc();
+
+            std::unordered_map<std::string, double> predictions1 =
+                    functions->predict(wa1, wa2, outYear);
+            std::unordered_map<std::string, double> predictions2 =
+                    functions->predict(wa2, wa1, outYear);
+
+            for (std::string &s : stats){
+                hists[s]->Fill(predictions1["o"+s] * wa1->getValue("o"+s) / ratios->get(outYear,game.second->getLoc(),"o"+s) -
+                               predictions2["o"+s] * wa2->getValue("o"+s) / ratios->get(outYear,game.second->getOppLoc(),"o"+s));
             }
-            srses[ind]->push_back(waverage.second->getSrs());
+            hists["srs"]->Fill((wa1->getSrs() - wa2->getSrs() + additions->get(outYear,loc)));
         }
     }
 
-    if (verbose) {
-        for (std::string &s : stats) {
-            for (int i = 0; i < 130; i++) {
-                double avgO, wstdO;
-                if (pcts[i]->at("o"+s)->length() > 0) {
-                    avgO = pcts[i]->at("o"+s)->p_bar();
-                    wstdO = pcts[i]->at("o"+s)->weighted_std_dev();
-                }
-                else{
-                    avgO = 0;
-                    wstdO = 0.1;
-                }
-                //consider what happens when there are no entries -> return 0 or 0.1 or something
-                if ((wstdO != wstdO) || (avgO != avgO)) {
-                    wstdO = 0.1;
-                }
-
-                double avgD, wstdD;
-                if (pcts[i]->at("d"+s)->length() > 0) {
-                    avgD = pcts[i]->at("d"+s)->p_bar();
-                    wstdD = pcts[i]->at("d"+s)->weighted_std_dev();
-                }
-                else{
-                    avgD = 0;
-                    wstdD = 0.1;
-                }
-                //consider what happens when there are no entries -> return 0 or 0.1 or something
-                if ((wstdD != wstdD) || (avgD != avgD)) {
-                    wstdD = 0.1;
-                }
-                double wstd = sqrt(wstdO*wstdO + wstdD*wstdD);
-                std::cout << "std_devs[\"" << s << ".p\"][" << i << "] = " << doubleFormatter(avgO, 3) <<
-                "\t" << doubleFormatter(wstd, 3) << std::endl;
-            }
-        }
-    }
-
-    if (writeOutput){
+    std::ofstream outFile;
+    if (writeOutput) {
         sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileName.c_str());
-        std::ofstream outFile(path, std::ios::app);
-        for (std::string &s : stats){
-            outFile << outYear << "," << "o" << s;
-            for (int i = 0; i < 130; i++){
-                double avgO, wstdO;
-                if (pcts[i]->at("o"+s)->length() > 0) {
-                    avgO = pcts[i]->at("o"+s)->p_bar();
-                    wstdO = pcts[i]->at("o"+s)->weighted_std_dev();
-                }
-                else{
-                    avgO = 0;
-                    wstdO = 0.1;
-                }
-                //consider what happens when there are no entries -> return 0 or 0.1 or something
-                if ((wstdO != wstdO) || (avgO != avgO)) {
-                    wstdO = 0.1;
-                }
+        outFile.open(path, std::ios::app);
+        outFile << outYear;
+    }
 
-                double avgD, wstdD;
-                if (pcts[i]->at("d"+s)->length() > 0) {
-                    avgD = pcts[i]->at("d"+s)->p_bar();
-                    wstdD = pcts[i]->at("d"+s)->weighted_std_dev();
-                }
-                else{
-                    avgD = 0;
-                    wstdD = 0.1;
-                }
-                //consider what happens when there are no entries -> return 0 or 0.1 or something
-                if ((wstdD != wstdD) || (avgD != avgD)) {
-                    wstdD = 0.1;
-                }
-                double wstd = sqrt(wstdO*wstdO + wstdD*wstdD);
-                outFile << "," << doubleFormatter(wstd, 3);
-            }
-            outFile << std::endl;
-        }
+    TF1 *tempFn = new TF1("tempFn","gaus");
 
-        //now deal with SRS
-        outFile << outYear << "," << "srs";
-        for (int i = 0; i < 130; i++){
-            double stdDevOfSRS = standardDeviationOfVector(srses[i]);
-            if (stdDevOfSRS == 0) stdDevOfSRS = 20.0;
-            outFile << "," << doubleFormatter(stdDevOfSRS, 3);
-        }
+    for (std::string &s : stats) {
+        hists[s]->Fit(tempFn,"q");
+        if (writeOutput)
+            outFile << "," << doubleFormatter(tempFn->GetParameter(2), 3);
+        if (verbose)
+            std::cout << s << "\t" << doubleFormatter(tempFn->GetParameter(2), 3) << std::endl;
+    }
+
+    //now deal with SRS
+    hists["srs"]->Fit(tempFn,"q");
+    if (verbose)
+        std::cout << "srs" << "\t" << doubleFormatter(tempFn->GetParameter(2), 3) << std::endl;
+
+    if (writeOutput) {
+        outFile << "," << doubleFormatter(tempFn->GetParameter(2), 3);
         outFile << std::endl;
-
         outFile.close();
     }
 
     return 0;
 }
 
-double standardDeviationOfVector(std::vector<double> *values){
-    if (values->size() <= 1) return 0;
-    double average = 0;
-    for (int i = 0; i < values->size(); i++)
-        average += values->at(i);
-    average /= values->size();
-
-    double stdDev = 0;
-    for (int i = 0; i < values->size(); i++)
-        stdDev += pow(values->at(i) - average,2);
-
-    stdDev /= (values->size() - 1);
-
-    return sqrt(stdDev);
-}
