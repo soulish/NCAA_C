@@ -113,3 +113,22 @@ double Pcts::weighted_std_dev() {
 
     return sqrt(sum);
 }
+
+double Pcts::std_dev() {
+    if (this->length() <= 1)
+        return 0;
+
+    double p_bar = this->p_bar();
+
+    std::vector<Pct>::iterator v = pcts->begin();
+    double sum = 0;
+    v = pcts->begin();
+    while(v != pcts->end()) {
+        sum += pow(v->P() - p_bar, 2);
+        v++;
+    }
+
+    sum = sum / (pcts->size() - 1);
+
+    return sqrt(sum);
+}

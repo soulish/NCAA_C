@@ -33,6 +33,7 @@ public:
     double weighted_average();
     double weighted_average_alt();
     double weighted_std_dev();
+    double std_dev();
 
 private:
     std::vector<Pct> *pcts;
