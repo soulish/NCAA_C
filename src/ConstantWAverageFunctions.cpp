@@ -100,7 +100,7 @@ std::unordered_map<std::string, double> ConstantWAverageFunctions::predictStats(
         else if (offOrDef == "defense"){
             factor = functions[year]->at("o" + s)->Eval(ConstantTeam5YearAverages::Instance()->get(year, "o" + s) -
                                                         w1->getValue("d" + s));
-            result.emplace("d" + s, factor);
+            result.emplace("o" + s, factor);
         }
     }
 
