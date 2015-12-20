@@ -6,7 +6,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <TFile.h>
-#include <TMinuit.h>
+#include <TROOT.h>
 #include "src/ConstantTeamNeutralRatios.h"
 #include "src/Team.h"
 #include "src/readTeams.h"
@@ -15,9 +15,7 @@
 #include "src/ConstantStandardDeviations.h"
 #include "src/ConstantWAverageFunctions.h"
 #include "TH1F.h"
-#include "TRandom3.h"
 #include "src/ConstantSRSadditions.h"
-#include "helpers/vectorMinMax.h"
 #include "src/ConstantGameFunction.h"
 
 int main(int argc,char *argv[]) {
@@ -26,8 +24,11 @@ int main(int argc,char *argv[]) {
     std::string outFileName = "";
     std::vector<std::string> years;
     std::string inYears = "";
+    std::string histogramsFileName = "";
+    bool useHistogramsFile = false;
+    double sigmas = 3;
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:o:")) != -1) {
+    while ((c = getopt(argc, argv, "y:o:H:s:")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -36,6 +37,13 @@ int main(int argc,char *argv[]) {
             case 'o':
                 outFileName.assign(optarg);
                 writeOutput = true;
+                break;
+            case 'H':
+                histogramsFileName.assign(optarg);
+                useHistogramsFile = true;
+                break;
+            case 's':
+                sigmas = atoi(optarg);
                 break;
             default:
                 // not an option
@@ -86,6 +94,20 @@ int main(int argc,char *argv[]) {
         readTeamsFromDir(path, "waverages");
     }
 
+    TFile *histsFile;
+    std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
+    if (useHistogramsFile){
+        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+        histsFile = new TFile(path);
+
+        for (int y = 2007; y <= 2016; y++){
+            sprintf(path, "probs_by_year_%d", y);
+            probs_by_year.emplace(y, (TH1F*)gROOT->FindObject(path));
+            sprintf(path, "probs_err_by_year_%d", y);
+            probs_err_by_year.emplace(y, (TH1F*)gROOT->FindObject(path));
+        }
+    }
+
     std::unordered_map<std::string, Team *> teams = Team::getTeams();
     std::unordered_map<std::string, TeamGame *> games;
     Team *opp;
@@ -94,6 +116,7 @@ int main(int argc,char *argv[]) {
     int gameScoreWins = 0, gameScoreTotal = 0;
     int gameScoreWinsSpread = 0, gameScoreTotalSpread = 0;
     int vegasWinsSpread = 0, vegasTotalSpread = 0;
+    int adjGameScoreWins = 0, adjGameScoreTotal = 0;
 
     for (auto &team : teams) {
         games = team.second->getGamesByDate();
@@ -115,6 +138,29 @@ int main(int argc,char *argv[]) {
 
             double gameScore = gameFunction->predictGame(wa1,wa2,team.second->getYear(),loc,oppLoc);
 
+            double gameScorePct = -1;
+            double gameScorePct_err = -1;
+
+            if (useHistogramsFile){
+                if (gameScore >= 3){
+                    gameScorePct = 1;
+                    gameScorePct_err = 1;
+                }
+                else if (gameScore <= -3){
+                    gameScorePct = 0;
+                    gameScorePct_err = 1;
+                }
+                else{
+                    gameScorePct = probs_by_year[team.second->getYear()]->GetBinContent((gameScore+3)*1600/6.0);
+                    gameScorePct_err = probs_err_by_year[team.second->getYear()]->GetBinContent((gameScore+3)*1600/6.0);
+                }
+
+                if (gameScorePct >= 0.5 && gameScorePct - sigmas*gameScorePct_err >= 0.5 && win) adjGameScoreWins++;
+                if (gameScorePct < 0.5 && gameScorePct + sigmas*gameScorePct_err < 0.5 && !win) adjGameScoreWins++;
+                if ((gameScorePct >= 0.5 && gameScorePct - sigmas*gameScorePct_err >= 0.5) ||
+                    (gameScorePct < 0.5 && gameScorePct + sigmas*gameScorePct_err < 0.5)) adjGameScoreTotal++;
+            }
+
             gameScoreTotal++;
             if (gameScore > 0 && win) gameScoreWins++;
             if (gameScore < 0 && !win) gameScoreWins++;
@@ -133,6 +179,11 @@ int main(int argc,char *argv[]) {
 
     std::cout << "All games:\t\t" << gameScoreWins << " / " << gameScoreTotal << " = " <<
     doubleFormatter(gameScoreWins / (double) gameScoreTotal, 3) << std::endl;
+
+    if (useHistogramsFile) {
+        std::cout << "Games above sigma:\t" << adjGameScoreWins << " / " << adjGameScoreTotal << " = " <<
+        doubleFormatter(adjGameScoreWins / (double) adjGameScoreTotal, 3) << std::endl;
+    }
 
     std::cout << "Games with Spread:\t" << gameScoreWinsSpread << " / " << gameScoreTotalSpread << " = " <<
     doubleFormatter(gameScoreWinsSpread / (double) gameScoreTotalSpread, 3) << std::endl;
