@@ -6,6 +6,10 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include "ConstantGameFunction.h"
+#include "ConstantWAverageFunctions.h"
+#include "ConstantTeamNeutralRatios.h"
+#include "ConstantStandardDeviations.h"
+#include "ConstantSRSadditions.h"
 
 ConstantGameFunction *ConstantGameFunction::uniqueInstance = NULL;
 
@@ -57,4 +61,45 @@ std::vector<double> ConstantGameFunction::getWeights(int year) {
     values.push_back(weights[year]->at("oto.p"));
     values.push_back(weights[year]->at("srs"));
     return values;
+}
+
+double ConstantGameFunction::predictGame(TeamWAverage *wa1, TeamWAverage *wa2, int year,
+                                         std::string loc, std::string oppLoc) {
+    ConstantWAverageFunctions *functions = ConstantWAverageFunctions::Instance();
+    ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
+    ConstantStandardDeviations *stdDevs = ConstantStandardDeviations::Instance();
+    ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
+
+    std::unordered_map<std::string, double> predictions1 = functions->predictStats(wa1, wa2, year);
+    std::unordered_map<std::string, double> predictions2 = functions->predictStats(wa2, wa1, year);
+
+    double oor = (predictions1["oor.p"] * wa1->getValue("oor.p") / ratios->get(year,loc,"oor.p") -
+                  predictions2["oor.p"] * wa2->getValue("oor.p") / ratios->get(year,oppLoc,"oor.p")) /
+                 stdDevs->get(year,"oor.p");
+
+    double oefg = (predictions1["oefg.p"] * wa1->getValue("oefg.p") / ratios->get(year,loc,"oefg.p") -
+                   predictions2["oefg.p"] * wa2->getValue("oefg.p") / ratios->get(year,oppLoc,"oefg.p")) /
+                  stdDevs->get(year,"oefg.p");
+
+    double oftmr = (predictions1["oftmr.p"] * wa1->getValue("oftmr.p") / ratios->get(year,loc,"oftmr.p") -
+                    predictions2["oftmr.p"] * wa2->getValue("oftmr.p") / ratios->get(year,oppLoc,"oftmr.p")) /
+                   stdDevs->get(year,"oftmr.p");
+
+    //This guy is reversed because turnovers are bad.
+    double oto = (-predictions1["oto.p"] * wa1->getValue("oto.p") / ratios->get(year,loc,"oto.p") +
+                  predictions2["oto.p"] * wa2->getValue("oto.p") / ratios->get(year,oppLoc,"oto.p")) /
+                 stdDevs->get(year,"oto.p");
+
+    double srs = (wa1->getSrs() - wa2->getSrs() + additions->get(year,loc)) /
+                 stdDevs->get(year,"srs");
+
+    std::unordered_map<std::string, double> *theWeights = weights[year];
+
+    double sum = theWeights->at("oor.p") * oor +
+                 theWeights->at("oefg.p") * oefg +
+                 theWeights->at("oftmr.p") * oftmr +
+                 theWeights->at("oto.p") * oto +
+                 theWeights->at("srs") * srs;
+
+    return sum;
 }

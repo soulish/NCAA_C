@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include "TeamWAverage.h"
 
 //Singleton class to hold the weights used in the game function
 //
@@ -24,6 +25,7 @@ public:
     void initialize(std::string path);
     std::vector<int> getKeys();
     std::vector<double> getWeights(int year);
+    double predictGame(TeamWAverage *wa1, TeamWAverage *wa2, int year, std::string loc, std::string oppLoc);
 
 private:
     ConstantGameFunction(){};
