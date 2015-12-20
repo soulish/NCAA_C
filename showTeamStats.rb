@@ -7,11 +7,14 @@ gStyle.SetPalette(1,0)
 fileName = nil
 drawGames = false
 teamName = nil
+histogramsFileName = nil
 #command line switcher
 ARGV.each_with_index do |entry, index|
   case entry
   when /^-F/
     fileName = ARGV[index+1]
+  when /^-H/
+    histogramsFileName = ARGV[index+1]
   when /^-t/
     teamName = ARGV[index+1]
   when /^-D|-d|-g|-G/
@@ -29,11 +32,19 @@ if teamName.nil?
   end
 else
   if fileName.nil?
-    `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\"`
+    if histogramsFileName.nil?
+      `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\"`
+    else
+      `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\" -H #{histogramsFileName}`
+    end
     #sleep 3
     file = TFile.new("rootFiles/temp.root")
   else
-    `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\"`
+    if histogramsFileName.nil?
+      `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\"`
+    else
+      `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\" -H #{histogramsFileName}`
+    end
     #sleep 3
     file = TFile.new("rootFiles/#{fileName}")
   end
@@ -60,6 +71,12 @@ ss.each do |s|
   realLines[s] = TLine.new(lines[s].GetX1,lines[s].GetY1,lines[s].GetX2,lines[s].GetY2)
 end
 
+if !histogramsFileName.nil?
+  avgs_per_time["gameScore"] = gROOT.FindObject("avg_per_time_gameScore")
+  wavgs_per_time["gameScore"] = gROOT.FindObject("wavg_per_time_gameScore")
+  realLines["gameScore"] = realLines["rpi"]
+end
+
 can = TCanvas.new("can","",0,0,1300,700)
 can.Divide(5,2)
 
@@ -69,8 +86,6 @@ ss.each_with_index do |s,i|
   avgs_per_time[s].SetMaximum(1)
   avgs_per_time[s].SetMinimum(-30) if s == "srs"
   avgs_per_time[s].SetMaximum(30) if s == "srs"
-  avgs_per_time[s].SetMinimum(0) if s == "rpi"
-  avgs_per_time[s].SetMaximum(1) if s == "rpi"
   avgs_per_time[s].SetMarkerStyle(4)
   avgs_per_time[s].SetMarkerColor(1)
   avgs_per_time[s].SetLineColor(1)
@@ -95,6 +110,24 @@ ss.each_with_index do |s,i|
   # lines[s] = TLine.new(0,league_avgs[s],180,league_avgs[s])
   realLines[s].SetLineColor(2)
   realLines[s].Draw("same")
+end
+
+if !histogramsFileName.nil?
+  can.cd(10)
+  avgs_per_time["gameScore"].SetMinimum(0)
+  avgs_per_time["gameScore"].SetMaximum(1)
+  avgs_per_time["gameScore"].SetMarkerStyle(4)
+  avgs_per_time["gameScore"].SetMarkerColor(1)
+  avgs_per_time["gameScore"].SetLineColor(1)
+  avgs_per_time["gameScore"].SetMarkerSize(0.5)
+  avgs_per_time["gameScore"].Draw("p")
+  wavgs_per_time["gameScore"].SetMarkerStyle(8)
+  wavgs_per_time["gameScore"].SetMarkerColor(4)
+  wavgs_per_time["gameScore"].SetMarkerSize(0.5)
+  wavgs_per_time["gameScore"].Draw("psame")
+
+  realLines["gameScore"].SetLineColor(2)
+  realLines["gameScore"].Draw("same")
 end
 
 if (!teamName.nil? and fileName.nil?)
