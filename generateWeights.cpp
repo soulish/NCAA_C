@@ -7,13 +7,8 @@
 #include <boost/algorithm/string.hpp>
 #include <TFile.h>
 #include <TMinuit.h>
-#include "src/ConstantTeam5YearAverages.h"
 #include "src/ConstantTeamNeutralRatios.h"
-#include "src/ConstantTeamPointDifferentials.h"
-#include "src/ConstantTeamWinRatios.h"
 #include "src/Team.h"
-#include "src/TeamGame.h"
-#include "src/Pcts.h"
 #include "src/readTeams.h"
 #include "helpers/doubleFormatter.h"
 #include "src/ConstantSeasonInfo.h"
@@ -283,9 +278,6 @@ void fcn(int& num_par, double* grad, double& f, double pars[], int flag) {
     double value = 1;
     int wins = 0, total = 0;
     int num_events = (int) win.size();
-
-//    double norm = (1-pars[4]) / (pars[0] + pars[1] + pars[2] + pars[3]);
-//    double norm = pars[0] + pars[1] + pars[2] + pars[3];
 
     for (int i = 0; i < num_events; i++){
         value = pars[0] * oor.at(i) +
