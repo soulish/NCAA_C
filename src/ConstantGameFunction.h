@@ -26,6 +26,7 @@ public:
     std::vector<int> getKeys();
     std::vector<double> getWeights(int year);
     double predictGame(TeamWAverage *wa1, TeamWAverage *wa2, int year, std::string loc, std::string oppLoc);
+    double predictGame(TeamWAverage *wa1, int year, std::string loc, std::string oppLoc);
 
 private:
     ConstantGameFunction(){};
