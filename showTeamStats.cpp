@@ -4,17 +4,27 @@
 #include "TH1F.h"
 #include "TLine.h"
 #include <boost/algorithm/string.hpp>
+#include <TROOT.h>
 #include "src/Team.h"
 #include "src/ConstantTeam5YearAverages.h"
 #include "src/ConstantSeasonInfo.h"
+#include "src/ConstantGameFunction.h"
+#include "src/ConstantSRSadditions.h"
+#include "src/ConstantTeamNeutralRatios.h"
+#include "src/ConstantWAverageFunctions.h"
+#include "src/ConstantStandardDeviations.h"
+
+void printOptions();
 
 int main(int argc,char *argv[]){
     int c;
     int year = 0;
     std::string teamName = "", outFileName = "";
+    std::string histogramsFileName = "";
+    bool useHistogramsFile = false;
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"t:o:")) != -1){
+    while((c = getopt(argc,argv,"t:o:hH:")) != -1){
         switch(c){
             case 't':
                 teamName = optarg;
@@ -22,6 +32,13 @@ int main(int argc,char *argv[]){
             case 'o':
                 outFileName = optarg;
                 break;
+            case 'H':
+                histogramsFileName.assign(optarg);
+                useHistogramsFile = true;
+                break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -39,9 +56,32 @@ int main(int argc,char *argv[]){
     homePath = getenv("HOME");
 
     sprintf(path, "%s/cpp/NCAA_C/constants/team_5yr_averages.d", homePath);
-    ConstantTeam5YearAverages::Instance()->initialize(path);
+    ConstantTeam5YearAverages *averages = ConstantTeam5YearAverages::Instance();
+    averages->initialize(path);
+
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
-    ConstantSeasonInfo::Instance()->initialize(path);
+    ConstantSeasonInfo *seasonInfo = ConstantSeasonInfo::Instance();
+    seasonInfo->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/waverage_functions.d", homePath);
+    ConstantWAverageFunctions *functions = ConstantWAverageFunctions::Instance();
+    functions->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
+    ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
+    ratios->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/srs_additions.d", homePath);
+    ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
+    additions->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
+    gameFunction->initialize(path);
+
+    sprintf(path, "%s/cpp/NCAA_C/constants/waverage_standard_deviations.d", homePath);
+    ConstantStandardDeviations *stdDevs = ConstantStandardDeviations::Instance();
+    stdDevs->initialize(path);
 
     //read in the averages and waverages for this one team
     Team *team = new Team(teamName);
@@ -51,6 +91,20 @@ int main(int argc,char *argv[]){
     sprintf(path, "%s/cpp/NCAA_C/teams/%i/teams.%s.waverages.d",
             homePath,team->getYear(),boost::replace_all_copy(teamName," ","_").c_str());
     team->addWAverages(path);
+
+    TFile *histsFile;
+    std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
+    if (useHistogramsFile){
+        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+        histsFile = new TFile(path);
+
+        for (int y = 2007; y <= 2016; y++){
+            sprintf(path, "probs_by_year_%d", y);
+            probs_by_year.emplace(y, (TH1F*)gROOT->FindObject(path));
+            sprintf(path, "probs_err_by_year_%d", y);
+            probs_err_by_year.emplace(y, (TH1F*)gROOT->FindObject(path));
+        }
+    }
 
     //create the output ROOT file
     sprintf(path, "%s/cpp/NCAA_C/rootFiles/%s",homePath,outFileName.c_str());
@@ -72,31 +126,35 @@ int main(int argc,char *argv[]){
         sprintf(histName, "wavg_per_game_%s",(boost::replace_all_copy(s,".","").c_str()));
         wavgs_per_game.emplace(s, new TH1F(histName,s.c_str(),140,0,140));
     }
+    if (useHistogramsFile) {
+        avgs_per_time.emplace("gameScore", new TH1F("avg_per_time_gameScore", "gameScore", 140, 0, 140));
+        wavgs_per_time.emplace("gameScore", new TH1F("wavg_per_time_gameScore", "gameScore", 140, 0, 140));
+    }
 
     //create the lines that hold the league averages for each stat
-    lines.emplace("oor.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oor.p"),140,
-                                     ConstantTeam5YearAverages::Instance()->get(year,"oor.p")));
+    lines.emplace("oor.p", new TLine(0,averages->get(year,"oor.p"),140,
+                                     averages->get(year,"oor.p")));
     lines["oor.p"]->Write("oorpLine");
-    lines.emplace("dor.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oor.p"),140,
-                                     ConstantTeam5YearAverages::Instance()->get(year,"oor.p")));
+    lines.emplace("dor.p", new TLine(0,averages->get(year,"oor.p"),140,
+                                     averages->get(year,"oor.p")));
     lines["dor.p"]->Write("dorpLine");
-    lines.emplace("oefg.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oefg.p"),140,
-                                      ConstantTeam5YearAverages::Instance()->get(year,"oefg.p")));
+    lines.emplace("oefg.p", new TLine(0,averages->get(year,"oefg.p"),140,
+                                      averages->get(year,"oefg.p")));
     lines["oefg.p"]->Write("oefgpLine");
-    lines.emplace("defg.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oefg.p"),140,
-                                      ConstantTeam5YearAverages::Instance()->get(year,"oefg.p")));
+    lines.emplace("defg.p", new TLine(0,averages->get(year,"oefg.p"),140,
+                                      averages->get(year,"oefg.p")));
     lines["defg.p"]->Write("defgpLine");
-    lines.emplace("oftmr.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oftmr.p"),140,
-                                       ConstantTeam5YearAverages::Instance()->get(year,"oftmr.p")));
+    lines.emplace("oftmr.p", new TLine(0,averages->get(year,"oftmr.p"),140,
+                                       averages->get(year,"oftmr.p")));
     lines["oftmr.p"]->Write("oftmrpLine");
-    lines.emplace("dftmr.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oftmr.p"),140,
-                                       ConstantTeam5YearAverages::Instance()->get(year,"oftmr.p")));
+    lines.emplace("dftmr.p", new TLine(0,averages->get(year,"oftmr.p"),140,
+                                       averages->get(year,"oftmr.p")));
     lines["dftmr.p"]->Write("dftmrpLine");
-    lines.emplace("oto.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oto.p"),140,
-                                     ConstantTeam5YearAverages::Instance()->get(year,"oto.p")));
+    lines.emplace("oto.p", new TLine(0,averages->get(year,"oto.p"),140,
+                                     averages->get(year,"oto.p")));
     lines["oto.p"]->Write("otopLine");
-    lines.emplace("dto.p", new TLine(0,ConstantTeam5YearAverages::Instance()->get(year,"oto.p"),140,
-                                     ConstantTeam5YearAverages::Instance()->get(year,"oto.p")));
+    lines.emplace("dto.p", new TLine(0,averages->get(year,"oto.p"),140,
+                                     averages->get(year,"oto.p")));
     lines["dto.p"]->Write("dtopLine");
     lines.emplace("srs", new TLine(0,0,140,0));
     lines["srs"]->Write("srsLine");
@@ -122,8 +180,7 @@ int main(int argc,char *argv[]){
         last_waverage = team->WAverageOnDate(average.second->getDate() - dateDuration);
 
         int last_num_games = last_average->getNum_games();
-        indDuration = average.second->getDate() -
-                      ConstantSeasonInfo::Instance()->get(team->getYear(),"season start");
+        indDuration = average.second->getDate() - seasonInfo->get(team->getYear(),"season start");
         int ind = (int)indDuration.days();
 
         //cycle through the strings
@@ -172,10 +229,42 @@ int main(int argc,char *argv[]){
                 wavgs_per_time[s]->SetBinContent(ind,waverage->getRpi());
             }
         }
+        if (useHistogramsFile) {
+            double gameScore = gameFunction->predictGame(waverage, team->getYear(), "neutral", "neutral");
+            double gameScorePct, gameScorePct_err;
+            if (gameScore >= 3) {
+                gameScorePct = 1;
+                gameScorePct_err = 1;
+            }
+            else if (gameScore <= -3) {
+                gameScorePct = 0;
+                gameScorePct_err = 1;
+            }
+            else {
+                gameScorePct = probs_by_year[team->getYear()]->GetBinContent((gameScore + 3) * 1600 / 6.0);
+                gameScorePct_err = probs_err_by_year[team->getYear()]->
+                        GetBinContent((gameScore + 3) * 1600 / 6.0);
+            }
+            avgs_per_time["gameScore"]->SetBinContent(ind, gameScorePct);
+            avgs_per_time["gameScore"]->SetBinError(ind, gameScorePct_err);
+            wavgs_per_time["gameScore"]->SetBinContent(ind, gameScorePct);
+            wavgs_per_time["gameScore"]->SetBinError(ind, gameScorePct_err);
+        }
     }
 
     outFile.Write();
     outFile.Close();
 
     return 0;
+}
+
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "Usage options" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-t teamname (no default)[Required]" << std::endl;
+    std::cout << "\t-o outFileName (no default)[Required]" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: showTeamStats -t \"2015 north carolina\" -o \"2015unc.root\"" << std::endl;
+    std::cout << std::endl;
 }
