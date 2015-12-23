@@ -135,9 +135,9 @@ int main(int argc,char *argv[]) {
 
 void printOptions(){
     std::cout << std::endl;
-    std::cout << "Usage options:" << std::endl;
+    std::cout << "generateWeightedAverages Usage options:" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "\t-y year to generate weighted averages for (no default)[Required]" << std::endl;
+    std::cout << "\t-y (int) year to generate weighted averages for (no default)[Required]" << std::endl;
     std::cout << "\t-o overwrite currently existing files in directory? (false)[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
