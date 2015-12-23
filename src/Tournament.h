@@ -6,6 +6,7 @@
 #define NCAA_C_TOURNAMENT_H
 
 #include <iostream>
+#include <array>
 #include "TournamentRegion.h"
 #include "Team.h"
 #include "ConstantSeasonInfo.h"
@@ -15,8 +16,9 @@ class Tournament {
 public:
     Tournament(int _year);
     void addTeam(int region, std::string teamName, int seed);
-    void play(TH1F* hist, bool verbose = true, std::string chosenTeam = "");
     void readTournamentInfo(std::string);
+    void play(TH1F* hist, bool verbose = true, std::string chosenTeam = "");
+    void calculateTotalPercentages(TH1F* hist);
 
 private:
     const int year;
@@ -27,6 +29,7 @@ private:
     std::array<std::string, 2> championshipGameTeams;
     std::string champion;
     double championPct;
+    std::unordered_map<std::string, std::array<double,7> *> pcts_all;
 };
 
 
