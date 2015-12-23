@@ -15,12 +15,14 @@
 #include "helpers/doubleFormatter.h"
 #include "src/ConstantSeasonInfo.h"
 
+void printOptions();
+
 int main(int argc,char *argv[]) {
     int c;
     int year = 0;
     bool overWrite = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:o")) != -1){
+    while((c = getopt(argc,argv,"y:oh")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
@@ -28,6 +30,9 @@ int main(int argc,char *argv[]) {
             case 'o':
                 overWrite = true;
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -36,6 +41,7 @@ int main(int argc,char *argv[]) {
 
     if (year == 0){
         std::cout << "you must set the year" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -125,4 +131,25 @@ int main(int argc,char *argv[]) {
 
 
     return 0;
+}
+
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y year to generate weighted averages for (no default)[Required]" << std::endl;
+    std::cout << "\t-o overwrite currently existing files in directory? (false)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateWeightedAverages -y 2015" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program will generate the weighted averages for every team in a given year." << std::endl;
+    std::cout << "It requires you to specify the year.  Then it searches the teams/YEAR/ directory" << std::endl;
+    std::cout << "to find all of the team's game information.  It also reads in the averages" << std::endl;
+    std::cout << "and neutral ratios files found in the constants directory.  It outputs two files" << std::endl;
+    std::cout << "for each team, an (unweighted) averages file and a weighted averages file." << std::endl;
+    std::cout << "If you have already generated some of the averages files in the year's directory," << std::endl;
+    std::cout << "you may choose whether or not to overwrite them with the -o switch." << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << std::endl;
 }
