@@ -26,9 +26,10 @@ int main(int argc,char *argv[]) {
     int year = 0;
     std::string histogramsFileName = "";
     bool useHistogramsFile = false;
+    bool calcTotalPercentages = false;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:H:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:H:th")) != -1) {
         switch (c) {
             case 'y':
                 year = atoi(optarg);
@@ -40,6 +41,9 @@ int main(int argc,char *argv[]) {
             case 'h':
                 printOptions();
                 return 0;
+            case 't':
+                calcTotalPercentages = true;
+                break;
             default:
                 std::cout << "You provided an unknown option.  Please try again." << std::endl;
                 printOptions();
@@ -108,7 +112,10 @@ int main(int argc,char *argv[]) {
     Tournament tournament(year);
     sprintf(path, "%s/cpp/NCAA_C/tournamentInfo/tournament_%d.d", homePath, year);
     tournament.readTournamentInfo(path);
-    tournament.play(probs_by_year[year]);
+    if (calcTotalPercentages)
+        tournament.calculateTotalPercentages(probs_by_year[year]);
+    else
+        tournament.play(probs_by_year[year]);
 
     return 0;
 }
@@ -119,11 +126,14 @@ void printOptions(){
     std::cout << "" << std::endl;
     std::cout << "\t-y year of the tournament to simulate (no default)[Required]" << std::endl;
     std::cout << "\t-H histogramsFileName (no default)[Optional]" << std::endl;
+    std::cout << "\t-t [Optional]" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: $CLION/tournamentSimulation -y 2015 -H rootFiles/gameFunctionHistograms.root" << std::endl;
     std::cout << std::endl;
     std::cout << "This program will simulate the NCAA tournament for a given year (must be" << std::endl;
     std::cout << "between 2007 and 2015 (currently)), using a histograms file to calculate" << std::endl;
     std::cout << "the winning percentages.  The results will be output on the screen." << std::endl;
+    std::cout << "The -t option allows the user to calculate the odds of each team reaching" << std::endl;
+    std::cout << "each round of the tournament as well as winning the whole tournament." << std::endl;
     std::cout << std::endl;
 }
