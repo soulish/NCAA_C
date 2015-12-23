@@ -14,14 +14,15 @@
 #include "helpers/doubleFormatter.h"
 
 std::vector<double> calcSRS(std::unordered_map<std::string, double>*, std::string, boost::gregorian::date);
+void printOptions();
 
 int main(int argc,char *argv[]){
     int c;
-    int year = 2015, numIterations = 3;
+    int year = 2015, numIterations = 100;
     bool verbose = false, writeOutput = false;
     bool startFromOriginalSRS = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:vn:oO")) != -1){
+    while((c = getopt(argc,argv,"y:vn:oOh")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
@@ -38,6 +39,9 @@ int main(int argc,char *argv[]){
             case 'O':
                 startFromOriginalSRS = true;
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -46,11 +50,13 @@ int main(int argc,char *argv[]){
 
     if (year == 0){
         std::cout << "you must set the year" << std::endl;
+        printOptions();
         return 0;
     }
 
     if (numIterations == 0){
         std::cout << "you must set the number of iterations" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -248,3 +254,27 @@ std::vector<double> calcSRS(std::unordered_map<std::string, double>* srsHash, st
     return result;
 }
 
+void printOptions(){// y:vn:oO
+    std::cout << std::endl;
+    std::cout << "generateSRS Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y (int) year to iterate SRS for (no default)[Required]" << std::endl;
+    std::cout << "\t-n (int) number of iterations to do (default: 100)[Optional]" << std::endl;
+    std::cout << "\t-o write output to file, overwriting current file (false)[Optional]" << std::endl;
+    std::cout << "\t-O start calculations for original SRS (false)[Optional]" << std::endl;
+    std::cout << "\t-v verbose (false)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateSRS -y 2015 -n 100 -o -O -v" << std::endl;
+    std::cout << std::endl;
+    std::cout << "The program iterates over the SRS values to come up with the final values." << std::endl;
+    std::cout << "It processes one year at a time.  It defaults to iterate 100 times.  You" << std::endl;
+    std::cout << "may choose to write the output to file with the -o switch, or print the " << std::endl;
+    std::cout << "results for three different teams at three different dates throughout the" << std::endl;
+    std::cout << "season at each iteration.  This latter option is so that you can see whether" << std::endl;
+    std::cout << "or not the results are converging.  Since you may wish start this process" << std::endl;
+    std::cout << "over, due to changes in a few weighted average files, or a change to the" << std::endl;
+    std::cout << "calculation, without having to start from the current iteration, it is" << std::endl;
+    std::cout << "possible to start over using the original SRS values using the -O switch." << std::endl;
+    std::cout << std::endl;
+}
