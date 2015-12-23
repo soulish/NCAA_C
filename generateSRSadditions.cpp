@@ -22,6 +22,7 @@ std::vector<double> srs;
 
 void fcn(int& num_par, double* grad, double& f, double pars[], int flag);
 std::vector<double> run_fit(double parSRS);
+void printOptions();
 
 int main(int argc,char *argv[]) {
     int c;
@@ -33,7 +34,7 @@ int main(int argc,char *argv[]) {
     int outYear = 0;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Y:i:o:")) != -1) {
+    while ((c = getopt(argc, argv, "y:Y:i:o:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -49,6 +50,9 @@ int main(int argc,char *argv[]) {
                 outFileName.assign(optarg);
                 writeOutput = true;
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -59,10 +63,12 @@ int main(int argc,char *argv[]) {
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
+        printOptions();
         return 0;
     }
     if (outYear == 0) {
         std::cout << "You must set the output year using the -Y switch" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -208,4 +214,25 @@ std::vector<double> run_fit(double parSRS){
     ret_ary.push_back(fmin);
 
     return ret_ary;
+}
+
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "generateSRSadditions Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y (int,int,...) comma-separated list of input years (no default)[Required]" << std::endl;
+    std::cout << "\t-Y (int) year to use for output (no default)[Required]" << std::endl;
+    std::cout << "\t-i (int) number of iterations of the fit to attempt (default: 1)[Optional]" << std::endl;
+    std::cout << "\t-o (string) write the output to a file with specified name in constants directory (no default)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateSRSadditions -y 2011,2012,2013,2014 -Y 2015 -i 500 -o srs_addition.d" << std::endl;
+    std::cout << std::endl;
+    std::cout << "The program calculates the number of points to add to a team's SRS when playing" << std::endl;
+    std::cout << "at home.  It does so for a given outYear (specified with the -Y switch), by" << std::endl;
+    std::cout << "analyzing the years sepcified as the input years using the -y switch and a" << std::endl;
+    std::cout << "comma-separated list of years.  The output is always written to the screen" << std::endl;
+    std::cout << "but can be written to a file, specified with the -o switch, which is created" << std::endl;
+    std::cout << "in the constants directory." << std::endl;
+    std::cout << std::endl;
 }
