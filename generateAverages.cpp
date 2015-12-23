@@ -20,6 +20,8 @@
 #include "src/readTeams.h"
 #include "helpers/doubleFormatter.h"
 
+void printOptions();
+
 int main(int argc,char *argv[]) {
     int c, outYear = 0;
     std::string inYears, outFileString;
@@ -27,7 +29,7 @@ int main(int argc,char *argv[]) {
     std::vector<std::string> outFileNames;
     bool verbose = false, writeOutput = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:Y:vo:")) != -1){
+    while((c = getopt(argc,argv,"y:Y:vo:h")) != -1){
         switch(c){
             case 'Y':
                 outYear = atoi(optarg);
@@ -46,6 +48,9 @@ int main(int argc,char *argv[]) {
                 boost::split(outFileNames, outFileString, boost::is_any_of(","));
                 writeOutput = true;
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -56,14 +61,17 @@ int main(int argc,char *argv[]) {
     if (years.empty()){
         std::cout << "You must select the years to use for the averages with the -y switch " <<
                      "and a comma-separated list." << std::endl;
+        printOptions();
         return 0;
     }
     if (outYear == 0){
         std::cout << "You must set the output year using the -Y switch" << std::endl;
+        printOptions();
         return 0;
     }
     if (writeOutput && outFileNames.size() != 4){
         std::cout << "You must select 4 names for the files put in a comma-separated list" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -338,3 +346,31 @@ int main(int argc,char *argv[]) {
     }
     return 0;
 }
+
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "generateAverages Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y comma-separated list of years (no default)[Required]" << std::endl;
+    std::cout << "\t-Y year to output (no default)[Required]" << std::endl;
+    std::cout << "\t-o comma-separated list of out file names, see below (no default)[Required]" << std::endl;
+    std::cout << "\t-v verbose (false)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateAverages -y 2011,2012,2013,2014,2015 -Y 2016 " << std::endl;
+    std::cout << "       -o team_5yr_averages.dd,team_neutral_ratios.dd,team_point_differentials.dd,team_win_ratios.dd" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This file is for generating the averages for each of the stats over all teams" << std::endl;
+    std::cout << "in a year or a specified set of years.  It will yield the average of the number of" << std::endl;
+    std::cout << "successes (e.g. made field goals), attempts (e.g. attempted field goals), and" << std::endl;
+    std::cout << "percentage for each of the main stats." << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Then, it will also provide the ratio of these averages in home, away, and neutral" << std::endl;
+    std::cout << "games compared to all games (i.e. the sum of all home, neutral, and away games)." << std::endl;
+    std::cout << "This ratio is used when weighting the stats to come up with opponent-adjusted stats." << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "You must provide the name of four files to hold the average, neutral ratios," << std::endl;
+    std::cout << "point differentials, and win ratios.  They will be created in the constants directory." << std::endl;
+    std::cout << std::endl;
+}
+
