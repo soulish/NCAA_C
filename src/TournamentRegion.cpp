@@ -57,7 +57,7 @@ void TournamentRegion::playInGames(TH1F *hist, bool verbose, std::string chosenT
                 (teamSeed.second->at(1) != chosenTeam && gameScore >= 0)){
 
                 if (verbose) {
-                    printf("%-15s %2d %-30s vs %2d %-30s  =>  %2d %-30s\t% .3f\t%.3f\n",
+                    printf("%-15s (%2d) %-30s vs (%2d) %-30s  =>  (%2d) %-30s\t% .3f\t%.3f\n",
                            "Play in Game:",teams[teamSeed.second->at(0)], teamSeed.second->at(0).c_str(),
                            teams[teamSeed.second->at(1)], teamSeed.second->at(1).c_str(),
                            teams[teamSeed.second->at(0)], teamSeed.second->at(0).c_str(),
@@ -71,7 +71,7 @@ void TournamentRegion::playInGames(TH1F *hist, bool verbose, std::string chosenT
                      (teamSeed.second->at(0) != chosenTeam && gameScore < 0)){
 
                 if (verbose) {
-                    printf("%-15s %2d %-30s vs %2d %-30s  =>  %2d %-30s\t% .3f\t%.3f\n",
+                    printf("%-15s (%2d) %-30s vs (%2d) %-30s  =>  (%2d) %-30s % .3f\t%.3f\n",
                            "Play in Game:",teams[teamSeed.second->at(0)], teamSeed.second->at(0).c_str(),
                            teams[teamSeed.second->at(1)], teamSeed.second->at(1).c_str(),
                            teams[teamSeed.second->at(1)], teamSeed.second->at(1).c_str(),
@@ -136,7 +136,7 @@ void TournamentRegion::firstRound(TH1F *hist, bool verbose, std::string chosenTe
         pcts[teamsBySeed[matchups[i]->at(1)]] *= (1 - gamePct);
 
         if (verbose){
-            printf("%-15s %2d %-30s vs %2d %-30s  =>  %2d %-30s\t% .3f\t%.3f\n",
+            printf("%-15s (%2d) %-30s vs (%2d) %-30s  =>  (%2d) %-30s % .3f\t%.3f\n",
                    "Round of 64:",teams[teamsBySeed[matchups[i]->at(0)]], teamsBySeed[matchups[i]->at(0)].c_str(),
                    teams[teamsBySeed[matchups[i]->at(1)]], teamsBySeed[matchups[i]->at(1)].c_str(),
                    teams[firstRoundWinners.back()], firstRoundWinners.back().c_str(),
@@ -180,7 +180,7 @@ void TournamentRegion::secondRound(TH1F *hist, bool verbose, std::string chosenT
         pcts[firstRoundWinners[matchups[i]->at(1)]] *= (1 - gamePct);
 
         if (verbose){
-            printf("%-15s %2d %-30s vs %2d %-30s  =>  %2d %-30s\t% .3f\t%.3f\n",
+            printf("%-15s (%2d) %-30s vs (%2d) %-30s  =>  (%2d) %-30s % .3f\t%.3f\n",
                    "Round of 32:",teams[firstRoundWinners[matchups[i]->at(0)]], firstRoundWinners[matchups[i]->at(0)].c_str(),
                    teams[firstRoundWinners[matchups[i]->at(1)]], firstRoundWinners[matchups[i]->at(1)].c_str(),
                    teams[secondRoundWinners.back()], secondRoundWinners.back().c_str(),
@@ -220,7 +220,7 @@ void TournamentRegion::thirdRound(TH1F *hist, bool verbose, std::string chosenTe
         pcts[secondRoundWinners[matchups[i]->at(1)]] *= (1 - gamePct);
 
         if (verbose){
-            printf("%-15s %2d %-30s vs %2d %-30s  =>  %2d %-30s\t% .3f\t%.3f\n",
+            printf("%-15s (%2d) %-30s vs (%2d) %-30s  =>  (%2d) %-30s % .3f\t%.3f\n",
                    "Sweet Sixteen:",teams[secondRoundWinners[matchups[i]->at(0)]], secondRoundWinners[matchups[i]->at(0)].c_str(),
                    teams[secondRoundWinners[matchups[i]->at(1)]], secondRoundWinners[matchups[i]->at(1)].c_str(),
                    teams[thirdRoundWinners.back()], thirdRoundWinners.back().c_str(),
@@ -251,7 +251,7 @@ void TournamentRegion::fourthRound(TH1F *hist, bool verbose, std::string chosenT
     pcts[thirdRoundWinners[1]] *= (1 - gamePct);
 
     if (verbose){
-        printf("%-15s %2d %-30s vs %2d %-30s  =>  %2d %-30s\t% .3f\t%.3f\n",
+        printf("%-15s (%2d) %-30s vs (%2d) %-30s  =>  (%2d) %-30s % .3f\t%.3f\n",
                "Elite Eight:",teams[thirdRoundWinners[0]], thirdRoundWinners[0].c_str(),
                teams[thirdRoundWinners[1]], thirdRoundWinners[1].c_str(),
                teams[regionChamp], regionChamp.c_str(),
@@ -274,3 +274,281 @@ void TournamentRegion::reset() {
     regionChamp = "";
 }
 
+//  #This methods are used to find the likelihood for each team to reach each round of the tournament
+//  #It is called by playTotalPercentages in Tournament.  It figures out that percentage by taking
+//  #the weighted average of the possibility they could beat the team they are playing, weighted by the probability
+//  #that they would reach that game.  For the first round, this is mostly academic (except for games involving play-in
+//  #game winners), but for other rounds, it involves playing each possible opponent, and weighing the probabilities.
+//  #
+//  #Note: I could have set this up so that each game is only played once (i.e. only play A vs B, skipping B vs A),
+//  #but this already runs extrememly quickly, so it's not really necessary.
+//  #
+//  #Note: In each round, after the percentages have been calculated, they are normalized.  This is done
+//  #because pct_A != 1 - pct_B exactly for each game.  They are very close, but generally not perfect.
+//  #so this fixes that.  generally the correction is very small.
+//  #
+//  #
+//  #In each method, opps lists all the possible seeds that each seed could play in that round.  So the second seed
+//  #must face the number 15 seed in round 1, then the 7 or 10 seed in round 2, then the 6, 11, 3 or 14 seeds in the
+//  #third round, etc.  Seeds that involve play-in games (11, 12, 16) include both +/- versions of their seed
+//  #because I call the loser of the play-in game -seed for convenience.
+void TournamentRegion::firstRoundTotalPercentages(TH1F *hist) {
+    std::unordered_map<int, std::string> teamsBySeed;
+    for (auto &t : teams)
+        teamsBySeed.emplace(t.second,t.first);
+
+    //this array maps the seed onto its possible opponents, i.e. 1 plays 16, 2 plays 15, etc.
+    //the few entries with negative values are due to possible play-in games
+    std::array<std::vector<int>*,17> opps;
+    for (int i = 0; i < 17; i++)
+        opps[i] = new std::vector<int>();
+    opps[0]->push_back(0);
+    opps[1]->push_back(16);    opps[1]->push_back(-16);
+    opps[2]->push_back(15);
+    opps[3]->push_back(14);
+    opps[4]->push_back(13);
+    opps[5]->push_back(12);    opps[5]->push_back(-12);
+    opps[6]->push_back(11);    opps[6]->push_back(-11);
+    opps[7]->push_back(10);
+    opps[8]->push_back(9);
+    opps[9]->push_back(8);
+    opps[10]->push_back(7);
+    opps[11]->push_back(6);
+    opps[12]->push_back(5);
+    opps[13]->push_back(4);
+    opps[14]->push_back(3);
+    opps[15]->push_back(2);
+    opps[16]->push_back(1);
+
+    double s = 0;
+
+    for (int &seed : seeds){
+        std::vector<int> *oppSeeds = opps[abs(seed)];
+        for (int &oppSeed : *oppSeeds){
+            if (std::find(std::begin(seeds), std::end(seeds), oppSeed) == seeds.end()) continue;
+
+            Team *teamA = Team::findTeam(teamsBySeed[seed]);
+            Team *teamB = Team::findTeam(teamsBySeed[oppSeed]);
+
+            TeamWAverage *waA = teamA->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+            TeamWAverage *waB = teamB->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+
+            double gameScore = ConstantGameFunction::Instance()->predictGame(waA,waB,year,"neutral","neutral");
+            double gamePct = hist->GetBinContent((gameScore+3)*1600/6.0);
+
+            pcts_all[teamsBySeed[seed]]->at(1) += pcts_all[teamsBySeed[seed]]->at(0) *
+                                                  pcts_all[teamsBySeed[oppSeed]]->at(0) * gamePct;
+            s += pcts_all[teamsBySeed[seed]]->at(0) * pcts_all[teamsBySeed[oppSeed]]->at(0) * gamePct;
+        }
+    }
+
+    //We renormalize here because it sometimes happens that, due to rounding issues, the sum is not
+    //exactly 1 in each game.  Here we multiply each pct by 8 / s, because the pcts should add up to
+    //1 for each game, and there are 8 games total.
+    double sum = 0; //this variable is really just a check.  Output if you want to ensure normalization
+    for (int &seed : seeds) {
+        pcts_all[teamsBySeed[seed]]->at(1) = pcts_all[teamsBySeed[seed]]->at(1) * 8 / s;
+        sum += pcts_all[teamsBySeed[seed]]->at(1);
+    }
+}
+
+void TournamentRegion::secondRoundTotalPercentages(TH1F *hist) {
+    std::unordered_map<int, std::string> teamsBySeed;
+    for (auto &t : teams)
+        teamsBySeed.emplace(t.second,t.first);
+
+    //this array maps the seed onto its possible opponents in the second round,
+    //i.e. 1 can play 8 or 9, 2 can play 7 or 10.
+    //the few entries with negative values are due to possible play-in games
+    std::array<std::vector<int>*,17> opps;
+    for (int i = 0; i < 17; i++)
+        opps[i] = new std::vector<int>();
+    opps[0]->push_back(0);
+    opps[1]->push_back(8);     opps[1]->push_back(9);
+    opps[2]->push_back(7);     opps[2]->push_back(10);
+    opps[3]->push_back(6);     opps[3]->push_back(11);     opps[3]->push_back(-11);
+    opps[4]->push_back(5);     opps[4]->push_back(12);     opps[4]->push_back(-12);
+    opps[5]->push_back(4);     opps[5]->push_back(13);
+    opps[6]->push_back(3);     opps[6]->push_back(14);
+    opps[7]->push_back(2);     opps[7]->push_back(15);
+    opps[8]->push_back(1);     opps[8]->push_back(16);     opps[8]->push_back(-16);
+    opps[9] = opps[8];//->push_back(1);     opps[9]->push_back(16);     opps[9]->push_back(-16);
+    opps[10] = opps[7];//->push_back(2);    opps[10]->push_back(15);
+    opps[11] = opps[6];//->push_back(3);    opps[11]->push_back(14);
+    opps[12] = opps[5];//->push_back(4);    opps[12]->push_back(13);
+    opps[13] = opps[4];//->push_back(5);    opps[13]->push_back(12);    opps[13]->push_back(-12);
+    opps[14] = opps[3];//->push_back(6);    opps[14]->push_back(11);    opps[14]->push_back(-11);
+    opps[15] = opps[2];//->push_back(7);    opps[15]->push_back(10);
+    opps[16] = opps[1];//->push_back(8);    opps[16]->push_back(9);
+
+    double s = 0;
+
+    for (int &seed : seeds){
+        std::vector<int> *oppSeeds = opps[abs(seed)];
+        for (int &oppSeed : *oppSeeds){
+            if (std::find(std::begin(seeds), std::end(seeds), oppSeed) == seeds.end()) continue;
+
+            Team *teamA = Team::findTeam(teamsBySeed[seed]);
+            Team *teamB = Team::findTeam(teamsBySeed[oppSeed]);
+
+            TeamWAverage *waA = teamA->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+            TeamWAverage *waB = teamB->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+
+            double gameScore = ConstantGameFunction::Instance()->predictGame(waA,waB,year,"neutral","neutral");
+            double gamePct = hist->GetBinContent((gameScore+3)*1600/6.0);
+
+            pcts_all[teamsBySeed[seed]]->at(2) += pcts_all[teamsBySeed[seed]]->at(1) *
+                                                  pcts_all[teamsBySeed[oppSeed]]->at(1) * gamePct;
+            s += pcts_all[teamsBySeed[seed]]->at(1) * pcts_all[teamsBySeed[oppSeed]]->at(1) * gamePct;
+        }
+    }
+
+    //We renormalize here because it sometimes happens that, due to rounding issues, the sum is not
+    //exactly 1 in each game.  Here we multiply each pct by 4 / s, because the pcts should add up to
+    //1 for each game, and there are 4 games total in this round.
+    double sum = 0; //this variable is really just a check.  Output if you want to ensure normalization
+    for (int &seed : seeds) {
+        pcts_all[teamsBySeed[seed]]->at(2) = pcts_all[teamsBySeed[seed]]->at(2) * 4/s;
+        sum += pcts_all[teamsBySeed[seed]]->at(2);
+    }
+}
+
+void TournamentRegion::thirdRoundTotalPercentages(TH1F *hist) {
+    std::unordered_map<int, std::string> teamsBySeed;
+    for (auto &t : teams)
+        teamsBySeed.emplace(t.second,t.first);
+
+    //this array maps the seed onto its possible opponents in the third round,
+    //i.e. 1 can play 5, 12 (either of the play-in teams at 12), 4, or 13.
+    //the few entries with negative values are due to possible play-in games
+    std::array<std::vector<int>*,17> opps;
+    for (int i = 0; i < 17; i++)
+        opps[i] = new std::vector<int>();
+    opps[0]->push_back(0);
+    opps[1]->push_back(5);     opps[1]->push_back(12);      opps[1]->push_back(-12);
+    opps[1]->push_back(4);     opps[1]->push_back(13);
+    opps[2]->push_back(6);     opps[2]->push_back(11);     opps[2]->push_back(-11);
+    opps[2]->push_back(3);     opps[2]->push_back(14);
+    opps[3]->push_back(7);     opps[3]->push_back(10);     opps[3]->push_back(2);     opps[3]->push_back(15);
+    opps[4]->push_back(1);     opps[4]->push_back(16);     opps[4]->push_back(-16);
+    opps[4]->push_back(8);     opps[4]->push_back(9);
+    opps[5] = opps[4];
+    opps[6] = opps[3];
+    opps[7] = opps[2];
+    opps[8] = opps[1];
+    opps[9] = opps[1];
+    opps[10] = opps[2];
+    opps[11] = opps[3];
+    opps[12] = opps[4];
+    opps[13] = opps[4];
+    opps[14] = opps[3];
+    opps[15] = opps[2];
+    opps[16] = opps[1];
+
+    double s = 0;
+
+    for (int &seed : seeds){
+        std::vector<int> *oppSeeds = opps[abs(seed)];
+        for (int &oppSeed : *oppSeeds){
+            if (std::find(std::begin(seeds), std::end(seeds), oppSeed) == seeds.end()) continue;
+
+            Team *teamA = Team::findTeam(teamsBySeed[seed]);
+            Team *teamB = Team::findTeam(teamsBySeed[oppSeed]);
+
+            TeamWAverage *waA = teamA->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+            TeamWAverage *waB = teamB->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+
+            double gameScore = ConstantGameFunction::Instance()->predictGame(waA,waB,year,"neutral","neutral");
+            double gamePct = hist->GetBinContent((gameScore+3)*1600/6.0);
+
+            pcts_all[teamsBySeed[seed]]->at(3) += pcts_all[teamsBySeed[seed]]->at(2) *
+                                                  pcts_all[teamsBySeed[oppSeed]]->at(2) * gamePct;
+            s += pcts_all[teamsBySeed[seed]]->at(2) * pcts_all[teamsBySeed[oppSeed]]->at(2) * gamePct;
+        }
+    }
+
+    //We renormalize here because it sometimes happens that, due to rounding issues, the sum is not
+    //exactly 1 in each game.  Here we multiply each pct by 2 / s, because the pcts should add up to
+    //1 for each game, and there are 2 games total in this round.
+    double sum = 0; //this variable is really just a check.  Output if you want to ensure normalization
+    for (int &seed : seeds) {
+        pcts_all[teamsBySeed[seed]]->at(3) = pcts_all[teamsBySeed[seed]]->at(3) * 2/s;
+        sum += pcts_all[teamsBySeed[seed]]->at(3);
+    }
+}
+
+void TournamentRegion::fourthRoundTotalPercentages(TH1F *hist) {
+    std::unordered_map<int, std::string> teamsBySeed;
+    for (auto &t : teams)
+        teamsBySeed.emplace(t.second,t.first);
+
+    //this array maps the seed onto its possible opponents in the fourth round,
+    //e.g. 1 can play 2, 3, 6, 7, 10, 11, (or the other 11), 14, or 15.
+    //the few entries with negative values are due to possible play-in games
+    std::array<std::vector<int>*,17> opps;
+    for (int i = 0; i < 17; i++)
+        opps[i] = new std::vector<int>();
+    opps[0]->push_back(0);
+    opps[1]->push_back(2);     opps[1]->push_back(3);      opps[1]->push_back(6);
+    opps[1]->push_back(7);     opps[1]->push_back(10);     opps[1]->push_back(11);
+    opps[1]->push_back(-11);   opps[1]->push_back(14);     opps[1]->push_back(15);
+
+    opps[2]->push_back(1);     opps[2]->push_back(4);      opps[2]->push_back(5);
+    opps[2]->push_back(8);     opps[2]->push_back(9);;     opps[2]->push_back(12);
+    opps[2]->push_back(-12);   opps[2]->push_back(13);
+    opps[2]->push_back(16);    opps[2]->push_back(-16);
+
+    opps[3] = opps[2];
+    opps[4] = opps[1];
+    opps[5] = opps[4];
+    opps[6] = opps[2];
+    opps[7] = opps[2];
+    opps[8] = opps[1];
+    opps[9] = opps[1];
+    opps[10] = opps[2];
+    opps[11] = opps[2];
+    opps[12] = opps[1];
+    opps[13] = opps[1];
+    opps[14] = opps[2];
+    opps[15] = opps[2];
+    opps[16] = opps[1];
+
+    double s = 0;
+
+    for (int &seed : seeds){
+        std::vector<int> *oppSeeds = opps[abs(seed)];
+        for (int &oppSeed : *oppSeeds){
+            if (std::find(std::begin(seeds), std::end(seeds), oppSeed) == seeds.end()) continue;
+
+            Team *teamA = Team::findTeam(teamsBySeed[seed]);
+            Team *teamB = Team::findTeam(teamsBySeed[oppSeed]);
+
+            TeamWAverage *waA = teamA->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+            TeamWAverage *waB = teamB->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
+
+            double gameScore = ConstantGameFunction::Instance()->predictGame(waA,waB,year,"neutral","neutral");
+            double gamePct = hist->GetBinContent((gameScore+3)*1600/6.0);
+
+            pcts_all[teamsBySeed[seed]]->at(4) += pcts_all[teamsBySeed[seed]]->at(3) *
+                                                  pcts_all[teamsBySeed[oppSeed]]->at(3) * gamePct;
+            s += pcts_all[teamsBySeed[seed]]->at(3) * pcts_all[teamsBySeed[oppSeed]]->at(3) * gamePct;
+        }
+    }
+
+    //We renormalize here because it sometimes happens that, due to rounding issues, the sum is not
+    //exactly 1 in each game.  Here we multiply each pct by 1 / s, because the pcts should add up to
+    //1 for each game, and there is only 1 game in this round
+    double sum = 0; //this variable is really just a check.  Output if you want to ensure normalization
+    for (int &seed : seeds) {
+        pcts_all[teamsBySeed[seed]]->at(4) = pcts_all[teamsBySeed[seed]]->at(4) * 1/s;
+        sum += pcts_all[teamsBySeed[seed]]->at(4);
+    }
+}
+
+std::unordered_map<int, std::string> TournamentRegion::getTeamsBySeed() {
+    std::unordered_map<int, std::string> teamsBySeed;
+    for (auto &t : teams)
+        teamsBySeed.emplace(t.second,t.first);
+
+    return teamsBySeed;
+}

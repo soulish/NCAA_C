@@ -25,10 +25,16 @@ public:
     void thirdRound(TH1F* hist, bool verbose = true, std::string chosenTeam = "");
     void fourthRound(TH1F* hist, bool verbose = true, std::string chosenTeam = "");
     void reset();
+    void firstRoundTotalPercentages(TH1F* hist);
+    void secondRoundTotalPercentages(TH1F* hist);
+    void thirdRoundTotalPercentages(TH1F* hist);
+    void fourthRoundTotalPercentages(TH1F* hist);
 
     //getters
     std::string getRegionChamp() { return regionChamp; }
     double getPct(std::string teamName) { return pcts[teamName]; }
+    std::unordered_map<std::string, std::array<double,5> *> getPctsAll() { return pcts_all; }
+    std::unordered_map<int,std::string> getTeamsBySeed();
 
 private:
     const int year;
