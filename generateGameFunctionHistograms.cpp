@@ -248,12 +248,12 @@ void printOptions(){
     std::cout << "\t-s (double) SRS value (default: \"free\")[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: $CLION/generateGameFunctionHistograms -y 2007,2008,2009,2010,2011,2012,2013,2014,2015" << std::endl;
+    std::cout << "Ex: $CLION/generateGameFunctionHistograms -y 2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015" << std::endl;
     std::cout << "          -s 0.5 -o gameFunctionHistograms.0.5.root" << std::endl;
     std::cout << std::endl;
     std::cout << "This program generates the histograms which are used to determine the" << std::endl;
     std::cout << "likely winning percentage of a team based on their game score.  It requires" << std::endl;
-    std::cout << "all of the years for which the game score function weights have been defined" << std::endl;
+    std::cout << "all of the years for which standard deviations have been defined" << std::endl;
     std::cout << "and the name of the output ROOT file, which will be created in the " << std::endl;
     std::cout << "rootFiles/ directory." << std::endl;
     std::cout << std::endl;
