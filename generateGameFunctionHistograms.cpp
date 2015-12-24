@@ -24,7 +24,7 @@ int main(int argc,char *argv[]) {
     std::string outFileName = "";
     std::vector<std::string> years;
     std::string inYears = "";
-    std::string srsValue = "";
+    std::string srsValue = "free";
     /*____________________________Parse Command Line___________________________*/
     while ((c = getopt(argc, argv, "y:o:s:h")) != -1) {
         switch (c) {
@@ -84,10 +84,7 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    if (srsValue == "")
-        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
-    else
-        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -248,7 +245,7 @@ void printOptions(){
     std::cout << "" << std::endl;
     std::cout << "\t-y (int) comma-separated list of intput years (no default)[Required]" << std::endl;
     std::cout << "\t-o (string) output ROOT file name created in rootFiles directory (no default)[Required]" << std::endl;
-    std::cout << "\t-s (double) SRS value (no default)[Optional]" << std::endl;
+    std::cout << "\t-s (double) SRS value (default: \"free\")[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: $CLION/generateGameFunctionHistograms -y 2007,2008,2009,2010,2011,2012,2013,2014,2015" << std::endl;
