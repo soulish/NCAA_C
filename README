@@ -206,22 +206,138 @@ ConstantGameFunction - containing the functions used to predict a winner
 The Programs
 ################
 
-generateAverages
-generateWeightedAverages.cpp
-calculateSRS.cpp
-generateSRSadditions.cpp
-generateWAverageFunctions.cpp
-generateStandardDeviations.cpp
-generateWeights.cpp
-generateWeightsFixedSRS.cpp
-generateGameFunctionHistograms.cpp
-checkGamePredictions.cpp
-tournamentSimulation.cpp
+generateAverages:
+This file is for generating the averages for each of the stats over all teams
+in a year or a specified set of years.  It will yield the average of the 
+number of successes (e.g. made field goals), attempts (e.g. attempted field 
+goals), and percentage for each of the main stats.
 
+Then, it will also provide the ratio of these averages in home, away, and 
+neutral games compared to all games (i.e. the sum of all home, neutral, and 
+away games). This ratio is used when weighting the stats to come up with 
+opponent-adjusted stats.
+
+
+generateWeightedAverages.cpp:
+This program will generate the weighted averages for every team in a given 
+year. It requires you to specify the year.  Then it searches the teams/YEAR/ 
+directory to find all of the team's game information.  It also reads in the 
+averages and neutral ratios files found in the constants directory.  It 
+outputs two files for each team, an (unweighted) averages file and a weighted 
+averages file. If you have already generated some of the averages files in 
+the year's directory, you may choose whether or not to overwrite them with 
+the -o switch.
+
+
+calculateSRS.cpp:
+The program iterates over the SRS values to come up with the final values.
+It processes one year at a time.  It defaults to iterate 100 times.  You
+may choose to write the output to file with the -o switch, or print the 
+results for three different teams at three different dates throughout the
+season at each iteration.  This latter option is so that you can see whether
+or not the results are converging.  Since you may wish start this process
+over, due to changes in a few weighted average files, or a change to the
+calculation, without having to start from the current iteration, it is
+possible to start over using the original SRS values using the -O switch.
+
+
+generateSRSadditions.cpp:
+The program calculates the number of points to add to a team's SRS when playing
+at home.  It does so for a given outYear (specified with the -Y switch), by
+analyzing the years sepcified as the input years using the -y switch and a
+comma-separated list of years.  The output is always written to the screen
+but can be written to a file, specified with the -o switch, which is created
+in the constants directory.
+
+
+generateWAverageFunctions.cpp:
+This program generates the histograms which will be used to generate the
+functions which take as input Team A's offensive WAverages and Team B's
+defensive WAverage, and returns a prediction for what Team A's offensive
+WAverage would be in that game.  There is a function for each of the four
+weighted average stats.
+
+It takes as input 5 years worth of WAverages, and output a ROOT file with
+the histograms and graphs needed to calculate the functions using the 
+showWAverageFns.rb program.  The number of bins will depend on the number
+of input years (generally 5 => 301, less => 165).
+
+
+showWAverageFns.rb:
+This program is used to show the results of the generateWAverageFunctions 
+program, but it can also be used to run that program first and then process 
+the output, so as to make this a one-step process.  If a ROOT file already 
+exists, you can plot its graphs using the -F and -n switches to set the input 
+file name and the number of bins used. If a ROOT file does not already exist, 
+then you can create one by using the -C option, and the -y and -n options.  
+If you wish to save the ROOT file created, simply use the -F option to set 
+the name, it will be saved by default in the rootFiles/ directory, so
+only the name is necessary.  If no name is set, then a temporary file is 
+created which is deleted at the end of the program.
+
+The results of the fits are written to the screen by default, if you wish 
+to write the output to a text file, simply use the -o option and provide a 
+name.
+
+If the -R option is chosen, then the canvases will be drawn, otherwise 
+they will not.
+
+
+generateStandardDeviations.cpp:
+This program generates the standard deviations necessary for the game 
+functions. It takes as input 5 years worth of weighted averages and then 
+outputs the standard deviations for a given year (set with -Y option) either 
+to the terminal or to a file (set by the -o option).
+
+
+generateWeights.cpp:
+This program determines the best weights to use to maximize the number
+of games correctly predicted by the game function.  It takes as input
+5 seasons worth of weighted averages, and the associated standard deviations
+and outputs the set of weights that has the highest percentage of correct
+games over the number of iterations chosen.
+
+By default, a fresh set of 5 random starting values are generated for each
+iteration and then a fit is run starting from those values.  But if you
+wish to, you can enter a (properly formatted) file with set starting values
+using the -S option.
+
+
+generateWeightsFixedSRS.cpp:
+This is basically the same program as generateWeights except that you
+fix the value of SRS and don't fit it, so there are only four
+parameters to fit each iteration.
+
+
+generateGameFunctionHistograms.cpp:
+This program generates the histograms which are used to determine the
+likely winning percentage of a team based on their game score.  It requires
+all of the years for which the game score function weights have been defined
+and the name of the output ROOT file, which will be created in the 
+rootFiles/ directory.
+
+
+checkGamePredictions.cpp:
+This program checks every game in the list of input years using the game
+function to determine how well it did.  If an SRS value is provided, using the
+-s option, a different game function weights file is used.  The histograms
+file is used to convert from the game score to likelihood of winning.
+
+
+tournamentSimulation.cpp:
+This program will simulate the NCAA tournament for a given year (must be
+between 2007 and 2015 (currently)), using a histograms file to calculate
+the winning percentages.  The results will be output on the screen.
+The -t option allows the user to calculate the odds of each team reaching
+each round of the tournament as well as winning the whole tournament.
+
+
+
+################
+Helper Programs
+################
 showTeamStats.cpp
 showTeamStats.rb
 showTournamentMatchup.cpp
 showTournamentMatchup.rb
-showWAverageFns.rb
-confirmStandardDeviations.cpp
 rankTeamsByGameScore.cpp
