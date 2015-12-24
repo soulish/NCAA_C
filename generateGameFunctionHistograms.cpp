@@ -84,7 +84,10 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
+    if (srsValue == "")
+        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    else
+        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
