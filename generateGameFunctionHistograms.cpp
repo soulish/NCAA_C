@@ -17,6 +17,8 @@
 #include "src/ConstantSRSadditions.h"
 #include "src/ConstantGameFunction.h"
 
+void printOptions();
+
 int main(int argc,char *argv[]) {
     int c;
     std::string outFileName = "";
@@ -24,7 +26,7 @@ int main(int argc,char *argv[]) {
     std::string inYears = "";
     std::string srsValue = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:o:s:")) != -1) {
+    while ((c = getopt(argc, argv, "y:o:s:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -36,6 +38,9 @@ int main(int argc,char *argv[]) {
             case 's':
                 srsValue.assign(optarg);
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -46,10 +51,12 @@ int main(int argc,char *argv[]) {
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
+        printOptions();
         return 0;
     }
     if (outFileName == ""){
         std::cout << "You must set the output file name using the -o switch" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -232,3 +239,22 @@ int main(int argc,char *argv[]) {
     return 0;
 }
 
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "generateGameFunctionHistograms Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y (int) comma-separated list of intput years (no default)[Required]" << std::endl;
+    std::cout << "\t-o (string) output ROOT file name created in rootFiles directory (no default)[Required]" << std::endl;
+    std::cout << "\t-s (double) SRS value (no default)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateGameFunctionHistograms -y 2007,2008,2009,2010,2011,2012,2013,2014,2015" << std::endl;
+    std::cout << "          -s 0.5 -o gameFunctionHistograms.0.5.root" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program generates the histograms which are used to determine the" << std::endl;
+    std::cout << "likely winning percentage of a team based on their game score.  It requires" << std::endl;
+    std::cout << "all of the years for which the game score function weights have been defined" << std::endl;
+    std::cout << "and the name of the output ROOT file, which will be created in the " << std::endl;
+    std::cout << "rootFiles/ directory." << std::endl;
+    std::cout << std::endl;
+}
