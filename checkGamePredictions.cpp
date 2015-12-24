@@ -18,17 +18,18 @@
 #include "src/ConstantSRSadditions.h"
 #include "src/ConstantGameFunction.h"
 
+void printOptions();
+
 int main(int argc,char *argv[]) {
     int c;
     bool writeOutput = false;
     std::vector<std::string> years;
     std::string inYears = "";
-    std::string histogramsFileName = "";
     bool useHistogramsFile = false;
-    std::string srsValue = "";
+    std::string srsValue = "free";
     double sigmas = 3;
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:H:S:s:")) != -1) {
+    while ((c = getopt(argc, argv, "y:HS:s:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -38,12 +39,15 @@ int main(int argc,char *argv[]) {
                 srsValue.assign(optarg);
                 break;
             case 'H':
-                histogramsFileName.assign(optarg);
+//                histogramsFileName.assign(optarg);
                 useHistogramsFile = true;
                 break;
             case 'S':
-                sigmas = atoi(optarg);
+                sigmas = atof(optarg);
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -54,6 +58,7 @@ int main(int argc,char *argv[]) {
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
+        printOptions();
         return 0;
     }
 
@@ -81,10 +86,7 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    if (srsValue == "")
-        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
-    else
-        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -99,7 +101,7 @@ int main(int argc,char *argv[]) {
     TFile *histsFile;
     std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
     if (useHistogramsFile){
-        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+        sprintf(path, "%s/cpp/NCAA_C/rootFiles/gameFunctionHistograms.%s.root", homePath, srsValue.c_str());
         histsFile = new TFile(path);
 
         for (int y = 2007; y <= 2016; y++){
@@ -194,4 +196,23 @@ int main(int argc,char *argv[]) {
     doubleFormatter(vegasWinsSpread / (double) vegasTotalSpread,3) << std::endl;
 
     return 0;
+}
+
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "checkGamePredictions Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y (int) comma-separated list of years (no default)[Required]" << std::endl;
+    std::cout << "\t-H use histograms file (no default)[Optional]" << std::endl;
+    std::cout << "\t-s (double) SRS value to determine weights file (default: \"free\")[Optional]" << std::endl;
+    std::cout << "\t-S (double) set number of sigmas to use (default: 3)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/checkGamePredictions -y 2015 -H" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program checks every game in the list of input years using the game" << std::endl;
+    std::cout << "function to determine how well it did.  If an SRS value is provided, using the" << std::endl;
+    std::cout << "-s option, a different game function weights file is used.  The histograms" << std::endl;
+    std::cout << "file is used to convert from the game score to likelihood of winning." << std::endl;
+    std::cout << std::endl;
 }
