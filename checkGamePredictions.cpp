@@ -21,28 +21,27 @@
 int main(int argc,char *argv[]) {
     int c;
     bool writeOutput = false;
-    std::string outFileName = "";
     std::vector<std::string> years;
     std::string inYears = "";
     std::string histogramsFileName = "";
     bool useHistogramsFile = false;
+    std::string srsValue = "";
     double sigmas = 3;
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:o:H:s:")) != -1) {
+    while ((c = getopt(argc, argv, "y:H:S:s:")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
                 boost::split(years, inYears, boost::is_any_of(","));
                 break;
-            case 'o':
-                outFileName.assign(optarg);
-                writeOutput = true;
+            case 's':
+                srsValue.assign(optarg);
                 break;
             case 'H':
                 histogramsFileName.assign(optarg);
                 useHistogramsFile = true;
                 break;
-            case 's':
+            case 'S':
                 sigmas = atoi(optarg);
                 break;
             default:
@@ -82,7 +81,10 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    if (srsValue == "")
+        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    else
+        sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
