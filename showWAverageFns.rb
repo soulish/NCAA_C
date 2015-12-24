@@ -4,6 +4,41 @@ gStyle.SetTitleFillColor(10)
 gStyle.SetTitleBorderSize(0)
 gStyle.SetPalette(1,0)
 
+def printOptions
+  puts ""
+  puts "showWAverageFns.rb Usage options"
+  puts ""
+  puts "\t-F (string) currently existing file name, or name of output ROOT file (no default)[Optional]"
+  puts "\t-C Create new ROOT file? If not chosen then -F must be set. If chosen"
+  puts "\t\t\t and -F is set, a new ROOT file will be created using the generateWAverageFunctions"
+  puts "\t\t\t program with this name.  If chosen and -F is not set, a temporary file will be created."
+  puts "\t\t\t (false)[Optional]"
+  puts "\t-o|-O (string) name of output text file (no default)[Optional]"
+  puts "\t-y (int,int,...) comma-separated list of input years. (no default)[Required if -C used]"
+  puts "\t-Y (int) output year (no default)[Required if -o|-O used]"
+  puts "\t-n (int) number of bins used for histograms (no default)[Required]"
+  puts "\t-R run ROOT? Canvas drawn if selected [Optional]"
+  puts ""
+  puts "Ex: ruby showWAverageFns.rb -C -y 2010,2011,2012,2013,2014 -Y 2015 -F functions2015_301.root"
+  puts "\t\t\t-n 301 -o constants/waverage_functions.d"
+  puts
+  puts "This program is used to show the results of the generateWAverageFunctions program, but"
+  puts "it can also be used to run that program first and then process the output, so as to make"
+  puts "this a one-step process.  If a ROOT file already exists, you can plot its graphs"
+  puts "using the -F and -n switches to set the input file name and the number of bins used."
+  puts "If a ROOT file does not already exist, then you can create one by using the -C option,"
+  puts "and the -y and -n options.  If you wish to save the ROOT file created, simply use the"
+  puts "-F option to set the name, it will be saved by default in the rootFiles/ directory, so"
+  puts "only the name is necessary.  If no name is set, then a temporary file is created which"
+  puts "is deleted at the end of the program."
+  puts ""
+  puts "The results of the fits are written to the screen by default, if you wish to write the"
+  puts "output to a text file, simply use the -o option and provide a name."
+  puts ""
+  puts "If the -R option is chosen, then the canvases will be drawn, otherwise they will not."
+  puts ""
+end
+
 class Float
   def to_n(n)
     sprintf("%.#{n}f",self)
@@ -17,6 +52,7 @@ nbins = nil
 create = false
 verbose = false
 outFileName = nil
+runROOT = false
 
 #command line switcher
 ARGV.each_with_index do |entry, index|
@@ -35,6 +71,11 @@ ARGV.each_with_index do |entry, index|
     outYear = ARGV[index + 1].to_i
   when /^-n/
     nbins = ARGV[index + 1].to_i
+  when /^-R/
+    runROOT = true
+  when /^-h/
+    printOptions
+    exit
   end
 end
 
@@ -158,4 +199,4 @@ gApplication.Connect("TCanvas","Closed()","TApplication",gApplication,
                      "Terminate()")
 ##If runROOT selected the window will stay until closed,  
 ##If not selected the window goes away after the fits run. 
-gApplication.Run# if runROOT             
+gApplication.Run if runROOT             
