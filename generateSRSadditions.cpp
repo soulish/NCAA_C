@@ -150,6 +150,11 @@ int main(int argc,char *argv[]) {
         params_ary.push_back(new std::vector<double>());
         for (int ii = 0; ii < temp_ary.size(); ii++)
             params_ary.back()->push_back(temp_ary[ii]);
+
+        int indexOfMin = indexOfVectorMin(fcn_min);
+        std::cout << "  " << i << "\t" << doubleFormatter(fcn_min.back(), 4) << "\t" <<
+        doubleFormatter(fcn_min[indexOfMin], 4) << "\t" << indexOfMin << "\r";
+        fflush(stdout);
     }
 
     int indexOfMin = indexOfVectorMin(fcn_min);
@@ -159,7 +164,8 @@ int main(int argc,char *argv[]) {
     if (writeOutput) {
         sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileName.c_str());
         std::ofstream outFile(path, std::ios::app);
-        outFile << outYear << "," << doubleFormatter(params_ary[indexOfMin]->at(0), 2) << std::endl;
+        outFile << outYear << "," << doubleFormatter(params_ary[indexOfMin]->at(0), 2) << "," <<
+                doubleFormatter(params_ary[indexOfMin]->at(1), 4) << std::endl;
         outFile.close();
     }
 
