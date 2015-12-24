@@ -24,25 +24,23 @@ void printOptions();
 int main(int argc,char *argv[]) {
     int c;
     int year = 0;
-    std::string histogramsFileName = "";
-    bool useHistogramsFile = false;
     bool calcTotalPercentages = false;
+    std::string srsValue = "free";
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:H:th")) != -1) {
+    while ((c = getopt(argc, argv, "y:H:ts:h")) != -1) {
         switch (c) {
             case 'y':
                 year = atoi(optarg);
-                break;
-            case 'H':
-                histogramsFileName.assign(optarg);
-                useHistogramsFile = true;
                 break;
             case 'h':
                 printOptions();
                 return 0;
             case 't':
                 calcTotalPercentages = true;
+                break;
+            case 's':
+                srsValue.assign(optarg);
                 break;
             default:
                 std::cout << "You provided an unknown option.  Please try again." << std::endl;
@@ -54,11 +52,6 @@ int main(int argc,char *argv[]) {
     //ensure years and outYear are set
     if (year == 0) {
         std::cout << "You must set the year using the -y switch" << std::endl;
-        printOptions();
-        return 0;
-    }
-    if (!useHistogramsFile){
-        std::cout << "You must supply a histograms file with the -H switch" << std:: endl;
         printOptions();
         return 0;
     }
@@ -91,7 +84,7 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -100,7 +93,7 @@ int main(int argc,char *argv[]) {
     std::cout << "Reading in waverages for " << year << std::endl;
     readTeamsFromDir(path, "waverages");
 
-    sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+    sprintf(path, "%s/cpp/NCAA_C/rootFiles/gameFunctionHistograms.%s.root", homePath, srsValue.c_str());
     TFile *histsFile = new TFile(path);
     std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
 
@@ -122,13 +115,13 @@ int main(int argc,char *argv[]) {
 
 void printOptions(){
     std::cout << std::endl;
-    std::cout << "Usage options:" << std::endl;
+    std::cout << "tournamentSimulation Usage options:" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "\t-y year of the tournament to simulate (no default)[Required]" << std::endl;
-    std::cout << "\t-H histogramsFileName (no default)[Optional]" << std::endl;
-    std::cout << "\t-t [Optional]" << std::endl;
+    std::cout << "\t-y (int) year of the tournament to simulate (no default)[Required]" << std::endl;
+    std::cout << "\t-s (double) srsValue which determines which weights file to use (default: \"free\")[Optional]" << std::endl;
+    std::cout << "\t-t calculate percentages for each team throughout the tournament [Optional]" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: $CLION/tournamentSimulation -y 2015 -H rootFiles/gameFunctionHistograms.root" << std::endl;
+    std::cout << "Ex: $CLION/tournamentSimulation -y 2015 -s 0.5" << std::endl;
     std::cout << std::endl;
     std::cout << "This program will simulate the NCAA tournament for a given year (must be" << std::endl;
     std::cout << "between 2007 and 2015 (currently)), using a histograms file to calculate" << std::endl;
