@@ -17,25 +17,23 @@
 #include "src/ConstantTeamNeutralRatios.h"
 
 std::vector<double> weightedAverageAndError(std::vector<double> values, std::vector<double> errors);
+void printOptions();
 
 int main(int argc,char *argv[]) {
     int c;
-    bool verbose = false, writeOutput = false;
+    bool writeOutput = false;
     std::vector<std::string> years;
     std::string inYears = "";
     std::string outFileName = "";
     double nbins = 165;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:vo:n:")) != -1) {
+    while ((c = getopt(argc, argv, "y:o:n:h")) != -1) {
         switch (c) {
             case 'y':
                 std::cout << "inYears: " << optarg << std::endl;
                 inYears.assign(optarg);
                 boost::split(years, inYears, boost::is_any_of(","));
-                break;
-            case 'v':
-                verbose = true;
                 break;
             case 'o':
                 outFileName.assign(optarg);
@@ -44,6 +42,9 @@ int main(int argc,char *argv[]) {
             case 'n':
                 nbins = (double)(atoi(optarg));
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -54,6 +55,12 @@ int main(int argc,char *argv[]) {
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
+        printOptions();
+        return 0;
+    }
+    if (!writeOutput){
+        std::cout << "You must set the output ROOT file name using the -o switch" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -322,4 +329,28 @@ std::vector<double> weightedAverageAndError(std::vector<double> values, std::vec
     result.push_back(average);
     result.push_back(error);
     return result;
+}
+
+void printOptions(){
+    std::cout << std::endl;
+    std::cout << "generateWAverageFunctions Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y (int,int,...) comma-separated list of input years (no default)[Required]" << std::endl;
+    std::cout << "\t-o (string) ROOT file name generated in rootFiles directory (no default)[Required]" << std::endl;
+    std::cout << "\t-n (int) number of bins to use for the histograms (default: 165)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateWAverageFunctions -y 2010,2011,2012,2013,2014 -o functions_2015_301.root -n 301" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program generates the histograms which will be used to generate the" << std::endl;
+    std::cout << "functions which take as input Team A's offensive WAverages and Team B's" << std::endl;
+    std::cout << "defensive WAverage, and returns a prediction for what Team A's offensive" << std::endl;
+    std::cout << "WAverage would be in that game.  There is a function for each of the four" << std::endl;
+    std::cout << "weighted average stats." << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "It takes as input 5 years worth of WAverages, and output a ROOT file with" << std::endl;
+    std::cout << "the histograms and graphs needed to calculate the functions using the " << std::endl;
+    std::cout << "showWAverageFns.rb program.  The number of bins will depend on the number" << std::endl;
+    std::cout << "of input years (generally 5 => 301, less => 165)." << std::endl;
+    std::cout << std::endl;
 }
