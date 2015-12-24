@@ -22,8 +22,9 @@ int main(int argc,char *argv[]) {
     std::string outFileName = "";
     std::vector<std::string> years;
     std::string inYears = "";
+    std::string srsValue = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:o:")) != -1) {
+    while ((c = getopt(argc, argv, "y:o:s:")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -31,6 +32,9 @@ int main(int argc,char *argv[]) {
                 break;
             case 'o':
                 outFileName.assign(optarg);
+                break;
+            case 's':
+                srsValue.assign(optarg);
                 break;
             default:
                 // not an option
@@ -73,7 +77,7 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -169,8 +173,6 @@ int main(int argc,char *argv[]) {
             if (win){
                 for (int y = 2007; y <= 2016; y++){
                     if (gameScoreByYear.find(y) == gameScoreByYear.end()) continue;
-//                    std::cout << y << std::endl;
-//                    std::cout << gameScoreByYear[y] << std::endl;
                     hists_gameScore_wins[y]->Fill(gameScoreByYear[y]);
                     hists_gameScore_losses[y]->Fill(-gameScoreByYear[y]);
                 }
@@ -229,3 +231,4 @@ int main(int argc,char *argv[]) {
 
     return 0;
 }
+
