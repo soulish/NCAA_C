@@ -30,6 +30,7 @@ std::vector<double> srs;
 void fcn(int& num_par, double* grad, double& f, double pars[], int flag);
 std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
                             double parOTO, double parSRS);
+void printOptions();
 
 int main(int argc,char *argv[]) {
     int c;
@@ -42,7 +43,7 @@ int main(int argc,char *argv[]) {
     bool useSeededValues = false;
     std::string seededLocation = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Y:o:i:S:")) != -1) {
+    while ((c = getopt(argc, argv, "y:Y:o:i:S:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -62,6 +63,9 @@ int main(int argc,char *argv[]) {
                 useSeededValues = true;
                 seededLocation.assign(optarg);
                 break;
+            case 'h':
+                printOptions();
+                return 0;
             default:
                 // not an option
                 break;
@@ -72,10 +76,12 @@ int main(int argc,char *argv[]) {
     if (years.empty()) {
         std::cout << "You must set the input years using the -y switch and a comma-separated list of years" <<
         std::endl;
+        printOptions();
         return 0;
     }
     if (outYear == 0) {
         std::cout << "You must set the output year using the -Y switch" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -166,7 +172,6 @@ int main(int argc,char *argv[]) {
     std::vector<double> fcn_mins;
     std::vector< std::vector<double>*> params_ary;
 
-
     if (!useSeededValues) {
         //random number generator, using Mersenne Twister method
         //the 0 means we use a unique seed each time
@@ -214,7 +219,7 @@ int main(int argc,char *argv[]) {
         }
     }
     else{
-        sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, seededLocation.c_str());
+        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, seededLocation.c_str());
         ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
         gameFunction->initialize(path);
 
@@ -332,4 +337,30 @@ std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
     ret_ary.push_back(fmin);
 
     return ret_ary;
+}
+
+void printOptions(){//yYoiS
+    std::cout << std::endl;
+    std::cout << "generateWeights Usage options:" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "\t-y (int,int,...) comma-separated list of input years (no default)[Required]" << std::endl;
+    std::cout << "\t-Y (int) year to generate weights for (no default)[Required]" << std::endl;
+    std::cout << "\t-i (int) number of fit iterations (default: 1)[Optional]" << std::endl;
+    std::cout << "\t-o (string) output file name to be created in constants directory (no default)[Optional]" << std::endl;
+    std::cout << "\t-S (string) seed file to read starting values from (no default)[Optional]" << std::endl;
+    std::cout << "\t-h print this message" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "Ex: $CLION/generateWeights -y 2010,2011,2012,2013,2014 -Y 2015 -i 500 -o game_function_weights.d" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program determines the best weights to use to maximize the number" << std::endl;
+    std::cout << "of games correctly predicted by the game function.  It takes as input" << std::endl;
+    std::cout << "5 seasons worth of weighted averages, and the associated standard deviations" << std::endl;
+    std::cout << "and outputs the set of weights that has the highest percentage of correct" << std::endl;
+    std::cout << "games over the number of iterations chosen." << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "By default, a fresh set of 5 random starting values are generated for each" << std::endl;
+    std::cout << "iteration and then a fit is run starting from those values.  But if you" << std::endl;
+    std::cout << "wish to, you can enter a (properly formatted) file with set starting values" << std::endl;
+    std::cout << "using the -S option." << std::endl;
+    std::cout << std::endl;
 }
