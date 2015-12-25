@@ -206,6 +206,13 @@ ConstantGameFunction - containing the functions used to predict a winner
 The Programs
 ################
 
+These are the main programs that you need to run.  In general, assume
+that you have to run them in order, meaning you generally can't run
+a program unless you've run all of the programs before it.  There are
+some other programs listed below that are used to look at the results
+of these programs.  I will note how many of them you have to run before
+you can use them.
+
 generateAverages:
 This file is for generating the averages for each of the stats over all teams
 in a year or a specified set of years.  It will yield the average of the 
@@ -229,7 +236,7 @@ the year's directory, you may choose whether or not to overwrite them with
 the -o switch.
 
 
-calculateSRS.cpp:
+generateSRS.cpp:
 The program iterates over the SRS values to come up with the final values.
 It processes one year at a time.  It defaults to iterate 100 times.  You
 may choose to write the output to file with the -o switch, or print the 
@@ -336,7 +343,12 @@ each round of the tournament as well as winning the whole tournament.
 ################
 Helper Programs
 ################
-showTeamStats.cpp
+
+These programs are generally used to look at the results of previous 
+programs in some way, shape, or form.  I note how far down the list of
+programs you need to go to be able to use them.
+
+showTeamStats.cpp:
 This program creates histograms for each of the four factors, offense and
 defense, over the course of the season.  It creates histograms for both
 the regular averages as well as the weighted averages.  It also plots
@@ -345,8 +357,10 @@ using the showTeamStats.rb Ruby program.  All you have to specify is the
 team name, and the name of the output file.  You can also decide to 
 plot the game score by selecting the -H option, and specifying an
 SRS value for the weights if necessary.
+Necessary programs: all up to and including generateSRS, must go to
+generateGameFunctionHistograms to use the -H option.
 
-showTeamStats.rb
+showTeamStats.rb:
 This program is used to show the results of the showTeamStats program, but
 o be used to run that program first and then process the output,
 his a one-step process.  If a ROOT file already exists, you can plot its graphs
@@ -356,6 +370,8 @@ of the team you want to plot. If you wish to save the ROOT file created,
 simply use the -F option to set the name, it will be saved by default in the 
 rootFiles/ directory, so only the name is necessary.  If no name is set, then 
 a temporary file is created which is deleted at the end of the program.
+Necessary programs: all up to and including generateSRS, must go to
+generateGameFunctionHistograms to use the -H option.
 
 showTournamentMatchup.cpp:
 This program creates histograms for each of the four factors, offense and
@@ -367,6 +383,8 @@ histograms using the showTournamentMatch.rb Ruby program.  All you have to
 specify is the teams' names, and the name of the output file.  You can also 
 decide to plot the game score by selecting the -H option, and specifying an
 SRS value for the weights if necessary.
+Necessary programs: all up to and including generateSRS, must go to
+generateGameFunctionHistograms to use the -H option.
 
 showTournamentMatchup.rb:
 This program is used to show the results of the showTournamentMatchup program,
@@ -379,6 +397,8 @@ the ROOT file created, simply use the -F option to set the name, it will
 be saved by default in the rootFiles/ directory, so only the name is 
 necessary.  If no name is set, then a temporary file is created which
 is deleted at the end of the program.
+Necessary programs: all up to and including generateSRS, must go to
+generateGameFunctionHistograms to use the -H option.
 
 rankTeamsByGameScore.cpp:
 This program ranks all of the teams in the list of years provided by their 
@@ -388,3 +408,5 @@ specific year which can be provided using the -Y switch.  In the example,
 all the teams from 2014 and 2015 will be ranked using 2015's constants.  
 If a histogram file is provided then the winning percentage will also 
 be output.
+Necessary programs: all up to and including generateSRS, must go to
+generateGameFunctionHistograms to use the -H option.
