@@ -351,9 +351,9 @@ void printOptions(){
     std::cout << std::endl;
     std::cout << "generateAverages Usage options:" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "\t-y comma-separated list of years (no default)[Required]" << std::endl;
-    std::cout << "\t-Y year to output (no default)[Required]" << std::endl;
-    std::cout << "\t-o comma-separated list of out file names, see below (no default)[Required]" << std::endl;
+    std::cout << "\t-y (int,int,...) comma-separated list of years (no default)[Required]" << std::endl;
+    std::cout << "\t-Y (int) year to output (no default)[Required]" << std::endl;
+    std::cout << "\t-o (string,string,string,string) comma-separated list of out file names, see below (no default)[Required]" << std::endl;
     std::cout << "\t-v verbose (false)[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
