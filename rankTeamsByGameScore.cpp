@@ -25,20 +25,22 @@ int main(int argc,char *argv[]) {
     int c;
     std::vector<std::string> years;
     std::string inYears = "";
-    std::string histogramsFileName = "";
     bool useHistogramsFile = false;
+    std::string srsValue = "free";
     int chosenYear = 0;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:H:Y:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:Hs:Y:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
                 boost::split(years, inYears, boost::is_any_of(","));
                 break;
             case 'H':
-                histogramsFileName.assign(optarg);
                 useHistogramsFile = true;
+                break;
+            case 's':
+                srsValue.assign(optarg);
                 break;
             case 'Y':
                 chosenYear = atoi(optarg);
@@ -88,7 +90,7 @@ int main(int argc,char *argv[]) {
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -102,7 +104,7 @@ int main(int argc,char *argv[]) {
     TFile *histsFile;
     std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
     if (useHistogramsFile){
-        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+        sprintf(path, "%s/cpp/NCAA_C/rootFiles/gameFunctionHistograms.%s.root", homePath, srsValue.c_str());
         histsFile = new TFile(path);
 
         for (int y = 2007; y <= 2016; y++){
@@ -170,13 +172,14 @@ int main(int argc,char *argv[]) {
 
 void printOptions(){
     std::cout << std::endl;
-    std::cout << "Usage options:" << std::endl;
+    std::cout << "rankTeamsByGameScore Usage options:" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "\t-y comma-separated list of years (no default)[Required]" << std::endl;
-    std::cout << "\t-Y year to use for calculations (no default)[Optional]" << std::endl;
-    std::cout << "\t-H histogramsFileName (no default)[Optional]" << std::endl;
+    std::cout << "\t-y (int,int,...) comma-separated list of years to use (no default)[Required]" << std::endl;
+    std::cout << "\t-Y (int) year to use for calculations (no default)[Optional]" << std::endl;
+    std::cout << "\t-s (double) srs value to use for weights and histograms (default: \"fixed\")[Optional]" << std::endl;
+    std::cout << "\t-H calculate game Score percentages using histograms file (no default)[Optional]" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: $CLION/rankTeamsByGameScore -y 2014,2015 -H rootFiles/gameFunctionHistograms.root -Y 2007" << std::endl;
+    std::cout << "Ex: $CLION/rankTeamsByGameScore -y 2014,2015 -H -s 0.5 -Y 2007" << std::endl;
     std::cout << std::endl;
     std::cout << "This program ranks all of the teams in the list of years provided by their gameScore" << std::endl;
     std::cout << "as it is calculated on the day the NCAA tournament began in that year" << std::endl;
