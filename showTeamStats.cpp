@@ -20,11 +20,11 @@ int main(int argc,char *argv[]){
     int c;
     int year = 0;
     std::string teamName = "", outFileName = "";
-    std::string histogramsFileName = "";
     bool useHistogramsFile = false;
+    std::string srsValue = "free";
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"t:o:hH:")) != -1){
+    while((c = getopt(argc,argv,"t:o:hH:s:")) != -1){
         switch(c){
             case 't':
                 teamName = optarg;
@@ -32,8 +32,10 @@ int main(int argc,char *argv[]){
             case 'o':
                 outFileName = optarg;
                 break;
+            case 's':
+                srsValue.assign(optarg);
+                break;
             case 'H':
-                histogramsFileName.assign(optarg);
                 useHistogramsFile = true;
                 break;
             case 'h':
@@ -47,6 +49,7 @@ int main(int argc,char *argv[]){
 
     if (teamName == "" || outFileName == ""){
         std::cout << "You must specify a team with the -t switch and an outFileName with the -o switch" << std::endl;
+        printOptions();
         return 0;
     }
 
@@ -75,7 +78,7 @@ int main(int argc,char *argv[]){
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -95,7 +98,7 @@ int main(int argc,char *argv[]){
     TFile *histsFile;
     std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
     if (useHistogramsFile){
-        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+        sprintf(path, "%s/cpp/NCAA_C/rootFiles/gameFunctionHistograms.%s.root", homePath, srsValue.c_str());
         histsFile = new TFile(path);
 
         for (int y = 2007; y <= 2016; y++){
@@ -260,11 +263,22 @@ int main(int argc,char *argv[]){
 
 void printOptions(){
     std::cout << std::endl;
-    std::cout << "Usage options" << std::endl;
+    std::cout << "showTeamStats Usage options" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "\t-t teamname (no default)[Required]" << std::endl;
-    std::cout << "\t-o outFileName (no default)[Required]" << std::endl;
+    std::cout << "\t-t (string) teamname (no default)[Required]" << std::endl;
+    std::cout << "\t-o (string) outFileName (no default)[Required]" << std::endl;
+    std::cout << "\t-s (double) srs value to use for weights and histograms (default: \"fixed\")[Optional]" << std::endl;
+    std::cout << "\t-H calculate game score using histograms file (no default)[Optional]" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: showTeamStats -t \"2015 north carolina\" -o \"2015unc.root\"" << std::endl;
+    std::cout << "Ex: showTeamStats -t \"2015 north carolina\" -o \"2015unc.root\" -H -s 0.5" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program creates histograms for each of the four factors, offense and" << std::endl;
+    std::cout << "defense, over the course of the season.  It creates histograms for both" << std::endl;
+    std::cout << "the regular averages as well as the weighted averages.  It also plots" << std::endl;
+    std::cout << "SRS and gameScore or RPI.  You view the resultant ROOT histograms" << std::endl;
+    std::cout << "using the showTeamStats.rb Ruby program.  All you have to specify is the" << std::endl;
+    std::cout << "team name, and the name of the output file.  You can also decide to " << std::endl;
+    std::cout << "plot the game score by selecting the -H option, and specifying an" << std::endl;
+    std::cout << "SRS value for the weights if necessary." << std::endl;
     std::cout << std::endl;
 }
