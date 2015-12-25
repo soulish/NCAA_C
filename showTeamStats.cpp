@@ -24,7 +24,7 @@ int main(int argc,char *argv[]){
     std::string srsValue = "free";
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"t:o:hH:s:")) != -1){
+    while((c = getopt(argc,argv,"t:o:hHs:")) != -1){
         switch(c){
             case 't':
                 teamName = optarg;
