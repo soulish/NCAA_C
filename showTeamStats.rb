@@ -4,11 +4,36 @@ gStyle.SetTitleFillColor(10)
 gStyle.SetTitleBorderSize(0)
 gStyle.SetPalette(1,0)
 
+def printOptions
+  puts ""
+  puts "showTeamStats.rb Usage options"
+  puts ""
+  puts "\t-F (string) currently existing file name, or name of output ROOT file (no default)[Optional]"
+  puts "\t-t (string) name of team whose stats to plot (no default)[Required if -F not used]"
+  puts "\t-H calculate and plot gameScore percentages"
+  puts "\t-s (int) (double) srs value to use for weights and histograms (default: \"fixed\")[Optional]"
+  puts "\t-g draw game-by-game statistics [Optional]"
+  puts "\t-h print this message"
+  puts ""
+  puts "Ex: ruby showTeamStats.rb -t \"2015 north carolina\" -H -s 0.5"
+  puts
+  puts "This program is used to show the results of the showTeamStats program, but"
+  puts "it can also be used to run that program first and then process the output, so as to make"
+  puts "this a one-step process.  If a ROOT file already exists, you can plot its graphs"
+  puts "using the -F switch to set the input file name. If a ROOT file does not already exist,"
+  puts "then you can create one by using the -t option to set the name of the team you want to plot."
+  puts "If you wish to save the ROOT file created, simply use the"
+  puts "-F option to set the name, it will be saved by default in the rootFiles/ directory, so"
+  puts "only the name is necessary.  If no name is set, then a temporary file is created which"
+  puts "is deleted at the end of the program."
+  puts ""
+end
+
 fileName = nil
 drawGames = false
 teamName = nil
 useHistograms = false
-srsVal = "fixed"
+srsVal = "free"
 #command line switcher
 ARGV.each_with_index do |entry, index|
   case entry
