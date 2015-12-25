@@ -20,11 +20,11 @@ int main(int argc,char *argv[]){
     int c;
     int year = 0;
     std::string teamNameA = "", teamNameB = "", outFileName = "";
-    std::string histogramsFileName = "";
     bool useHistogramsFile = false;
+    std::string srsValue = "free";
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"t:T:o:hH:")) != -1){
+    while((c = getopt(argc,argv,"t:T:o:hHs:")) != -1){
         switch(c){
             case 't':
                 teamNameA = optarg;
@@ -36,8 +36,10 @@ int main(int argc,char *argv[]){
                 outFileName = optarg;
                 break;
             case 'H':
-                histogramsFileName.assign(optarg);
                 useHistogramsFile = true;
+                break;
+            case 's':
+                srsValue.assign(optarg);
                 break;
             case 'h':
                 printOptions();
@@ -80,7 +82,7 @@ int main(int argc,char *argv[]){
     ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     additions->initialize(path);
 
-    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.d", homePath);
+    sprintf(path, "%s/cpp/NCAA_C/constants/game_function_weights.%s.d", homePath,srsValue.c_str());
     ConstantGameFunction *gameFunction = ConstantGameFunction::Instance();
     gameFunction->initialize(path);
 
@@ -109,7 +111,7 @@ int main(int argc,char *argv[]){
     TFile *histsFile;
     std::unordered_map<int, TH1F*> probs_by_year, probs_err_by_year;
     if (useHistogramsFile){
-        sprintf(path, "%s/cpp/NCAA_C/%s", homePath, histogramsFileName.c_str());
+        sprintf(path, "%s/cpp/NCAA_C/rootFiles/gameFunctionHistograms.%s.root", homePath, srsValue.c_str());
         histsFile = new TFile(path);
 
         for (int y = 2007; y <= 2016; y++){
@@ -337,12 +339,24 @@ int main(int argc,char *argv[]){
 
 void printOptions(){
     std::cout << std::endl;
-    std::cout << "Usage options" << std::endl;
+    std::cout << "showTournamentMatchup Usage options" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "\t-t teamNameA (no default)[Required]" << std::endl;
-    std::cout << "\t-T teamNameB (no default)[Required]" << std::endl;
-    std::cout << "\t-o outFileName (no default)[Required]" << std::endl;
+    std::cout << "\t-t (string) teamnameA (no default)[Required]" << std::endl;
+    std::cout << "\t-T (string) teamnameB (no default)[Required]" << std::endl;
+    std::cout << "\t-o (string) outFileName (no default)[Required]" << std::endl;
+    std::cout << "\t-s (double) srs value to use for weights and histograms (default: \tfree\")[Optional]" << std::endl;
+    std::cout << "\t-H calculate game score using histograms file (no default)[Optional]" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: showTeamStats -t \"2015 north carolina\" -T \"2015 clemson\"-o \"2015uncVsClemson.root\"" << std::endl;
+    std::cout << "Ex: showTournamentMatchup -t \"2015 north carolina\" -T \"2015 harvard\" -o \"temp.root\" -H -s 0.5" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This program creates histograms for each of the four factors, offense and" << std::endl;
+    std::cout << "defense, over the course of the season for two teams.  It creates histograms for both" << std::endl;
+    std::cout << "the regular averages as well as the weighted averages.  It also plots" << std::endl;
+    std::cout << "SRS and gameScore or RPI.  Lastly it calculates the predictions for both teams'" << std::endl;
+    std::cout << "four factors, and likelihood of winning.  You view the resultant ROOT histograms" << std::endl;
+    std::cout << "using the showTournamentMatch.rb Ruby program.  All you have to specify is the" << std::endl;
+    std::cout << "teams' names, and the name of the output file.  You can also decide to " << std::endl;
+    std::cout << "plot the game score by selecting the -H option, and specifying an" << std::endl;
+    std::cout << "SRS value for the weights if necessary." << std::endl;
     std::cout << std::endl;
 }
