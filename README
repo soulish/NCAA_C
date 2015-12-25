@@ -337,7 +337,54 @@ each round of the tournament as well as winning the whole tournament.
 Helper Programs
 ################
 showTeamStats.cpp
+This program creates histograms for each of the four factors, offense and
+defense, over the course of the season.  It creates histograms for both
+the regular averages as well as the weighted averages.  It also plots
+SRS and gameScore or RPI.  You view the resultant ROOT histograms
+using the showTeamStats.rb Ruby program.  All you have to specify is the
+team name, and the name of the output file.  You can also decide to 
+plot the game score by selecting the -H option, and specifying an
+SRS value for the weights if necessary.
+
 showTeamStats.rb
-showTournamentMatchup.cpp
-showTournamentMatchup.rb
-rankTeamsByGameScore.cpp
+This program is used to show the results of the showTeamStats program, but
+o be used to run that program first and then process the output,
+his a one-step process.  If a ROOT file already exists, you can plot its graphs
+using the -F switch to set the input file name. If a ROOT file does not 
+already exist, then you can create one by using the -t option to set the name 
+of the team you want to plot. If you wish to save the ROOT file created, 
+simply use the -F option to set the name, it will be saved by default in the 
+rootFiles/ directory, so only the name is necessary.  If no name is set, then 
+a temporary file is created which is deleted at the end of the program.
+
+showTournamentMatchup.cpp:
+This program creates histograms for each of the four factors, offense and
+defense, over the course of the season for two teams.  It creates histograms 
+for both the regular averages as well as the weighted averages.  It also plots
+SRS and gameScore or RPI.  Lastly it calculates the predictions for both teams'
+four factors, and likelihood of winning.  You view the resultant ROOT 
+histograms using the showTournamentMatch.rb Ruby program.  All you have to 
+specify is the teams' names, and the name of the output file.  You can also 
+decide to plot the game score by selecting the -H option, and specifying an
+SRS value for the weights if necessary.
+
+showTournamentMatchup.rb:
+This program is used to show the results of the showTournamentMatchup program,
+but it can also be used to run that program first and then process the output,
+so as to make this a one-step process.  If a ROOT file already exists, you 
+can plot its graphs using the -F switch to set the input file name. If a ROOT 
+file does not already exist, then you can create one by using the -t and -T 
+options to set the names of the teams you want to plot. If you wish to save 
+the ROOT file created, simply use the -F option to set the name, it will 
+be saved by default in the rootFiles/ directory, so only the name is 
+necessary.  If no name is set, then a temporary file is created which
+is deleted at the end of the program.
+
+rankTeamsByGameScore.cpp:
+This program ranks all of the teams in the list of years provided by their 
+gameScore as it is calculated on the day the NCAA tournament began in that year
+using either the constants appropriate for the year of the team, or a 
+specific year which can be provided using the -Y switch.  In the example, 
+all the teams from 2014 and 2015 will be ranked using 2015's constants.  
+If a histogram file is provided then the winning percentage will also 
+be output.
