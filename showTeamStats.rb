@@ -7,14 +7,17 @@ gStyle.SetPalette(1,0)
 fileName = nil
 drawGames = false
 teamName = nil
-histogramsFileName = nil
+useHistograms = false
+srsVal = "fixed"
 #command line switcher
 ARGV.each_with_index do |entry, index|
   case entry
   when /^-F/
     fileName = ARGV[index+1]
   when /^-H/
-    histogramsFileName = ARGV[index+1]
+    useHistograms = true
+  when /^-s/
+    srsVal = ARGV[index+1]
   when /^-t/
     teamName = ARGV[index+1]
   when /^-D|-d|-g|-G/
@@ -32,20 +35,18 @@ if teamName.nil?
   end
 else
   if fileName.nil?
-    if histogramsFileName.nil?
+    if !useHistograms
       `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\"`
     else
-      `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\" -H #{histogramsFileName}`
+      `$CLION/showTeamStats -t \"#{teamName}\" -o \"temp.root\" -H -s #{srsVal}`
     end
-    #sleep 3
     file = TFile.new("rootFiles/temp.root")
   else
-    if histogramsFileName.nil?
+    if !useHistograms
       `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\"`
     else
-      `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\" -H #{histogramsFileName}`
+      `$CLION/showTeamStats -t \"#{teamName}\" -o \"#{fileName}\" -H -s #{srsVal}`
     end
-    #sleep 3
     file = TFile.new("rootFiles/#{fileName}")
   end
 end
@@ -71,7 +72,7 @@ ss.each do |s|
   realLines[s] = TLine.new(lines[s].GetX1,lines[s].GetY1,lines[s].GetX2,lines[s].GetY2)
 end
 
-if !histogramsFileName.nil?
+if useHistograms
   avgs_per_time["gameScore"] = gROOT.FindObject("avg_per_time_gameScore")
   wavgs_per_time["gameScore"] = gROOT.FindObject("wavg_per_time_gameScore")
   realLines["gameScore"] = realLines["rpi"]
@@ -107,12 +108,11 @@ ss.each_with_index do |s,i|
     wavgs_per_game[s].Draw("psame")
   end
 
-  # lines[s] = TLine.new(0,league_avgs[s],180,league_avgs[s])
   realLines[s].SetLineColor(2)
   realLines[s].Draw("same")
 end
 
-if !histogramsFileName.nil?
+if useHistograms
   can.cd(10)
   avgs_per_time["gameScore"].SetMinimum(0)
   avgs_per_time["gameScore"].SetMaximum(1)
