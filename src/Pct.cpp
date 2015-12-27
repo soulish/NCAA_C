@@ -8,7 +8,7 @@
 Pct::Pct(int makes, int attempts)
         : m(makes),
           a(attempts < 0 ? 0 : attempts),
-          p(a == 0 ? 0.0 : (m >= a ? 0.99 : m/(double)a)){
+          p(a == 0 ? 0.0 : (m / a >= 0.99 ? 0.99 : m/(double)a)){
     //the p assignment is m/a unless a == 0 when it is 0,
     //or m >= a (often by mistake) when it is 0.99
     //0.99 is chosen because the variance=0 when p=1, and 1/variance is
@@ -23,7 +23,7 @@ Pct::Pct(int makes, int attempts, double pct)
 Pct::Pct(double makes, double attempts)
         : m((int)round(makes)),
           a((int)round(attempts)),
-          p(a == 0 ? 0.0 : (makes >= attempts ? 0.99 : makes/attempts)) {  }
+          p(a == 0 ? 0.0 : (makes / attempts >= 0.99 ? 0.99 : makes/attempts)) {  }
 
 double Pct::Variance() const {
     return a == 0 ? 0 : p*(1-p)/a;
