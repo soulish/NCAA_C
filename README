@@ -330,6 +330,20 @@ function to determine how well it did.  If an SRS value is provided, using the
 -s option, a different game function weights file is used.  The histograms
 file is used to convert from the game score to likelihood of winning.
 
+checkGamePredictions.rb
+This program is used to show the results of the checkGamePredictions.cpp 
+program, but it can also be used to run that program first and then process 
+the output, so as to make this a one-step process.  If a ROOT file already 
+exists, you can plot its graphs using the -F switch to set the input file 
+name.  If a ROOT file does not already exist, then you can use the -C switch 
+to create one, and then you must specify the input years, and optionally 
+the SRS value to use and the number of sigmas to use.  This program gets
+the number of wins per predicted winning percentage bin and divides that by 
+the number of total games in that bin to get a graph of the actual winning 
+percentage vs the predicted ones.  The resulting plot is then fit with a 
+first-order polynomial.  If everything has gone well, then the resulting fit 
+should be a line with intercept of 0 and slope of 1.  The parameters of the 
+fit are output on the screen, to see the actual plots, use the -R switch.
 
 tournamentSimulation.cpp:
 This program will simulate the NCAA tournament for a given year (must be
@@ -362,14 +376,15 @@ generateGameFunctionHistograms to use the -H option.
 
 showTeamStats.rb:
 This program is used to show the results of the showTeamStats program, but
-o be used to run that program first and then process the output,
-his a one-step process.  If a ROOT file already exists, you can plot its graphs
-using the -F switch to set the input file name. If a ROOT file does not 
-already exist, then you can create one by using the -t option to set the name 
-of the team you want to plot. If you wish to save the ROOT file created, 
-simply use the -F option to set the name, it will be saved by default in the 
-rootFiles/ directory, so only the name is necessary.  If no name is set, then 
-a temporary file is created which is deleted at the end of the program.
+it can also be used to run that program first and then process the output, 
+so as to make this a one-step process.  If a ROOT file already exists, you 
+can plot its graphs using the -F switch to set the input file name. If a 
+ROOT file does not already exist, then you can create one by using the 
+-t option to set the name of the team you want to plot. If you wish to 
+save the ROOT file created, simply use the -F option to set the name, 
+it will be saved by default in the rootFiles/ directory, so only the 
+name is necessary.  If no name is set, then a temporary file is created 
+which is deleted at the end of the program.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
