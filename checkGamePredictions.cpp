@@ -29,8 +29,9 @@ int main(int argc,char *argv[]) {
     std::string srsValue = "free";
     std::string outFileName = "";
     double sigmas = 3;
+    int nbins = 33;
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:HS:o:s:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:HS:o:s:n:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -47,6 +48,9 @@ int main(int argc,char *argv[]) {
                 break;
             case 'S':
                 sigmas = atof(optarg);
+                break;
+            case 'n':
+                nbins = atoi(optarg);
                 break;
             case 'h':
                 printOptions();
@@ -132,8 +136,8 @@ int main(int argc,char *argv[]) {
         outFile = new TFile(path, "RECREATE");
     }
 
-    TH1F *h_wins = new TH1F("h_wins","",33,0,1);
-    TH1F *h_total = new TH1F("h_total","",33,0,1);
+    TH1F *h_wins = new TH1F("h_wins","",nbins,0,1);
+    TH1F *h_total = new TH1F("h_total","",nbins,0,1);
 
     for (auto &team : teams) {
         games = team.second->getGamesByDate();
