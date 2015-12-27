@@ -29,6 +29,7 @@ private:
     static ConstantSRSadditions* uniqueInstance;
 
     std::unordered_map<int,double> srsAddition;
+    std::unordered_map<int,double> fcnMin;
 };
 
 

@@ -21,8 +21,10 @@ void ConstantSRSadditions::initialize(std::string path) {
         getline(file, value, ',');
         if (value == "") break; //stops when reading last line
         year = stoi(value);
-        getline(file, value, '\n');
+        getline(file, value, ',');
         srsAddition.emplace(year, stod(value));
+        getline(file, value, '\n');
+        fcnMin.emplace(year, stod(value));
     }
 }
 
