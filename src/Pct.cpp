@@ -30,15 +30,15 @@ double Pct::Variance() const {
 }
 
 double Pct::StandardDeviation() const {
-    return a == 0 ? 0 : (double)sqrt(p*(1-p)/a);
+    return a == 0 ? 0 : sqrt(p*(1-p)/a);
 }
 
 double Pct::StandardDeviationOfTheMean() const {
-    return a == 0 ? 0 : (double)sqrt(p*(1-p)/(a*a));
+    return a == 0 ? 0 : sqrt(p*(1-p)/(a*a));
 }
 
 double Pct::StandardDeviationOfStandardDeviation() const {
-    return a <= 1 ? 0 : 1/(double)sqrt(2*(a - 1));
+    return a <= 1 ? 0 : 1/sqrt(2*(a - 1));
 }
 
 double Pct::VarianceOfVariance() const {
