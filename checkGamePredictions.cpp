@@ -27,9 +27,10 @@ int main(int argc,char *argv[]) {
     std::string inYears = "";
     bool useHistogramsFile = false;
     std::string srsValue = "free";
+    std::string outFileName = "";
     double sigmas = 3;
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:HS:s:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:HS:o:s:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -39,8 +40,10 @@ int main(int argc,char *argv[]) {
                 srsValue.assign(optarg);
                 break;
             case 'H':
-//                histogramsFileName.assign(optarg);
                 useHistogramsFile = true;
+                break;
+            case 'o':
+                outFileName = optarg;
                 break;
             case 'S':
                 sigmas = atof(optarg);
@@ -121,6 +124,16 @@ int main(int argc,char *argv[]) {
     int gameScoreWinsSpread = 0, gameScoreTotalSpread = 0;
     int vegasWinsSpread = 0, vegasTotalSpread = 0;
     int adjGameScoreWins = 0, adjGameScoreTotal = 0;
+    int srsWins = 0, srsTotal = 0;
+
+    TFile *outFile;
+    if (outFileName != "") {
+        sprintf(path, "%s/cpp/NCAA_C/rootFiles/%s",homePath,outFileName.c_str());
+        outFile = new TFile(path, "RECREATE");
+    }
+
+    TH1F *h_wins = new TH1F("h_wins","",33,0,1);
+    TH1F *h_total = new TH1F("h_total","",33,0,1);
 
     for (auto &team : teams) {
         games = team.second->getGamesByDate();
@@ -145,6 +158,11 @@ int main(int argc,char *argv[]) {
             double gameScorePct = -1;
             double gameScorePct_err = -1;
 
+            double srsVal = wa1->getSrs() - wa2->getSrs() + additions->get(team.second->getYear(),loc);
+            if (win && srsVal >= 0) srsWins++;
+            if (!win && srsVal < 0) srsWins++;
+            srsTotal++;
+
             if (useHistogramsFile){
                 if (gameScore >= 3){
                     gameScorePct = 1;
@@ -163,11 +181,17 @@ int main(int argc,char *argv[]) {
                 if (gameScorePct < 0.5 && gameScorePct + sigmas*gameScorePct_err < 0.5 && !win) adjGameScoreWins++;
                 if ((gameScorePct >= 0.5 && gameScorePct - sigmas*gameScorePct_err >= 0.5) ||
                     (gameScorePct < 0.5 && gameScorePct + sigmas*gameScorePct_err < 0.5)) adjGameScoreTotal++;
+
+                if (win) h_wins->Fill(gameScorePct);
+                h_total->Fill(gameScorePct);
             }
 
             gameScoreTotal++;
             if (gameScore > 0 && win) gameScoreWins++;
             if (gameScore < 0 && !win) gameScoreWins++;
+
+            TeamGame *oppgame = opp->GameOnDate(game.second->getDate(),team.second->getName());
+            if (spread != -1*oppgame->getSpread()) continue; //if the spreads are somehow messed up
 
             if (spread != 0){
                 gameScoreTotalSpread++;
@@ -195,6 +219,14 @@ int main(int argc,char *argv[]) {
     std::cout << "Vegas precitions:\t" << vegasWinsSpread << " / " << vegasTotalSpread << " = " <<
     doubleFormatter(vegasWinsSpread / (double) vegasTotalSpread,3) << std::endl;
 
+    std::cout << "SRS predictions:\t" << srsWins << " / " << srsTotal << " = " <<
+    doubleFormatter(srsWins / (double) srsTotal, 3) << std::endl;
+
+    if (outFileName != "") {
+        outFile->Write();
+        outFile->Close();
+    }
+
     return 0;
 }
 
@@ -205,6 +237,7 @@ void printOptions(){
     std::cout << "\t-y (int) comma-separated list of years (no default)[Required]" << std::endl;
     std::cout << "\t-H use histograms file (no default)[Optional]" << std::endl;
     std::cout << "\t-s (double) SRS value to determine weights file (default: \"free\")[Optional]" << std::endl;
+    std::cout << "\t-o (string) write output ROOT file in rootFiles/ with designated name (no default)[Optional]" << std::endl;
     std::cout << "\t-S (double) set number of sigmas to use (default: 3)[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
