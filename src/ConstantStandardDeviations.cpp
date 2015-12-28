@@ -35,6 +35,8 @@ void ConstantStandardDeviations::initialize(std::string path) {
         standardDeviations[year]->emplace("oftmr.p", stod(value));
         getline(file, value, ',');
         standardDeviations[year]->emplace("oto.p", stod(value));
+        getline(file, value, ',');
+        standardDeviations[year]->emplace("oppp.p", stod(value));
         getline(file, value, '\n');
         standardDeviations[year]->emplace("srs", stod(value));
     }

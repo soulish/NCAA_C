@@ -95,7 +95,7 @@ int main(int argc,char *argv[]){
     Team *opp;
     TeamWAverage *wa1, *wa2;
 
-    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
+    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p", "ppp.p"};
     std::unordered_map<std::string, TH1F*> hists;
     for (std::string &s : stats){
         hists.emplace(s, new TH1F(("hist_"+s).c_str(),"",200,-0.5,0.5));
