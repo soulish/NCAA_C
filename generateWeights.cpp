@@ -181,12 +181,7 @@ int main(int argc,char *argv[]) {
             double randoms[5];
             rand.RndmArray(5, randoms);
 
-            double rand_norm = 0;
-            for (int j = 0; j < 5; j++)
-                rand_norm += randoms[j];
-
-            temp_ary = run_fit(randoms[0] / rand_norm, randoms[1] / rand_norm, randoms[2] / rand_norm,
-                               randoms[3] / rand_norm, randoms[4] / rand_norm);
+            temp_ary = run_fit(randoms[0], randoms[1], randoms[2], randoms[3], randoms[4]);
 
             double temp_fcn_min = temp_ary.back();
             double temp_fcn_min2;
@@ -195,11 +190,7 @@ int main(int argc,char *argv[]) {
             int num_times_through = 0;
             for (int k = 0; k < 100; k++) {
                 num_times_through++;
-                temp_norm = 0;
-                for (int j = 0; j < 5; j++)
-                    temp_norm += temp_ary[j];
-                temp_ary2 = run_fit(temp_ary[0] / temp_norm, temp_ary[1] / temp_norm, temp_ary[2] / temp_norm,
-                                    temp_ary[3] / temp_norm, temp_ary[4] / temp_norm);
+                temp_ary2 = run_fit(temp_ary[0], temp_ary[1], temp_ary[2], temp_ary[3], temp_ary[4]);
                 temp_fcn_min2 = temp_ary2.back();
                 if (temp_fcn_min2 == temp_fcn_min && temp_ary == temp_ary2) break;
 
@@ -216,6 +207,14 @@ int main(int argc,char *argv[]) {
             std::cout << "  " << i << "\t" << doubleFormatter(fcn_mins.back(), 4) << "\t" <<
             doubleFormatter(fcn_mins[indexOfMin], 4) << "\t" << indexOfMin << "\r";
             fflush(stdout);
+//            std::cout << "  \t\t" << i << "\t" << doubleFormatter(fcn_mins.back(), 4) << "\t" <<
+//                  doubleFormatter(fcn_mins[indexOfMin], 4) << "\t" << indexOfMin << std::endl;
+//            temp_norm = 0;
+//            for (int ii = 0; ii < 5; ii++)
+//                temp_norm += fabs(temp_ary[ii]);
+//            for (int ii = 0; ii < 5; ii++){
+//                std::cout << "  " << ii << "\t" << doubleFormatter(temp_ary[ii],4) << std::endl;
+//            }
         }
     }
     else{
@@ -237,11 +236,7 @@ int main(int argc,char *argv[]) {
             int num_times_through = 0;
             for (int k = 0; k < 100; k++) {
                 num_times_through++;
-                temp_norm = 0;
-                for (int j = 0; j < 5; j++)
-                    temp_norm += temp_ary[j];
-                temp_ary2 = run_fit(temp_ary[0] / temp_norm, temp_ary[1] / temp_norm, temp_ary[2] / temp_norm,
-                                    temp_ary[3] / temp_norm, temp_ary[4] / temp_norm);
+                temp_ary2 = run_fit(temp_ary[0], temp_ary[1], temp_ary[2], temp_ary[3], temp_ary[4]);
                 temp_fcn_min2 = temp_ary2.back();
                 if (temp_fcn_min2 == temp_fcn_min && temp_ary == temp_ary2) break;
 
@@ -262,16 +257,21 @@ int main(int argc,char *argv[]) {
 
     std::cout << "\n\n\nFinal Results";
     int indexOfMin = indexOfVectorMin(fcn_mins);
+    double norm = 0;
+    for (int i = 0; i < 5; i++)
+        norm += fabs(params_ary[indexOfMin]->at(i));
+
     std::cout << "Minimum = " << doubleFormatter(fcn_mins[indexOfMin],4) << std::endl;
     for (int i = 0; i < 5; i++)
-        std::cout << i << "\t" << doubleFormatter(params_ary[indexOfMin]->at(i),4) << std::endl;
+        std::cout << i << "\t" << doubleFormatter(params_ary[indexOfMin]->at(i) / norm, 4) << std::endl;
 
     if (writeOutput) {
         sprintf(path, "%s/cpp/NCAA_C/constants/%s", homePath, outFileName.c_str());
         std::ofstream outFile(path, std::ios::app);
         outFile << outYear;
-        for (int i = 0; i < 6; i++)
-            outFile << "," << doubleFormatter(params_ary[indexOfMin]->at(i),4);
+        for (int i = 0; i < 5; i++)
+            outFile << "," << doubleFormatter(params_ary[indexOfMin]->at(i) / norm, 4);
+        outFile << "," << doubleFormatter(params_ary[indexOfMin]->at(5), 4);
         outFile << std::endl;
         outFile.close();
     }
@@ -280,7 +280,7 @@ int main(int argc,char *argv[]) {
 }
 
 void fcn(int& num_par, double* grad, double& f, double pars[], int flag) {
-    double value = 1;
+    double value;
     int wins = 0, total = 0;
     int num_events = (int) win.size();
 
@@ -311,13 +311,13 @@ std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
     minuit.mnexcm("SET PRINT",arglist,1,iflag);
     minuit.mnexcm("SET NOW",arglist,0,iflag);
     minuit.SetFCN(fcn);
-    arglist[0] = 1;
+    arglist[0] = 2;
     minuit.mnexcm("SET STR",arglist,1,iflag);
-    minuit.mnparm(0,"parOOR",parOOR,0.1,0,100,iflag);//or
-    minuit.mnparm(1,"parEFG",parOEFG,0.1,0,100,iflag);//efgp
-    minuit.mnparm(2,"parFTMR",parOFTMR,0.1,0,100,iflag);//ftr
-    minuit.mnparm(3,"parTO",parOTO,0.1,0,100,iflag);//top
-    minuit.mnparm(4,"parSRS",parSRS,0.1,0,100,iflag);//srs
+    minuit.mnparm(0,"parOOR",parOOR,0.1,0,0,iflag);//or
+    minuit.mnparm(1,"parEFG",parOEFG,0.1,0,0,iflag);//efgp
+    minuit.mnparm(2,"parFTMR",parOFTMR,0.1,0,0,iflag);//ftr
+    minuit.mnparm(3,"parTO",parOTO,0.1,0,0,iflag);//top
+    minuit.mnparm(4,"parSRS",parSRS,0.1,0,0,iflag);//srs
 
     arglist[0] = 10000;
     arglist[1] = 0.0001;
@@ -339,7 +339,7 @@ std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
     return ret_ary;
 }
 
-void printOptions(){//yYoiS
+void printOptions(){
     std::cout << std::endl;
     std::cout << "generateWeights Usage options:" << std::endl;
     std::cout << "" << std::endl;
