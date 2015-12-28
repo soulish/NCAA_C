@@ -113,6 +113,12 @@ void ConstantTeamNeutralRatios::initialize(std::string path) {
         team_neutral_ratios[year]->at(loc)->emplace("oftmr.a", stod(value));
         getline(file, value, ',');
         team_neutral_ratios[year]->at(loc)->emplace("oftmr.p", stod(value));
+        getline(file, value, ',');
+        team_neutral_ratios[year]->at(loc)->emplace("oppp.m", stod(value));
+        getline(file, value, ',');
+        team_neutral_ratios[year]->at(loc)->emplace("oppp.a", stod(value));
+        getline(file, value, ',');
+        team_neutral_ratios[year]->at(loc)->emplace("oppp.p", stod(value));
         getline(file, value, '\n');
     }
 

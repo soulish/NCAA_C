@@ -109,6 +109,12 @@ void ConstantTeam5YearAverages::initialize(std::string path) {
         team_5yr_averages[year]->emplace("oftmr.a", stod(value));
         getline(file, value, ',');
         team_5yr_averages[year]->emplace("oftmr.p", stod(value));
+        getline(file, value, ',');
+        team_5yr_averages[year]->emplace("oppp.m", stod(value));
+        getline(file, value, ',');
+        team_5yr_averages[year]->emplace("oppp.a", stod(value));
+        getline(file, value, ',');
+        team_5yr_averages[year]->emplace("oppp.p", stod(value));
         getline(file, value, '\n');
     }
 }
