@@ -17,6 +17,7 @@ def printOptions
   puts "\t-y (int,int,...) comma-separated list of input years. (no default)[Required if -C used]"
   puts "\t-Y (int) output year (no default)[Required if -o|-O used]"
   puts "\t-n (int) number of bins used for histograms (no default)[Required]"
+  puts "\t-v|-V verbose mode [Optional]"
   puts "\t-R run ROOT? Canvas drawn if selected [Optional]"
   puts ""
   puts "Ex: ruby showWAverageFns.rb -C -y 2010,2011,2012,2013,2014 -Y 2015 -F functions2015_301.root"
@@ -105,13 +106,14 @@ end
 
 hist = {}; hist_slices = {}; graphs = {}; grs = {}; fns = {}
 averaged_graphs = {}
-ss = ["or","efg","ftmr","to"]
+ss = ["or","efg","ftmr","to","ppp"]
 range = {}
 #order is low edge, high edge, nbins
-range["or"] =   [0.1,0.5,nbins]
-range["efg"] =  [0.3,0.7,nbins]
-range["ftmr"] = [0.1,0.5,nbins]
-range["to"] =   [0.0,0.4,nbins]
+range["or"] =   [0.1,0.7,nbins]
+range["efg"] =  [0.2,0.8,nbins]
+range["ftmr"] = [0.0,0.6,nbins]
+range["to"] =   [0.05,0.35,nbins]
+range["ppp"] =  [0.3,1.3,nbins]
 
 ss.each do |s|
   hist[s] = gROOT.FindObject("hist_#{s}")
@@ -129,7 +131,7 @@ end
 
 cans = {}; can_slices = {}; can_fits = {}
 cans["main"] = TCanvas.new("main","Main",0,0,1300,700)
-cans["main"].Divide(4,2)
+cans["main"].Divide(4,3)
 
 outFile = nil
 if outFileName
