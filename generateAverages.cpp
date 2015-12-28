@@ -83,7 +83,7 @@ int main(int argc,char *argv[]) {
     std::string basic_stats[] = {"opts","opf"};//these only matter in raw values, they don't have a m, a, and p.
     //these have m, a, and p values
     std::string stats[] = {"ofg","otwo","othree","oft","oor","odr","otr",
-                           "oas","ost","obl","oto","oefg","oftmr"};
+                           "oas","ost","obl","oto","oefg","oftmr","oppp"};
 
     //variables to keep track of the point differentials, wins, losses, and total games in the various locations
     int pt_diff_home = 0, pt_diff_away = 0, pt_diff_neutral = 0;
