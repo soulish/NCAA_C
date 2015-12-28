@@ -62,6 +62,15 @@ void ConstantWAverageFunctions::initialize(std::string path) {
         functions[year]->emplace(stat, new TF1(name, "pol1"));
         getline(file, value, ',');
         functions[year]->at(stat)->SetParameter(0,stod(value));
+        getline(file, value, ',');
+        functions[year]->at(stat)->SetParameter(1,stod(value));
+
+        //ppp.p
+        getline(file, stat, ',');
+        sprintf(name, "fn_%s",stat.c_str());
+        functions[year]->emplace(stat, new TF1(name, "pol1"));
+        getline(file, value, ',');
+        functions[year]->at(stat)->SetParameter(0,stod(value));
         getline(file, value, '\n');
         functions[year]->at(stat)->SetParameter(1,stod(value));
     }
@@ -71,7 +80,7 @@ std::unordered_map<std::string, double> ConstantWAverageFunctions::predictStats(
                                                                                 int year) {
     std::unordered_map<std::string, double> result;
 
-    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
+    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p","ppp.p"};
 
     for (std::string &s : stats){
         double factor;
@@ -88,7 +97,7 @@ std::unordered_map<std::string, double> ConstantWAverageFunctions::predictStats(
                                                                                 std::string offOrDef) {
     std::unordered_map<std::string, double> result;
 
-    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p"};
+    std::string stats[] = {"or.p", "efg.p", "ftmr.p", "to.p", "ppp.p"};
 
     for (std::string &s : stats){
         double factor;
