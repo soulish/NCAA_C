@@ -32,6 +32,7 @@ public:
         delete dftmr;
         delete dto;
 
+        delete oppp;
         delete ofg;
         delete otwo;
         delete othree;
@@ -39,6 +40,7 @@ public:
         delete odr;
         delete otr;
 
+        delete dppp;
         delete dfg;
         delete dtwo;
         delete dthree;
@@ -54,6 +56,8 @@ public:
     const std::string getTeam() const {      return teamname;  }
     const boost::gregorian::date &getDate() const {  return date;  }
     const int getNum_games() const {  return num_games;  }
+    const double getOposs() const {  return oposs;  }
+    const double getDposs() const {  return dposs;  }
     const Pct *getOor() const {   return oor;  }
     const Pct *getOefg() const {  return oefg; }
     const Pct *getOftmr() const { return oftmr;}
@@ -63,6 +67,7 @@ public:
     const Pct *getDftmr() const { return dftmr;}
     const Pct *getDto() const {   return dto;  }
     const int getOpts() const {   return opts; }
+    const Pct *getOppp() const {  return oppp;  }
     const Pct *getOfg() const {   return ofg;  }
     const Pct *getOtwo() const {  return otwo; }
     const Pct *getOthree() const {return othree;}
@@ -70,6 +75,7 @@ public:
     const Pct *getOdr() const {   return odr;  }
     const Pct *getOtr() const {   return otr;  }
     const int getDpts() const {   return dpts; }
+    const Pct *getDppp() const {  return dppp;  }
     const Pct *getDfg() const {   return dfg;  }
     const Pct *getDtwo() const {  return dtwo; }
     const Pct *getDthree() const {return dthree;}
@@ -86,6 +92,8 @@ protected:
     const std::string teamname;
     const boost::gregorian::date date;
     const int num_games;
+    const double oposs;
+    const double dposs;
 
     //four factors***************
     const Pct *oor;
@@ -100,6 +108,7 @@ protected:
     //****************************
 
     const int opts;
+    const Pct *oppp;
     const Pct *ofg;
     const Pct *otwo;
     const Pct *othree;
@@ -108,6 +117,7 @@ protected:
     const Pct *otr;
 
     const int dpts;
+    const Pct *dppp;
     const Pct *dfg;
     const Pct *dtwo;
     const Pct *dthree;
