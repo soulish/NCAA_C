@@ -23,6 +23,7 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
           ost(new Pct((double)_stl,oposs)),
           obl(new Pct((double)_blk,oposs)),
           oto(new Pct((double)_tov,oposs)),
+          oppp(new Pct((double)_pts,oposs)),
           dpts(_opp_pts),
           dfg(new Pct(_opp_fgm,_opp_fga)),
           dtwo(new Pct(_opp_fgm-_opp_threem,_opp_fga-_opp_threea)),
@@ -38,7 +39,8 @@ TeamGame::TeamGame(std::string _team, std::string _opp, int _game_no, boost::gre
           dto(new Pct((double)_opp_tov,dposs)),
           dpf(_opp_pf),
           defg(new Pct(_opp_fgm+(0.5*_opp_threem),(double)_opp_fga)),
-          dftmr(new Pct(_opp_ftm,_opp_fga)){
+          dftmr(new Pct(_opp_ftm,_opp_fga)),
+          dppp(new Pct((double)_opp_pts,dposs)){
     if (_loc == "away") opp_loc = "home";
     else if (_loc == "home") opp_loc = "away";
     else if (_loc == "neutral") opp_loc = "neutral";
@@ -72,6 +74,8 @@ const Pct *TeamGame::getPct(std::string which) const {
         return oefg;
     else if (which == "oftmr")
         return oftmr;
+    else if (which == "oppp")
+        return oppp;
     else if (which == "dfg")
         return dfg;
     else if (which == "dtwo")
@@ -98,6 +102,8 @@ const Pct *TeamGame::getPct(std::string which) const {
         return defg;
     else if (which == "dftmr")
         return dftmr;
+    else if (which == "dppp")
+        return dppp;
     else {
         std::cout << "Error " << which << std::endl;
         return nullptr;

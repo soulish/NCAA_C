@@ -29,6 +29,7 @@ public:
         delete ost;
         delete obl;
         delete oto;
+        delete oppp;
 
         delete dfg;
         delete dtwo;
@@ -43,6 +44,7 @@ public:
         delete dto;
         delete defg;
         delete dftmr;
+        delete dppp;
     }
     //Copy Constructor
     //Copy Assignment
@@ -96,6 +98,7 @@ private:
     const Pct *ost;
     const Pct *obl;
     const Pct *oto;
+    const Pct *oppp;
 
     const int dpts;
     const Pct *dfg;
@@ -113,6 +116,7 @@ private:
     const Pct *dto;
     const Pct *defg;
     const Pct *dftmr;
+    const Pct *dppp;
     const int dpf;
 };
 
