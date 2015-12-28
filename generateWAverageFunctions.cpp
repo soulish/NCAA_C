@@ -84,39 +84,49 @@ int main(int argc,char *argv[]) {
     sprintf(path, "%s/cpp/NCAA_C/rootFiles/%s",homePath,outFileName.c_str());
     TFile outFile(path,"recreate");
 
-    std::string stats[] = {"or","efg","ftmr","to"};
+    std::string stats[] = {"or","efg","ftmr","to","ppp"};
 
     std::unordered_map<std::string, std::array<double,3> *> range;
     range.emplace("or", new std::array<double,3>());
-    range["or"]->at(0) = 0.1;
-    range["or"]->at(1) = 0.5;
+    range["or"]->at(0) = 0.1;//range["or"]->at(0) = 0.1;
+    range["or"]->at(1) = 0.7;//range["or"]->at(1) = 0.5;
     range["or"]->at(2) = nbins;
     range.emplace("efg", new std::array<double,3>());
-    range["efg"]->at(0) = 0.3;
-    range["efg"]->at(1) = 0.7;
+    range["efg"]->at(0) = 0.2;//range["efg"]->at(0) = 0.3;
+    range["efg"]->at(1) = 0.8;//range["efg"]->at(1) = 0.7;
     range["efg"]->at(2) = nbins;
     range.emplace("ftmr", new std::array<double,3>());
-    range["ftmr"]->at(0) = 0.1;
-    range["ftmr"]->at(1) = 0.5;
+    range["ftmr"]->at(0) = 0.0;//range["ftmr"]->at(0) = 0.1;
+    range["ftmr"]->at(1) = 0.6;//range["ftmr"]->at(1) = 0.5;
     range["ftmr"]->at(2) = nbins;
     range.emplace("to", new std::array<double,3>());
-    range["to"]->at(0) = 0.0;
-    range["to"]->at(1) = 0.4;
+    range["to"]->at(0) = 0.05;//range["to"]->at(0) = 0.0;
+    range["to"]->at(1) = 0.35;//range["to"]->at(1) = 0.4;
     range["to"]->at(2) = nbins;
+    range.emplace("ppp", new std::array<double,3>());
+    range["ppp"]->at(0) = 0.3;
+    range["ppp"]->at(1) = 1.3;
+    range["ppp"]->at(2) = nbins;
 
     std::unordered_map<std::string, TH2F*> defVsOffHists;
     std::unordered_map<std::string, TH2F*> gameResultsVsDiffHists;
     std::unordered_map<std::string, std::vector<std::vector<Pcts*> *> *> pcts;
+    std::unordered_map<std::string, TH1F*> numGamesAtDiff;
 
     //initialize the hashes
     for (auto &s : stats){
         sprintf(name,"hist_%s",s.c_str());
         sprintf(title,"d%s vs o%s",s.c_str(),s.c_str());
-        defVsOffHists.emplace(s, new TH2F(name, title, range[s]->at(2), 0, 1, range[s]->at(2), 0, 1));
+        defVsOffHists.emplace(s, new TH2F(name, title, range[s]->at(2), range[s]->at(0), range[s]->at(1),
+                                          range[s]->at(2), range[s]->at(0), range[s]->at(1)));
 
         sprintf(name,"gameResultsVsDiff_%s",s.c_str());
         sprintf(title,"Result vs Diff %s",s.c_str());
-        gameResultsVsDiffHists.emplace(s, new TH2F(name, title, 2*range[s]->at(2), -1, 1, 2*range[s]->at(2), 0, 2));
+        gameResultsVsDiffHists.emplace(s, new TH2F(name, title, 2*range[s]->at(2), -1*range[s]->at(1), range[s]->at(1),
+                                                   2*range[s]->at(2), 0, 2));
+
+        sprintf(name,"numGamesAtDiff_%s",s.c_str());
+        numGamesAtDiff.emplace(s, new TH1F(name,"",2*range[s]->at(2), -1*range[s]->at(1), range[s]->at(1)));
 
         pcts.emplace(s, new std::vector<std::vector<Pcts*>*>());
         for (int i = 0; i < range[s]->at(2); i++){
@@ -156,12 +166,33 @@ int main(int argc,char *argv[]) {
             if (!oppWaverage) continue;
 
             for (std::string &s : stats){
-                defVsOffHists[s]->Fill(waverage->getValue("o" + s + ".p"), oppWaverage->getValue("d" + s + ".p"));
-                int i = (int)floor(waverage->getValue("o"+s+".p") * range[s]->at(2));
-                int j = (int)floor(oppWaverage->getValue("d"+s+".p") * range[s]->at(2));
-                gameResultsVsDiffHists[s]->Fill((i-j)/range[s]->at(2),
-                        game.second->getPct("o"+s)->P() * ratios->get(year,game.second->getLoc(),"o"+s+".p") /
-                        waverage->getValue("o"+s+".p"));
+                int i, j;
+                if (s == "ppp") {
+                    double waP = waverage->getValue("o" + s + ".m") / waverage->getValue("o" + s + ".a");
+                    double oppWaP =  oppWaverage->getValue("d" + s + ".m") / oppWaverage->getValue("d" + s + ".a");
+                    defVsOffHists[s]->Fill(waP,oppWaP);
+                    i = (int)floor((waP - range[s]->at(0)) * range[s]->at(2) /
+                                   (range[s]->at(1) - range[s]->at(0)));
+                    j = (int)floor((oppWaP - range[s]->at(0)) * range[s]->at(2) /
+                                   (range[s]->at(1) - range[s]->at(0)));
+                }
+                else{
+                    defVsOffHists[s]->Fill(waverage->getValue("o" + s + ".p"), oppWaverage->getValue("d" + s + ".p"));
+                    i = (int)floor((waverage->getValue("o"+s+".p") - range[s]->at(0)) * range[s]->at(2) /
+                                   (range[s]->at(1) - range[s]->at(0)));
+                    j = (int)floor((oppWaverage->getValue("d"+s+".p") - range[s]->at(0)) * range[s]->at(2) /
+                                   (range[s]->at(1) - range[s]->at(0)));
+                }
+                //a very small number of games should have out-of-bounds problems, but this fixes them.
+                i = i < 0 ? 0 : i;
+                i = i >= range[s]->at(2) ? range[s]->at(2) - 1 : i;
+                j = j < 0 ? 0 : j;
+                j = j >= range[s]->at(2) ? range[s]->at(2) - 1 : j;
+                gameResultsVsDiffHists[s]->Fill((i-j) * (range[s]->at(1) - range[s]->at(0)) / range[s]->at(2),
+                                                game.second->getPct("o"+s)->P() * ratios->get(year,game.second->getLoc(),"o"+s+".p") /
+                                                waverage->getValue("o"+s+".p"));
+                numGamesAtDiff[s]->Fill((i-j) * (range[s]->at(1) - range[s]->at(0)) / range[s]->at(2));
+
                 //neutralize the results
                 pcts[s]->at(i)->at(j)->add_pct(Pct(game.second->getPct("o"+s)->M() * ratios->get(year,game.second->getLoc(),"o"+s+".m"),
                                                    game.second->getPct("o"+s)->A() * ratios->get(year,game.second->getLoc(),"o"+s+".a")));
@@ -208,17 +239,24 @@ int main(int argc,char *argv[]) {
                     //defense gives up.  So as we increase in x, the defense is getting better
                     //compared to the offense.  This convention was chosen so that we can
                     //evaluate the functions with team A's offense minus team B's defense.
-                    x[i][j] = i / range[s]->at(2) - j / range[s]->at(2);
+//                    x[i][j] = i / range[s]->at(2) - j / range[s]->at(2);
+                    x[i][j] = (i - j) * (range[s]->at(1) - range[s]->at(0)) / range[s]->at(2);
 
                     //the denominator here is the middle of the bin that i represents.
                     //so, a value of 1 for y[i][j] means that p_bar is the same as you would
                     //expect without considering the defense.  A number below 1 means that
                     //the defense is lowering the result, and a number above 1 means that
                     //the defense is causing a higher result than expected.
+//                    y[i][j] = pcts[s]->at(i)->at(j)->p_bar() /
+//                              (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
+//                    y_err[i][j] = pcts[s]->at(i)->at(j)->weighted_std_dev() /
+//                                  (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
                     y[i][j] = pcts[s]->at(i)->at(j)->p_bar() /
-                              (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
+                            (i * (range[s]->at(1) - range[s]->at(0)) / range[s]->at(2) + range[s]->at(0) +
+                             1 / (2 * range[s]->at(2)));
                     y_err[i][j] = pcts[s]->at(i)->at(j)->weighted_std_dev() /
-                                  (i / range[s]->at(2) + 1 / (2 * range[s]->at(2)));
+                            (i * (range[s]->at(1) - range[s]->at(0)) / range[s]->at(2) + range[s]->at(0) +
+                             1 / (2 * range[s]->at(2)));
 
                     allX.push_back(x[i][j]);
                     allY.push_back(y[i][j]);
@@ -257,7 +295,8 @@ int main(int argc,char *argv[]) {
                 std::vector<double> averageAndError = weightedAverageAndError(allYAtX[i], allYerrAtX[i]);
                 if (averageAndError.size() == 0) continue;
                 if (averageAndError[0] != averageAndError[0]) continue;//check for nans
-                averagedX.push_back((i - (range[s]->at(2) - 1)) / range[s]->at(2));
+                averagedX.push_back((i - (range[s]->at(2) - 1)) * (range[s]->at(1) - range[s]->at(0)) /
+                                    range[s]->at(2));
                 averagedXerr.push_back(0);
                 averagedY.push_back(averageAndError[0]);
                 averagedYerr.push_back(averageAndError[1]);
@@ -290,11 +329,13 @@ int main(int argc,char *argv[]) {
     outFile.Append(graphs["efg"]);
     outFile.Append(graphs["ftmr"]);
     outFile.Append(graphs["to"]);
+    outFile.Append(graphs["ppp"]);
 
     outFile.Append(averagedGraphs["or"]);
     outFile.Append(averagedGraphs["efg"]);
     outFile.Append(averagedGraphs["ftmr"]);
     outFile.Append(averagedGraphs["to"]);
+    outFile.Append(averagedGraphs["ppp"]);
 
     outFile.Write();
     outFile.Close();
