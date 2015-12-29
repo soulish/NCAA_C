@@ -47,6 +47,9 @@ ARGV.each_with_index do |entry, index|
     teamName = ARGV[index+1]
   when /^-D|-d|-g|-G/
     drawGames = true
+  when /^-h/
+    printOptions
+    exit
   end
 end
 
@@ -166,4 +169,4 @@ gApplication.Connect("TCanvas","Closed()","TApplication",gApplication,
                      "Terminate()")
 ##If runROOT selected the window will stay until closed,  
 ##If not selected the window goes away after the fits run. 
- gApplication.Run# if runROOT             
+gApplication.Run# if runROOT
