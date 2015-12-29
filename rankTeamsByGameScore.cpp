@@ -28,9 +28,11 @@ int main(int argc,char *argv[]) {
     bool useHistogramsFile = false;
     std::string srsValue = "free";
     int chosenYear = 0;
+    std::string rankingDay = "tournament start";
+    boost::gregorian::date rankingDate;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Hs:Y:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:Hs:Y:d:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -44,6 +46,9 @@ int main(int argc,char *argv[]) {
                 break;
             case 'Y':
                 chosenYear = atoi(optarg);
+                break;
+            case 'd':
+                rankingDay.assign(optarg);
                 break;
             case 'h':
                 printOptions();
@@ -122,9 +127,14 @@ int main(int argc,char *argv[]) {
     std::unordered_map<std::string, double> gameScorePcts;
 
     for (auto &team : teams) {
-        wa1 = team.second->WAverageOnDate(seasonInfo->get(team.second->getYear(), "tournament start"));
-        double gameScore = gameFunction->predictGame(wa1,
-                                                     chosenYear == 0 ? team.second->getYear() : chosenYear,
+        if (rankingDay == "tournament start")
+            wa1 = team.second->WAverageOnDate(seasonInfo->get(team.second->getYear(), "tournament start"));
+        else if (rankingDay == "tournament end")
+            wa1 = team.second->WAverageOnDate(seasonInfo->get(team.second->getYear(), "tournament end"));
+        else
+            wa1 = team.second->WAverageOnDate(boost::gregorian::date(boost::gregorian::from_string(rankingDay)));
+
+        double gameScore = gameFunction->predictGame(wa1,chosenYear == 0 ? team.second->getYear() : chosenYear,
                                                      "neutral","neutral");
 
         if (gameScores.find(gameScore) != gameScores.end())
@@ -175,17 +185,20 @@ void printOptions(){
     std::cout << "rankTeamsByGameScore Usage options:" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "\t-y (int,int,...) comma-separated list of years to use (no default)[Required]" << std::endl;
-    std::cout << "\t-Y (int) year to use for calculations (no default)[Optional]" << std::endl;
+    std::cout << "\t-Y (int) year to use for calculations (default: standard year)[Optional]" << std::endl;
     std::cout << "\t-s (double) srs value to use for weights and histograms (default: \"fixed\")[Optional]" << std::endl;
     std::cout << "\t-H calculate game Score percentages using histograms file (no default)[Optional]" << std::endl;
+    std::cout << "\t-d (string yyyy-mm-dd) date on which to rank teams. Date format or season info" << std::endl;
+    std::cout << "\t\tstrings allowed, such as \"tournament end\" (default:\"tournament start\")[Optional]" << std::endl;
+    std::cout << "\t-h show this dialog" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: $CLION/rankTeamsByGameScore -y 2014,2015 -H -s 0.5 -Y 2007" << std::endl;
+    std::cout << "Ex: $CLION/rankTeamsByGameScore -y 2014,2015 -H -s 0.5 -Y 2007 -d \"tournament end\"" << std::endl;
     std::cout << std::endl;
     std::cout << "This program ranks all of the teams in the list of years provided by their gameScore" << std::endl;
-    std::cout << "as it is calculated on the day the NCAA tournament began in that year" << std::endl;
+    std::cout << "as it is calculated on the date supplied, which defaults to \"tournament start\"," << std::endl;
     std::cout << "using either the constants appropriate for the year of the team, or a specific year" << std::endl;
     std::cout << "which can be provided using the -Y switch.  In the example, all the teams from " << std::endl;
-    std::cout << "2014 and 2015 will be ranked using 2015's constants.  If a histogram file is provided" << std::endl;
+    std::cout << "2014 and 2015 will be ranked using 2007's constants.  If a histogram file is provided" << std::endl;
     std::cout << "then the winning percentage will also be output." << std::endl;
     std::cout << std::endl;
 }
