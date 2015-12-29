@@ -388,21 +388,21 @@ which is deleted at the end of the program.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-showTournamentMatchup.cpp:
+predictGameOnDate.cpp:
 This program creates histograms for each of the four factors, offense and
 defense, over the course of the season for two teams.  It creates histograms 
 for both the regular averages as well as the weighted averages.  It also plots
 SRS and gameScore or RPI.  Lastly it calculates the predictions for both teams'
 four factors, and likelihood of winning.  You view the resultant ROOT 
-histograms using the showTournamentMatch.rb Ruby program.  All you have to 
+histograms using the predictGameOnDate.rb Ruby program.  All you have to
 specify is the teams' names, and the name of the output file.  You can also 
 decide to plot the game score by selecting the -H option, and specifying an
 SRS value for the weights if necessary.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-showTournamentMatchup.rb:
-This program is used to show the results of the showTournamentMatchup program,
+predictGameOnDate.rb:
+This program is used to show the results of the predictGameOnDate program,
 but it can also be used to run that program first and then process the output,
 so as to make this a one-step process.  If a ROOT file already exists, you 
 can plot its graphs using the -F switch to set the input file name. If a ROOT 
