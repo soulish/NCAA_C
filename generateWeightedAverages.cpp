@@ -4,13 +4,10 @@
 #include <string>
 #include <unordered_map>
 #include <map>
-#include <boost/foreach.hpp>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include "src/ConstantTeamNeutralRatios.h"
 #include "src/Team.h"
-#include "src/TeamGame.h"
-#include "src/Pcts.h"
 #include "src/readTeams.h"
 #include "helpers/doubleFormatter.h"
 #include "src/ConstantSeasonInfo.h"
@@ -21,14 +18,26 @@ int main(int argc,char *argv[]) {
     int c;
     int year = 0;
     bool overWrite = false;
+    std::string startDay = "";
+    std::string endDay = "";
+    bool append = false;
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:oh")) != -1){
+    while((c = getopt(argc,argv,"y:od:D:ah")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
                 break;
             case 'o':
                 overWrite = true;
+                break;
+            case 'd':
+                startDay.assign(optarg);
+                break;
+            case 'D':
+                endDay.assign(optarg);
+                break;
+            case 'a':
+                append = true;
                 break;
             case 'h':
                 printOptions();
@@ -38,9 +47,19 @@ int main(int argc,char *argv[]) {
                 break;
         }
     }
-
     if (year == 0){
         std::cout << "you must set the year" << std::endl;
+        printOptions();
+        return 0;
+    }
+    if (overWrite && append){
+        std::cout << "You may either overwrite the files or append to them, not both.  Please" << std::endl;
+        std::cout << "choose either the -a or -o switch, not both" << std::endl;
+        printOptions();
+        return 0;
+    }
+    if (append && startDay == ""){
+        std::cout << "If you choose to append, you must select a start date as well with the -d switch" << std::endl;
         printOptions();
         return 0;
     }
@@ -49,9 +68,23 @@ int main(int argc,char *argv[]) {
     homePath = getenv("HOME");
 
     sprintf(path, "%s/cpp/NCAA_C/constants/team_neutral_ratios.d", homePath);
-    ConstantTeamNeutralRatios::Instance()->initialize(path);
+    ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
+    ratios->initialize(path);
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
-    ConstantSeasonInfo::Instance()->initialize(path);
+    ConstantSeasonInfo *seasonInfo = ConstantSeasonInfo::Instance();
+    seasonInfo->initialize(path);
+
+    boost::gregorian::date startDate, endDate;
+
+    if (startDay == "")
+        startDate = seasonInfo->get(year,"season start") + boost::gregorian::date_duration(14);
+    else
+        startDate = boost::gregorian::date(boost::gregorian::from_string(startDay));
+
+    if (endDay == "")
+        endDate = seasonInfo->get(year,"tournament start");
+    else
+        endDate = boost::gregorian::date(boost::gregorian::from_string(endDay));
 
     sprintf(path, "%s/cpp/NCAA_C/teams/%i/", homePath, year);
     std::cout << "Reading in " << year << std::endl;
@@ -60,7 +93,6 @@ int main(int argc,char *argv[]) {
     std::unordered_map<std::string, Team *> teams = Team::getTeams();
     std::map<std::string, Team *> orderedTeams(teams.begin(), teams.end());
     Team *a;
-    TeamGame *tg;
 
     for (auto &team : orderedTeams) {
         a = team.second;
@@ -70,7 +102,7 @@ int main(int argc,char *argv[]) {
         sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.averages.d",
                 homePath,year,boost::replace_all_copy(a->getName()," ","_").c_str());
 
-        if (!overWrite) {
+        if (!overWrite && !append) {
             struct stat buffer;
             if (stat(path, &buffer) == 0){
                 std::cout << team.first << std::endl;
@@ -78,13 +110,19 @@ int main(int argc,char *argv[]) {
             }
         }
 
-        averagesFile.open(path);
+        if (append)
+            averagesFile.open(path, std::ios::app);
+        else
+            averagesFile.open(path);
         sprintf(path,"%s/cpp/NCAA_C/teams/%i/teams.%s.waverages.d",
                 homePath,year,boost::replace_all_copy(a->getName()," ","_").c_str());
-        waveragesFile.open(path);
-        boost::gregorian::day_iterator ditr(ConstantSeasonInfo::Instance()->get(year,"season start") +
-                                            boost::gregorian::date_duration(14));//2 weeks after start of season
-        for (; ditr <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++ditr) {
+        if (append)
+            waveragesFile.open(path, std::ios::app);
+        else
+            waveragesFile.open(path);
+
+        boost::gregorian::day_iterator ditr(startDate);
+        for (; ditr <= endDate; ++ditr) {
             std::cout << "Processing " << team.first << " date: " <<
             boost::gregorian::to_iso_extended_string(*ditr) << "\r";
             std::fflush(stdout);
@@ -129,7 +167,6 @@ int main(int argc,char *argv[]) {
         std::cout << std::endl;
     }
 
-
     return 0;
 }
 
@@ -139,9 +176,12 @@ void printOptions(){
     std::cout << "" << std::endl;
     std::cout << "\t-y (int) year to generate weighted averages for (no default)[Required]" << std::endl;
     std::cout << "\t-o overwrite currently existing files in directory? (false)[Optional]" << std::endl;
+    std::cout << "\t-d (string yyyy-mm-dd) start date (default: 2 weeks into season)[Required with -a switch]" << std::endl;
+    std::cout << "\t-D (string yyyy-mm-dd) end date (default: first day of the tournament)[Optional]" << std::endl;
+    std::cout << "\t-a append to file?[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "Ex: $CLION/generateWeightedAverages -y 2015" << std::endl;
+    std::cout << "Ex: $CLION/generateWeightedAverages -y 2015 -d \"2015-04-07\" -D \"2015-04-07\" -a" << std::endl;
     std::cout << std::endl;
     std::cout << "This program will generate the weighted averages for every team in a given year." << std::endl;
     std::cout << "It requires you to specify the year.  Then it searches the teams/YEAR/ directory" << std::endl;
@@ -149,7 +189,9 @@ void printOptions(){
     std::cout << "and neutral ratios files found in the constants directory.  It outputs two files" << std::endl;
     std::cout << "for each team, an (unweighted) averages file and a weighted averages file." << std::endl;
     std::cout << "If you have already generated some of the averages files in the year's directory," << std::endl;
-    std::cout << "you may choose whether or not to overwrite them with the -o switch." << std::endl;
+    std::cout << "you may choose whether or not to overwrite them with the -o switch, or to append" << std::endl;
+    std::cout << "to the file with the -a switch in conjunction with setting the start and end" << std::endl;
+    std::cout << "dates with the -d and -D options." << std::endl;
     std::cout << "" << std::endl;
     std::cout << std::endl;
 }
