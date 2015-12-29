@@ -6,7 +6,7 @@ gStyle.SetPalette(1,0)
 
 def printOptions
   puts ""
-  puts "showTournamentMatchup.rb Usage options"
+  puts "predictGameOnDate.rb Usage options"
   puts ""
   puts "\t-F (string) currently existing file name, or name of output ROOT file (no default)[Optional]"
   puts "\t-t (string) teamnameA (no default)[Required if -F not used]"
@@ -15,9 +15,9 @@ def printOptions
   puts "\t-s (int) (double) srs value to use for weights and histograms (default: \"fixed\")[Optional]"
   puts "\t-h print this message"
   puts ""
-  puts "Ex: ruby showTournamentMatchup.rb -t \"2015 north carolina\" -T \"2015 harvard\" -H -s 0.5"
+  puts "Ex: ruby predictGameOnDate.rb -t \"2015 north carolina\" -T \"2015 harvard\" -H -s 0.5"
   puts
-  puts "This program is used to show the results of the showTournamentMatchup program, but"
+  puts "This program is used to show the results of the predictGameOnDate program, but"
   puts "it can also be used to run that program first and then process the output, so as to make"
   puts "this a one-step process.  If a ROOT file already exists, you can plot its graphs"
   puts "using the -F switch to set the input file name. If a ROOT file does not already exist,"
@@ -34,6 +34,7 @@ teamNameA = nil
 teamNameB = nil
 srsVal = "free"
 useHistograms = false
+evaluationDate = "tournament start"
 
 #command line switcher
 ARGV.each_with_index do |entry, index|
@@ -48,6 +49,10 @@ ARGV.each_with_index do |entry, index|
     teamNameA = ARGV[index+1]
   when /^-T/
     teamNameB = ARGV[index+1]
+  when /^-d/
+    evaluationDate = ARGV[index+1]
+  when /^-h/
+    printOptions
   end
 end
 
@@ -60,29 +65,33 @@ if (teamNameA.nil? && teamNameB.nil?)
     file = TFile.new(fileName)
   end
 else
+  result = nil
   if fileName.nil?
     if !useHistograms
-      `$CLION/showTournamentMatchup -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\"`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -d #{evaluationDate}`
     else
-      `$CLION/showTournamentMatchup -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -H -s #{srsVal}`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -H -s #{srsVal} -d #{evaluationDate}`
     end
     #sleep 3
     file = TFile.new("rootFiles/temp.root")
   else
     if !useHistograms
-      `$CLION/showTournamentMatchup -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\"`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -d #{evaluationDate}`
     else
-      `$CLION/showTournamentMatchup -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -H -s #{srsVal}`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -H -s #{srsVal} -d #{evaluationDate}`
     end
     #sleep 3
     file = TFile.new("rootFiles/#{fileName}")
   end
+  puts result
 end
 
 avgsA_per_time = {}
 wavgsA_per_time = {}
 avgsB_per_time = {}
 wavgsB_per_time = {}
+predicted_wavgsA = {}
+predicted_wavgsB = {}
 league_avgs = {}
 lines = {}
 realLines = {}
@@ -92,9 +101,11 @@ ss = ["oor.p","oefg.p","oftmr.p","oto.p",
 ss.each do |s|
   avgsA_per_time[s] = gROOT.FindObject("avgA_per_time_#{s.gsub(".","")}")
   wavgsA_per_time[s] = gROOT.FindObject("wavgA_per_time_#{s.gsub(".","")}")
+  predicted_wavgsA[s] = gROOT.FindObject("predicted_wavgA_#{s.gsub(".","")}")
 
   avgsB_per_time[s] = gROOT.FindObject("avgB_per_time_#{s.gsub(".","")}")
   wavgsB_per_time[s] = gROOT.FindObject("wavgB_per_time_#{s.gsub(".","")}")
+  predicted_wavgsB[s] = gROOT.FindObject("predicted_wavgB_#{s.gsub(".","")}")
 
   #For some idiot reason I don't understand I can't draw a line read in this way
   #so I have to make a new TLine object using it.
@@ -105,9 +116,11 @@ end
 if useHistograms
   avgsA_per_time["gameScore"] = gROOT.FindObject("avgA_per_time_gameScore")
   wavgsA_per_time["gameScore"] = gROOT.FindObject("wavgA_per_time_gameScore")
+  predicted_wavgsA["gameScore"] = gROOT.FindObject("predicted_wavgA_gameScore")
 
   avgsB_per_time["gameScore"] = gROOT.FindObject("avgB_per_time_gameScore")
   wavgsB_per_time["gameScore"] = gROOT.FindObject("wavgB_per_time_gameScore")
+  predicted_wavgsB["gameScore"] = gROOT.FindObject("predicted_wavgB_gameScore")
 
   realLines["gameScore"] = realLines["rpi"]
 end
@@ -126,16 +139,22 @@ ss.each_with_index do |s,i|
   wavgsA_per_time[s].SetLineColor(4)
   wavgsA_per_time[s].SetMarkerSize(0.5)
   wavgsA_per_time[s].Draw("psame")
-  # avgsA_per_time[s].SetMarkerStyle(8)
-  # avgsA_per_time[s].SetMarkerColor(4)
-  # avgsA_per_time[s].SetMarkerSize(0.5)
-  # avgsA_per_time[s].Draw("psame")
+
+  predicted_wavgsA[s].SetMarkerStyle(20)
+  predicted_wavgsA[s].SetMarkerColor(4)
+  predicted_wavgsA[s].SetMarkerSize(1.0)
+  predicted_wavgsA[s].Draw("psame")
 
   wavgsB_per_time[s].SetMarkerStyle(4)
   wavgsB_per_time[s].SetMarkerColor(2)
   wavgsB_per_time[s].SetLineColor(2)
   wavgsB_per_time[s].SetMarkerSize(0.5)
   wavgsB_per_time[s].Draw("psame")
+
+  predicted_wavgsB[s].SetMarkerStyle(20)
+  predicted_wavgsB[s].SetMarkerColor(2)
+  predicted_wavgsB[s].SetMarkerSize(1.0)
+  predicted_wavgsB[s].Draw("psame")
 
   realLines[s].SetLineColor(2)
   realLines[s].Draw("same")
@@ -150,16 +169,22 @@ if useHistograms
   wavgsA_per_time["gameScore"].SetLineColor(4)
   wavgsA_per_time["gameScore"].SetMarkerSize(0.5)
   wavgsA_per_time["gameScore"].Draw("psame")
-  # avgsA_per_time["gameScore"].SetMarkerStyle(8)
-  # avgsA_per_time["gameScore"].SetMarkerColor(4)
-  # avgsA_per_time["gameScore"].SetMarkerSize(0.5)
-  # avgsA_per_time["gameScore"].Draw("psame")
+
+  predicted_wavgsA["gameScore"].SetMarkerStyle(20)
+  predicted_wavgsA["gameScore"].SetMarkerColor(4)
+  predicted_wavgsA["gameScore"].SetMarkerSize(1.0)
+  predicted_wavgsA["gameScore"].Draw("psame")
 
   wavgsB_per_time["gameScore"].SetMarkerStyle(4)
   wavgsB_per_time["gameScore"].SetMarkerColor(2)
   wavgsB_per_time["gameScore"].SetLineColor(2)
   wavgsB_per_time["gameScore"].SetMarkerSize(0.5)
   wavgsB_per_time["gameScore"].Draw("psame")
+
+  predicted_wavgsB["gameScore"].SetMarkerStyle(20)
+  predicted_wavgsB["gameScore"].SetMarkerColor(2)
+  predicted_wavgsB["gameScore"].SetMarkerSize(1.0)
+  predicted_wavgsB["gameScore"].Draw("psame")
 
   realLines["gameScore"].SetLineColor(2)
   realLines["gameScore"].Draw("same")
