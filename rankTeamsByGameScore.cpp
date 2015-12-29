@@ -127,13 +127,7 @@ int main(int argc,char *argv[]) {
     std::unordered_map<std::string, double> gameScorePcts;
 
     for (auto &team : teams) {
-        if (rankingDay == "tournament start")
-            wa1 = team.second->WAverageOnDate(seasonInfo->get(team.second->getYear(), "tournament start"));
-        else if (rankingDay == "tournament end")
-            wa1 = team.second->WAverageOnDate(seasonInfo->get(team.second->getYear(), "tournament end"));
-        else
-            wa1 = team.second->WAverageOnDate(boost::gregorian::date(boost::gregorian::from_string(rankingDay)));
-
+        wa1 = team.second->WAverageOnDate(seasonInfo->get(team.second->getYear(), rankingDay));
         double gameScore = gameFunction->predictGame(wa1,chosenYear == 0 ? team.second->getYear() : chosenYear,
                                                      "neutral","neutral");
 
@@ -186,10 +180,11 @@ void printOptions(){
     std::cout << "" << std::endl;
     std::cout << "\t-y (int,int,...) comma-separated list of years to use (no default)[Required]" << std::endl;
     std::cout << "\t-Y (int) year to use for calculations (default: standard year)[Optional]" << std::endl;
-    std::cout << "\t-s (double) srs value to use for weights and histograms (default: \"fixed\")[Optional]" << std::endl;
+    std::cout << "\t-s (double) srs value to use for weights and histograms (default: \"free\")[Optional]" << std::endl;
     std::cout << "\t-H calculate game Score percentages using histograms file (no default)[Optional]" << std::endl;
-    std::cout << "\t-d (string yyyy-mm-dd) date on which to rank teams. Date format or season info" << std::endl;
-    std::cout << "\t\tstrings allowed, such as \"tournament end\" (default:\"tournament start\")[Optional]" << std::endl;
+    std::cout << "\t-d (string yyyy-mm-dd or mm-dd or string) date on which to rank teams." << std::endl;
+    std::cout << "\t\t Date format or season info strings allowed, such as \"tournament end\"" << std::endl;
+    std::cout << "\t\t (default:\"tournament start\")[Optional]" << std::endl;
     std::cout << "\t-h show this dialog" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: $CLION/rankTeamsByGameScore -y 2014,2015 -H -s 0.5 -Y 2007 -d \"tournament end\"" << std::endl;
