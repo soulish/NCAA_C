@@ -21,7 +21,7 @@ public:
     static ConstantSeasonInfo* Instance();
 
     void initialize(std::string path);
-    const boost::gregorian::date &get(int,std::string);
+    const boost::gregorian::date get(int,std::string);
 
 private:
     ConstantSeasonInfo(){};

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "ConstantSeasonInfo.h"
 #include <fstream>
+#include <boost/algorithm/string.hpp>
 
 ConstantSeasonInfo* ConstantSeasonInfo::uniqueInstance = NULL;
 
@@ -56,6 +57,25 @@ void ConstantSeasonInfo::initialize(std::string path) {
     }
 }
 
-const boost::gregorian::date &ConstantSeasonInfo::get(int year, std::string dateDesired) {
-    return season_info[year]->at(dateDesired);
+const boost::gregorian::date ConstantSeasonInfo::get(int year, std::string dateDesired) {
+    if (dateDesired == "season start" || dateDesired == "season end" ||
+        dateDesired == "tournament start" || dateDesired == "tournament end")
+        return season_info[year]->at(dateDesired);
+    else{
+        std::vector<std::string> splitVec;
+        boost::split(splitVec, dateDesired, boost::is_any_of("-"));
+        if (splitVec.size() == 0 || splitVec.size() == 1)
+            return season_info[year]->at("tournament start");
+        else if (splitVec.size() == 2) {
+            std::string dateDesiredString;
+            if (atoi(splitVec[0].c_str()) >= 11)
+                dateDesiredString = std::to_string(year - 1) + "-" + dateDesired;
+            else
+                dateDesiredString = std::to_string(year) + "-" + dateDesired;
+            return boost::gregorian::date(boost::gregorian::from_string(dateDesiredString));
+        }
+        else if (splitVec.size() == 3){
+            return boost::gregorian::date(boost::gregorian::from_string(dateDesired));
+        }
+    }
 }
