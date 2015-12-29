@@ -4,10 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/foreach.hpp>
 #include "src/Team.h"
-#include "src/ConstantTeam5YearAverages.h"
-#include "src/ConstantTeamNeutralRatios.h"
 #include "src/ConstantSeasonInfo.h"
 #include "src/TeamWAverage.h"
 #include "src/readTeams.h"
@@ -64,7 +61,8 @@ int main(int argc,char *argv[]){
     homePath = getenv("HOME");
 
     sprintf(path, "%s/cpp/NCAA_C/constants/season_info.d", homePath);
-    ConstantSeasonInfo::Instance()->initialize(path);
+    ConstantSeasonInfo *seasonInfo = ConstantSeasonInfo::Instance();
+    seasonInfo->initialize(path);
 
     sprintf(path, "%s/cpp/NCAA_C/teams/%i/", homePath, year);
     std::cout << "Reading in " << year << std::endl;
@@ -80,30 +78,33 @@ int main(int argc,char *argv[]){
     srsHash.emplace(0,new dateHashType());
     allTeamsHashType allTeamsHash = Team::getTeams();
 
-    //initialize the srsHash with the initial srs values
-    boost::gregorian::day_iterator ditr(ConstantSeasonInfo::Instance()->get(year,"season start") +
-                                        boost::gregorian::date_duration(14));//2 weeks after start of season
-    for (; ditr <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++ditr) {
-        std::string date = boost::gregorian::to_iso_extended_string(*ditr);
-        srsHash[0]->emplace(date,new teamHashType());
+    sprintf(path,"%d north carolina",year);
+    Team *genericTeam = Team::findTeam(path);
+    std::unordered_map<std::string, TeamWAverage*> genericWAveragesUnordered = genericTeam->getWAveragesByDate();
+    std::map<std::string, TeamWAverage*> genericWAverages(genericWAveragesUnordered.begin(),
+                                                          genericWAveragesUnordered.end());
+    for (auto &genericWAverage : genericWAverages){
+        boost::gregorian::date day(boost::gregorian::from_string(genericWAverage.first));
+        std::string date = genericWAverage.first;
+        srsHash[0]->emplace(genericWAverage.first,new teamHashType());
         for (auto &team : allTeamsHash){
             if (startFromOriginalSRS)
-                srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getOrigSRS());
+                srsHash[0]->at(genericWAverage.first)->emplace(team.first, team.second->WAverageOnDate(day)->getOrigSRS());
             else
-                srsHash[0]->at(date)->emplace(team.first, team.second->WAverageOnDate(*ditr)->getSrs());
+                srsHash[0]->at(genericWAverage.first)->emplace(team.first, team.second->WAverageOnDate(day)->getSrs());
         }
+
     }
 
     std::vector<double> srsSOS;
     for (int i = 1; i < numIterations; i++){
         srsHash.emplace(i, new dateHashType());
-        boost::gregorian::day_iterator day(ConstantSeasonInfo::Instance()->get(year,"season start") +
-                                           boost::gregorian::date_duration(14));
-        for (; day <= ConstantSeasonInfo::Instance()->get(year,"tournament start"); ++day) {
-            std::string date = boost::gregorian::to_iso_extended_string(*day);
+        for (auto &genericWAverage : genericWAverages){
+            boost::gregorian::date day(boost::gregorian::from_string(genericWAverage.first));
+            std::string date = genericWAverage.first;
             srsHash[i]->emplace(date, new teamHashType());
             for (auto &team : allTeamsHash){
-                srsSOS = calcSRS(srsHash[i-1]->at(date),team.first,*day);
+                srsSOS = calcSRS(srsHash[i-1]->at(date),team.first,day);
                 srsHash[i]->at(date)->emplace(team.first,srsSOS[0]);
             }
         }
@@ -112,45 +113,33 @@ int main(int argc,char *argv[]){
             //this will show the srs for 3 different teams (a generally good team, a generally
             //mediocre team, and a generally bad team, on four different dates throughout the
             //season, the first date SRS is calculated (14 days after the season starts),
-            //then 50 days into the season, 100 days into the season, and the day the
-            //tournament starts.
+            //then 50 days into the season, 100 days into the season, the day the
+            //tournament starts, and the day the tournament ends.
             char team1[256], team2[256], team3[256];
             sprintf(team1, "%i north carolina", year);
             sprintf(team2, "%i bradley", year);
             sprintf(team3, "%i grambling state", year);
-            std::cout << i << "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(14)))->at(team1), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(14)))->at(team2), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(14)))->at(team3), 3) <<
-            "\t\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(50)))->at(team1), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(50)))->at(team2), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(50)))->at(team3), 3) <<
-            "\t\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(100)))->at(team1), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(100)))->at(team2), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "season start") +
-                    boost::gregorian::date_duration(100)))->at(team3), 3) <<
-            "\t\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "tournament start")))->at(team1), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "tournament start")))->at(team2), 3) <<
-            "\t" << doubleFormatter(srsHash[i]->at(boost::gregorian::to_iso_extended_string(
-                    ConstantSeasonInfo::Instance()->get(year, "tournament start")))->at(team3), 3) << std::endl;
+            std::string date1 = std::to_string(year-1)+"-12-01";
+            std::string date2 = std::to_string(year)+"-01-01";
+            std::string date3 = std::to_string(year)+"-02-14";
+            std::string date4 = boost::gregorian::to_iso_extended_string(seasonInfo->get(year, "tournament start"));
+            std::string date5 = boost::gregorian::to_iso_extended_string(seasonInfo->get(year, "tournament end"));
+            std::cout << i <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date1)->at(team1), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date1)->at(team2), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date1)->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(date2)->at(team1), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date2)->at(team2), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date2)->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(date3)->at(team1), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date3)->at(team2), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date3)->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(date4)->at(team1), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date4)->at(team2), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date4)->at(team3), 3) <<
+            "\t\t" << doubleFormatter(srsHash[i]->at(date5)->at(team1), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date5)->at(team2), 3) <<
+            "\t" <<   doubleFormatter(srsHash[i]->at(date5)->at(team3), 3) << std::endl;
         }
     }
 
@@ -164,19 +153,18 @@ int main(int argc,char *argv[]){
                     homePath, year, boost::replace_all_copy(team.first, " ", "_").c_str());
             waveragesFile.open(path);
 
-            boost::gregorian::day_iterator day(ConstantSeasonInfo::Instance()->get(year, "season start") +
-                                               boost::gregorian::date_duration(14));
-            for (; day <= ConstantSeasonInfo::Instance()->get(year, "tournament start"); ++day) {
-                std::string date = boost::gregorian::to_iso_extended_string(*day);
-                srsSOS = calcSRS(srsHash[numIterations - 1]->at(date), team.first, *day);
+            for (auto &genericWAverage : genericWAverages){
+                boost::gregorian::date day(boost::gregorian::from_string(genericWAverage.first));
+                std::string date = genericWAverage.first;
+                srsSOS = calcSRS(srsHash[numIterations - 1]->at(date), team.first, day);
 
-                wAverage = team.second->WAverageOnDate(*day);
+                wAverage = team.second->WAverageOnDate(day);
 
                 //write in the file
                 waveragesFile << team.first;
-                waveragesFile << "," << day->year();
-                waveragesFile << "," << day->month().as_number();
-                waveragesFile << "," << day->day();
+                waveragesFile << "," << day.year();
+                waveragesFile << "," << day.month().as_number();
+                waveragesFile << "," << day.day();
                 waveragesFile << "," << wAverage->getOpts();
                 waveragesFile << "," << wAverage->getOtwo()->A();
                 waveragesFile << "," << doubleFormatter(wAverage->getOtwo()->P(), 3);
