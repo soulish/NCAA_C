@@ -7,10 +7,12 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "TeamGame.h"
 #include "TeamAverage.h"
 #include "TeamWAverage.h"
+#include "TeamScheduledGame.h"
 
 class Team {
 public:
@@ -32,19 +34,25 @@ public:
     const std::unordered_map<std::string, TeamGame *> &getGamesByDate() const {  return gamesByDate;  }
     const std::unordered_map<std::string, TeamAverage *> &getAveragesByDate() const  {  return averagesByDate;  }
     const std::unordered_map<std::string, TeamWAverage *> &getWAveragesByDate() const {  return waveragesByDate;  }
+    const std::unordered_map<std::string, std::vector<TeamScheduledGame *> *> &getScheduledGamesByDate() const {
+        return scheduledGamesByDate;
+    }
     TeamGame *GameOnDate(boost::gregorian::date d, std::string opponent) const;
     TeamAverage *AverageOnDate(boost::gregorian::date d) const;
     TeamWAverage *WAverageOnDate(boost::gregorian::date d) const;
+    std::vector<TeamScheduledGame*> *ScheduledGamesOnDate(boost::gregorian::date d) const;
 
     //Other methods
     //adding games and averages
     void addGame(TeamGame* g);
     void addAverage(TeamAverage* a);
     void addWAverage(TeamWAverage* w);
+    void addScheduledGame(TeamScheduledGame* g);
 
     void addGames(std::string);
     void addAverages(std::string);
     void addWAverages(std::string);
+    void addScheduledGames(std::string);
 
     std::vector<double> calcWeightedAverage(boost::gregorian::date date);
 
@@ -61,6 +69,7 @@ private:
     std::unordered_map<std::string,TeamGame*>     gamesByDate;      //date strings are of form YYYY-MM-DD
     std::unordered_map<std::string,TeamAverage*>  averagesByDate;
     std::unordered_map<std::string,TeamWAverage*> waveragesByDate;
+    std::unordered_map<std::string,std::vector<TeamScheduledGame*> *> scheduledGamesByDate;
 
     static std::unordered_map<std::string, Team*> teams; //hash to store all the teams by name
     static Team *lastTeam;

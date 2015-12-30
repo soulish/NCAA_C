@@ -46,6 +46,19 @@ void Team::addWAverage(TeamWAverage *w) {
     waveragesByDate.emplace(boost::gregorian::to_iso_extended_string(w->getDate()),w);
 }
 
+void Team::addScheduledGame(TeamScheduledGame *g) {
+    if (scheduledGamesByDate.find(boost::gregorian::to_iso_extended_string(g->getDate())) ==
+        scheduledGamesByDate.end()) {
+
+        scheduledGamesByDate.emplace(boost::gregorian::to_iso_extended_string(g->getDate()),
+                                     new std::vector<TeamScheduledGame *>);
+        scheduledGamesByDate[boost::gregorian::to_iso_extended_string(g->getDate())]->push_back(g);
+    }
+    else{
+        scheduledGamesByDate[boost::gregorian::to_iso_extended_string(g->getDate())]->push_back(g);
+    }
+}
+
 //Add TeamGames via a file containing their games.
 void Team::addGames(std::string fileName) {
     std::string team, opp, loc;
@@ -315,6 +328,33 @@ void Team::addWAverages(std::string fileName) {
                                      dpts, dtwoa, dtwop, dthreea, dthreep, dfta, dftp,
                                      dora, dorp, ddra, ddrp, dtoa, dtop,
                                      rpi, origSRS, srs, sos, num_games));
+        }
+    }
+}
+
+void Team::addScheduledGames(std::string fileName) {
+    std::string team, opp, loc;
+    unsigned short yy, mo, da;
+    int game_no;
+
+    std::ifstream file(fileName);
+    std::string value;
+    while ( file.good() ){
+        getline(file, team, ',' );
+        getline(file, opp, ',' );
+        getline(file, value, ',' );
+        game_no = stoi(value);
+        getline(file, value, ',' );
+        yy = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        mo = (unsigned short)stoi(value);
+        getline(file, value, ',' );
+        da = (unsigned short)stoi(value);
+        getline(file, loc, '\n' );
+
+        if (file.good()) {
+            this->addScheduledGame(
+                    new TeamScheduledGame(team, opp, game_no, boost::gregorian::date(yy, mo, da), loc));
         }
     }
 }
@@ -592,3 +632,11 @@ TeamWAverage *Team::WAverageOnDate(boost::gregorian::date d) const {
     else
         return waveragesByDate.at(boost::gregorian::to_iso_extended_string(d));
 }
+
+std::vector<TeamScheduledGame*> *Team::ScheduledGamesOnDate(boost::gregorian::date d) const {
+    if (scheduledGamesByDate.find(boost::gregorian::to_iso_extended_string(d)) == scheduledGamesByDate.end())
+        return nullptr;
+    else
+        return scheduledGamesByDate.at(boost::gregorian::to_iso_extended_string(d));
+}
+
