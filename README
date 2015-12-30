@@ -415,6 +415,22 @@ is deleted at the end of the program.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
+predictAllGamesOnDate.rb:
+This program will calculate the odds of each team winning for every game to be
+played on the date specified by the -d switch.  The games to be played on the 
+date are determined by the schedules files.  Every team is cycled through, and
+if they have a game (or games) on the date, then the program will produce a 
+prediction for them using the weights and histograms file (if desired) 
+associated with the SRS indicated with the -s switch.  The TeamWAverage 
+to use for the predictions defaults to the day of the game, but can be set 
+with the -D option; this is so that you can make predictions for a day even 
+if you don't have completely up-to-date statistics, and haven't calculated 
+the waverage for the game date yet, which will be common since you probably 
+won't be able to instantly download all of the game information immediately 
+for every day, so the stats lag behind by a few days.
+Necessary programs: all up to and including generateSRS, must go to
+generateGameFunctionHistograms to use the -H option.
+
 rankTeamsByGameScore.cpp:
 This program ranks all of the teams in the list of years provided by their 
 gameScore as it is calculated on the day the NCAA tournament began in that year
@@ -425,3 +441,4 @@ If a histogram file is provided then the winning percentage will also
 be output.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
+
