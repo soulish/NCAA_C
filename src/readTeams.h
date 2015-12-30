@@ -54,6 +54,8 @@ int readTeamsFromDir(std::string dir, std::string gamesOrAverages = "games"){
             team->addAverages(filepath);
         else if (gamesOrAverages == "waverages")
             team->addWAverages(filepath);
+        else if (gamesOrAverages == "schedule")
+            team->addScheduledGames(filepath);
 
 //        std::cout << "Reading in " << gamesOrAverages << " for " << teamName << "\r";
 //        fflush(stdout);
