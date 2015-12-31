@@ -69,7 +69,6 @@ double ConstantGameFunction::predictGame(TeamWAverage *wa1, TeamWAverage *wa2, i
     ConstantWAverageFunctions *functions = ConstantWAverageFunctions::Instance();
     ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
     ConstantStandardDeviations *stdDevs = ConstantStandardDeviations::Instance();
-    ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
 
     std::unordered_map<std::string, double> predictions1 = functions->predictStats(wa1, wa2, year);
     std::unordered_map<std::string, double> predictions2 = functions->predictStats(wa2, wa1, year);
@@ -91,8 +90,7 @@ double ConstantGameFunction::predictGame(TeamWAverage *wa1, TeamWAverage *wa2, i
                   predictions2["oto.p"] * wa2->getValue("oto.p") / ratios->get(year,oppLoc,"oto.p")) /
                  stdDevs->get(year,"oto.p");
 
-    double srs = (wa1->getSrs() - wa2->getSrs() + additions->get(year,loc)) /
-                 stdDevs->get(year,"srs");
+    double srs = (wa1->getSrs() - wa2->getSrs()) / stdDevs->get(year,"srs"); //removed addition here
 
     std::unordered_map<std::string, double> *theWeights = weights[year];
 
@@ -109,7 +107,6 @@ double ConstantGameFunction::predictGame(TeamWAverage *wa1, int year, std::strin
     ConstantWAverageFunctions *functions = ConstantWAverageFunctions::Instance();
     ConstantTeamNeutralRatios *ratios = ConstantTeamNeutralRatios::Instance();
     ConstantStandardDeviations *stdDevs = ConstantStandardDeviations::Instance();
-    ConstantSRSadditions *additions = ConstantSRSadditions::Instance();
     ConstantTeam5YearAverages *averages = ConstantTeam5YearAverages::Instance();
 
     std::unordered_map<std::string, double> predictions1 = functions->predictStats(wa1, year);
@@ -133,8 +130,7 @@ double ConstantGameFunction::predictGame(TeamWAverage *wa1, int year, std::strin
                  stdDevs->get(year,"oto.p");
 
     //note average srs is 0, which is why it is omitted
-    double srs = (wa1->getSrs() + additions->get(year,loc)) /
-                 stdDevs->get(year,"srs");
+    double srs = (wa1->getSrs()) / stdDevs->get(year,"srs"); //removed addition here
 
     std::unordered_map<std::string, double> *theWeights = weights[year];
 
