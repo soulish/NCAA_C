@@ -15,8 +15,10 @@
 #include "src/ConstantStandardDeviations.h"
 #include "src/ConstantWAverageFunctions.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "src/ConstantSRSadditions.h"
 #include "src/ConstantGameFunction.h"
+#include "helpers/vegasConversion.h"
 
 void printOptions();
 
@@ -138,6 +140,8 @@ int main(int argc,char *argv[]) {
 
     TH1F *h_wins = new TH1F("h_wins","",nbins,0,1);
     TH1F *h_total = new TH1F("h_total","",nbins,0,1);
+    TH2F *spread_vs_spread = new TH2F("spread_vs_spread","",80,-20,20,80,-20,20);
+    TH2F *myspread_vs_pct = new TH2F("myspread_vs_pct","",100,0,1,80,-20,20);
 
     for (auto &team : teams) {
         games = team.second->getGamesByDate();
@@ -147,6 +151,8 @@ int main(int argc,char *argv[]) {
             if (!opp) continue;
             if (game.second->getDate() >= seasonInfo->get(team.second->getYear(), "tournament start")) continue;
             if (game.second->getDate().month().as_number() == 11) continue;
+
+            TeamGame *oppgame = opp->GameOnDate(game.second->getDate(),team.second->getName());
 
             bool win = game.second->getWin() == 1;
             double spread = game.second->getSpread();
@@ -188,13 +194,18 @@ int main(int argc,char *argv[]) {
 
                 if (win) h_wins->Fill(gameScorePct);
                 h_total->Fill(gameScorePct);
+
+                if (spread != 0 && spread == -1*oppgame->getSpread()){
+                    double myspread = gameScorePct < 0.5 ? pctToSpread(gameScorePct) : -1*pctToSpread(1 - gameScorePct);
+                    myspread_vs_pct->Fill(gameScorePct,myspread);
+                    spread_vs_spread->Fill(spread, myspread);
+                }
             }
 
             gameScoreTotal++;
             if (gameScore > 0 && win) gameScoreWins++;
             if (gameScore < 0 && !win) gameScoreWins++;
 
-            TeamGame *oppgame = opp->GameOnDate(game.second->getDate(),team.second->getName());
             if (spread != -1*oppgame->getSpread()) continue; //if the spreads are somehow messed up
 
             if (spread != 0){

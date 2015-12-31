@@ -100,11 +100,13 @@ end
 
 h_wins = gROOT.FindObject("h_wins")
 h_total = gROOT.FindObject("h_total")
+spread_vs_spread = gROOT.FindObject("spread_vs_spread")
+myspread_vs_pct = gROOT.FindObject("myspread_vs_pct")
 
 h_wins.Divide(h_total)
 
 can = TCanvas.new("can","",0,0,1300,700)
-can.Divide(2,1)
+can.Divide(2,2)
 
 can.cd(1)
 h_total.SetTitle(";Predicted Winning Percentage;Number of Games")
@@ -123,6 +125,23 @@ fn = TF1.new("fn","pol1")
 h_wins.Fit(fn,"q")
 puts
 printf("Linear fit function: %.3f + %.3fx\n", fn.GetParameter(0),fn.GetParameter(1))
+
+can.cd(3)
+spread_vs_spread.SetTitle(";Vegas Spread;My Spread")
+spread_vs_spread.Draw("colz")
+fn_neg = TF1.new("fn_neg","pol1",-15,0)
+fn_pos = TF1.new("fn_pos","pol1",0,15)
+fn_full = TF1.new("fn_full","pol1",-15,15)
+spread_vs_spread.Fit(fn_neg,"qr")
+spread_vs_spread.Fit(fn_pos,"qrsame")
+spread_vs_spread.Fit(fn_full,"qrsame")
+puts "Negative side: #{fn_neg.GetParameter(0)} + #{fn_neg.GetParameter(1)}*x"
+puts "Positive side: #{fn_pos.GetParameter(0)} + #{fn_pos.GetParameter(1)}*x"
+puts "Full range   : #{fn_full.GetParameter(0)} + #{fn_full.GetParameter(1)}*x"
+
+can.cd(4)
+myspread_vs_pct.SetTitle(";Predicted Pct;My Spread")
+myspread_vs_pct.Draw("colz")
 
 if (create and fileName.nil?)
   `rm rootFiles/predictions.root`
