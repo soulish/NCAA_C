@@ -161,8 +161,7 @@ int main(int argc,char *argv[]) {
                            predictions2["oto.p"] * wa2->getValue("oto.p") / ratios->get(outYear,oppLoc,"oto.p")) /
                           stdDevs->get(outYear,"oto.p"));
 
-            srs.push_back((wa1->getSrs() - wa2->getSrs() + additions->get(outYear,loc)) /
-                          stdDevs->get(outYear,"srs"));
+            srs.push_back((wa1->getSrs() - wa2->getSrs()) / stdDevs->get(outYear,"srs")); //removed additions
         }
     }
 
