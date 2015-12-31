@@ -128,7 +128,7 @@ int main(int argc,char *argv[]){
                 hists[s]->Fill(predictions1["o"+s] * wa1->getValue("o"+s) / ratios->get(outYear,game.second->getLoc(),"o"+s) -
                                predictions2["o"+s] * wa2->getValue("o"+s) / ratios->get(outYear,game.second->getOppLoc(),"o"+s));
             }
-            hists["srs"]->Fill((wa1->getSrs() - wa2->getSrs() + additions->get(outYear,loc)));
+            hists["srs"]->Fill(wa1->getSrs() - wa2->getSrs()); //no longer including the addition
         }
     }
 
