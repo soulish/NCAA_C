@@ -135,9 +135,9 @@ fn_full = TF1.new("fn_full","pol1",-15,15)
 spread_vs_spread.Fit(fn_neg,"qr")
 spread_vs_spread.Fit(fn_pos,"qrsame")
 spread_vs_spread.Fit(fn_full,"qrsame")
-puts "Negative side: #{fn_neg.GetParameter(0)} + #{fn_neg.GetParameter(1)}*x"
-puts "Positive side: #{fn_pos.GetParameter(0)} + #{fn_pos.GetParameter(1)}*x"
-puts "Full range   : #{fn_full.GetParameter(0)} + #{fn_full.GetParameter(1)}*x"
+printf("Negative side: %.3f + %.3f * x\n",fn_neg.GetParameter(0),fn_neg.GetParameter(1))
+printf("Positive side: %.3f + %.3f * x\n",fn_pos.GetParameter(0),fn_pos.GetParameter(1))
+printf("Full range   : %.3f + %.3f * x\n",fn_full.GetParameter(0),fn_full.GetParameter(1))
 
 can.cd(4)
 myspread_vs_pct.SetTitle(";Predicted Pct;My Spread")
