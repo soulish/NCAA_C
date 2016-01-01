@@ -83,6 +83,8 @@ if create
     results = `$CLION/checkGamePredictions -y #{years} -o #{fileName} -H #{srsVal.nil? ? "" : "-s #{srsVal}"} #{sigmas.nil? ? "" : "-S #{sigmas}"} #{nbins.nil? ? "" : "-n #{nbins}"}`
     file = TFile.new("rootFiles/#{fileName}")
   end
+  puts results.split("\n")[-7]
+  puts results.split("\n")[-6]
   puts results.split("\n")[-5]
   puts results.split("\n")[-4]
   puts results.split("\n")[-3]
