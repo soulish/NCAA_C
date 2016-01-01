@@ -42,8 +42,9 @@ int main(int argc,char *argv[]) {
     int outYear = 0;
     bool useSeededValues = false;
     std::string seededLocation = "";
+    bool zeroSRS = false;
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Y:o:i:S:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:Y:o:i:S:zh")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -62,6 +63,9 @@ int main(int argc,char *argv[]) {
             case 'S':
                 useSeededValues = true;
                 seededLocation.assign(optarg);
+                break;
+            case 'z':
+                zeroSRS = true;
                 break;
             case 'h':
                 printOptions();
@@ -180,7 +184,10 @@ int main(int argc,char *argv[]) {
             double randoms[5];
             rand.RndmArray(5, randoms);
 
-            temp_ary = run_fit(randoms[0], randoms[1], randoms[2], randoms[3], randoms[4]);
+            if (zeroSRS)
+                temp_ary = run_fit(randoms[0], randoms[1], randoms[2], randoms[3], 0);
+            else
+                temp_ary = run_fit(randoms[0], randoms[1], randoms[2], randoms[3], randoms[4]);
 
             double temp_fcn_min = temp_ary.back();
             double temp_fcn_min2;
@@ -318,6 +325,9 @@ std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
     minuit.mnparm(3,"parTO",parOTO,0.1,0,0,iflag);//top
     minuit.mnparm(4,"parSRS",parSRS,0.1,0,0,iflag);//srs
 
+    if (parSRS == 0)
+        minuit.FixParameter(4);
+
     arglist[0] = 10000;
     arglist[1] = 0.0001;
     minuit.mnexcm("MIGRAD",arglist,2,iflag);
@@ -347,6 +357,7 @@ void printOptions(){
     std::cout << "\t-i (int) number of fit iterations (default: 1)[Optional]" << std::endl;
     std::cout << "\t-o (string) output file name to be created in constants directory (no default)[Optional]" << std::endl;
     std::cout << "\t-S (string) seed file to read starting values from (no default)[Optional]" << std::endl;
+    std::cout << "\t-z lock the SRS value to zero, fitting only four parameters [Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: $CLION/generateWeights -y 2010,2011,2012,2013,2014 -Y 2015 -i 500 -o game_function_weights.d" << std::endl;
@@ -361,5 +372,9 @@ void printOptions(){
     std::cout << "iteration and then a fit is run starting from those values.  But if you" << std::endl;
     std::cout << "wish to, you can enter a (properly formatted) file with set starting values" << std::endl;
     std::cout << "using the -S option." << std::endl;
+    std::cout << std::endl;
+    std::cout << "You are also able to set the value of the SRS to zero and to lock it to that value" << std::endl;
+    std::cout << "so that parameter is not fit.  This is useful when trying to determine the " << std::endl;
+    std::cout << "four factors parameters on their own." << std::endl;
     std::cout << std::endl;
 }
