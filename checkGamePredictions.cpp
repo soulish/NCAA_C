@@ -130,8 +130,12 @@ int main(int argc,char *argv[]) {
     int gameScoreWinsSpread = 0, gameScoreTotalSpread = 0;
     int vegasWinsSpread = 0, vegasTotalSpread = 0;
     int adjGameScoreWins = 0, adjGameScoreTotal = 0;
+    int unadjustedSrsWins = 0, unadjustedSrsTotal = 0;
     int srsWins = 0, srsTotal = 0;
     int srsWinsSpread = 0, srsTotalSpread = 0;
+
+    int srsGameScoreWins = 0, srsGameScoreTotal = 0;
+    int srsGameScoreWinsSpread = 0, srsGameScoreTotalSpread = 0;
 
     TFile *outFile;
     if (outFileName != "") {
@@ -165,14 +169,31 @@ int main(int argc,char *argv[]) {
             std::string oppLoc = game.second->getOppLoc();
 
             double gameScore = gameFunction->predictGame(wa1,wa2,team.second->getYear(),loc,oppLoc);
+            if (gameScore >= 0 && win) gameScoreWins++;
+            if (gameScore < 0 && !win) gameScoreWins++;
+            gameScoreTotal++;
 
             double gameScorePct = -1;
             double gameScorePct_err = -1;
+
+            double unadjustedSrsVal = wa1->getSrs() - wa2->getSrs();
+            if (win && unadjustedSrsVal >= 0) unadjustedSrsWins++;
+            if (!win && unadjustedSrsVal < 0) unadjustedSrsWins++;
+            unadjustedSrsTotal++;
 
             double srsVal = wa1->getSrs() - wa2->getSrs() + additions->get(team.second->getYear(),loc);
             if (win && srsVal >= 0) srsWins++;
             if (!win && srsVal < 0) srsWins++;
             srsTotal++;
+
+            if (gameScore >= 0 && srsVal >= 0){
+                if (win) srsGameScoreWins++;
+                srsGameScoreTotal++;
+            }
+            if (gameScore < 0 && srsVal < 0){
+                if (!win) srsGameScoreWins++;
+                srsGameScoreTotal++;
+            }
 
             if (useHistogramsFile){
                 if (gameScore >= 3){
@@ -203,10 +224,6 @@ int main(int argc,char *argv[]) {
                 }
             }
 
-            gameScoreTotal++;
-            if (gameScore > 0 && win) gameScoreWins++;
-            if (gameScore < 0 && !win) gameScoreWins++;
-
             if (spread != -1*oppgame->getSpread()) continue; //if the spreads are somehow messed up
 
             if (spread != 0){
@@ -217,6 +234,15 @@ int main(int argc,char *argv[]) {
                 srsTotalSpread++;
                 if (win && srsVal >= 0) srsWinsSpread++;
                 if (!win && srsVal < 0) srsWinsSpread++;
+
+                if (gameScore >= 0 && srsVal >= 0){
+                    if (win) srsGameScoreWinsSpread++;
+                    srsGameScoreTotalSpread++;
+                }
+                if (gameScore < 0 && srsVal < 0){
+                    if (!win) srsGameScoreWinsSpread++;
+                    srsGameScoreTotalSpread++;
+                }
 
                 vegasTotalSpread++;
                 if (spread < 0 && win) vegasWinsSpread++;
@@ -233,8 +259,14 @@ int main(int argc,char *argv[]) {
         doubleFormatter(adjGameScoreWins / (double) adjGameScoreTotal, 3) << std::endl;
     }
 
-    std::cout << "SRS predictions:\t" << srsWins << " / " << srsTotal << " = " <<
+    std::cout << "Unadjusted SRS:\t\t" << unadjustedSrsWins << " / " << unadjustedSrsTotal << " = " <<
+    doubleFormatter(unadjustedSrsWins / (double) unadjustedSrsTotal, 3) << std::endl;
+
+    std::cout << "Adjusted SRS:\t\t" << srsWins << " / " << srsTotal << " = " <<
     doubleFormatter(srsWins / (double) srsTotal, 3) << std::endl;
+
+    std::cout << "SRS, GameScore agree :\t" << srsGameScoreWins << " / " << srsGameScoreTotal << " = " <<
+    doubleFormatter(srsGameScoreWins / (double) srsGameScoreTotal, 3) << std::endl;
 
     std::cout << std::endl;
 
@@ -247,6 +279,8 @@ int main(int argc,char *argv[]) {
     std::cout << "SRS with Spread:\t" << srsWinsSpread << " / " << srsTotalSpread << " = " <<
     doubleFormatter(srsWinsSpread / (double) srsTotalSpread, 3) << std::endl;
 
+    std::cout << "SRS, GameScore agree :\t" << srsGameScoreWinsSpread << " / " << srsGameScoreTotalSpread << " = " <<
+    doubleFormatter(srsGameScoreWinsSpread / (double) srsGameScoreTotalSpread, 3) << std::endl;
 
     if (outFileName != "") {
         outFile->Write();
