@@ -131,6 +131,7 @@ int main(int argc,char *argv[]) {
     int vegasWinsSpread = 0, vegasTotalSpread = 0;
     int adjGameScoreWins = 0, adjGameScoreTotal = 0;
     int srsWins = 0, srsTotal = 0;
+    int srsWinsSpread = 0, srsTotalSpread = 0;
 
     TFile *outFile;
     if (outFileName != "") {
@@ -213,6 +214,10 @@ int main(int argc,char *argv[]) {
                 if (gameScore > 0 && win) gameScoreWinsSpread++;
                 if (gameScore < 0 && !win) gameScoreWinsSpread++;
 
+                srsTotalSpread++;
+                if (win && srsVal >= 0) srsWinsSpread++;
+                if (!win && srsVal < 0) srsWinsSpread++;
+
                 vegasTotalSpread++;
                 if (spread < 0 && win) vegasWinsSpread++;
                 if (spread > 0 && !win) vegasWinsSpread++;
@@ -228,14 +233,20 @@ int main(int argc,char *argv[]) {
         doubleFormatter(adjGameScoreWins / (double) adjGameScoreTotal, 3) << std::endl;
     }
 
-    std::cout << "Games with Spread:\t" << gameScoreWinsSpread << " / " << gameScoreTotalSpread << " = " <<
-    doubleFormatter(gameScoreWinsSpread / (double) gameScoreTotalSpread, 3) << std::endl;
+    std::cout << "SRS predictions:\t" << srsWins << " / " << srsTotal << " = " <<
+    doubleFormatter(srsWins / (double) srsTotal, 3) << std::endl;
+
+    std::cout << std::endl;
 
     std::cout << "Vegas precitions:\t" << vegasWinsSpread << " / " << vegasTotalSpread << " = " <<
     doubleFormatter(vegasWinsSpread / (double) vegasTotalSpread,3) << std::endl;
 
-    std::cout << "SRS predictions:\t" << srsWins << " / " << srsTotal << " = " <<
-    doubleFormatter(srsWins / (double) srsTotal, 3) << std::endl;
+    std::cout << "Games with Spread:\t" << gameScoreWinsSpread << " / " << gameScoreTotalSpread << " = " <<
+    doubleFormatter(gameScoreWinsSpread / (double) gameScoreTotalSpread, 3) << std::endl;
+
+    std::cout << "SRS with Spread:\t" << srsWinsSpread << " / " << srsTotalSpread << " = " <<
+    doubleFormatter(srsWinsSpread / (double) srsTotalSpread, 3) << std::endl;
+
 
     if (outFileName != "") {
         outFile->Write();
