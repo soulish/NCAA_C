@@ -32,8 +32,9 @@ int main(int argc,char *argv[]) {
     std::string outFileName = "";
     double sigmas = 3;
     int nbins = 33;
+    std::string predictionDay = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:HS:o:s:n:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:HS:o:s:n:d:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -54,6 +55,9 @@ int main(int argc,char *argv[]) {
             case 'n':
                 nbins = atoi(optarg);
                 break;
+            case 'd':
+                predictionDay.assign(optarg);
+                break;
             case 'h':
                 printOptions();
                 return 0;
@@ -70,6 +74,10 @@ int main(int argc,char *argv[]) {
         printOptions();
         return 0;
     }
+
+    boost::gregorian::date predictionDate;
+    if (predictionDay != "")
+        predictionDate = boost::gregorian::date(boost::gregorian::from_string(predictionDay));
 
     char *homePath, path[256];
     homePath = getenv("HOME");
@@ -151,6 +159,7 @@ int main(int argc,char *argv[]) {
     for (auto &team : teams) {
         games = team.second->getGamesByDate();
         for (auto &game : games) {
+            if (predictionDay != "" && predictionDate != game.second->getDate()) continue;
             if (team.first < game.second->getOpp()) continue; //look at each game only once
             opp = Team::findTeam(game.second->getOpp());
             if (!opp) continue;
