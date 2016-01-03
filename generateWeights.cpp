@@ -27,7 +27,9 @@ std::vector<double> oftmr;
 std::vector<double> oto;
 std::vector<double> srs;
 
+double evaluateFcn(double parOOR, double parOEFG, double parOFTMR, double parOTO, double parSRS);
 void fcn(int& num_par, double* grad, double& f, double pars[], int flag);
+void fcn2(int& num_par, double* grad, double& f, double pars[], int flag);
 std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
                             double parOTO, double parSRS);
 void printOptions();
@@ -346,6 +348,30 @@ std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
     ret_ary.push_back(fmin);
 
     return ret_ary;
+}
+
+double evaluateFcn(double parOOR, double parOEFG, double parOFTMR,
+                   double parOTO, double parSRS) {
+    double value;
+    int wins = 0, total = 0;
+    int num_events = (int) win.size();
+
+    for (int i = 0; i < num_events; i++){
+        value = parOOR * oor.at(i) +
+                parOEFG * oefg.at(i) +
+                parOFTMR * oftmr.at(i) +
+                parOTO * oto.at(i) +
+                parSRS * srs.at(i);
+        total++;
+        if (value > 0){
+            if (win.at(i) == 1) wins++;
+        }
+        else{
+            if (win.at(i) == 0) wins++;
+        }
+    }
+
+    return -wins / (double) total;//return the winning percentage
 }
 
 void printOptions(){
