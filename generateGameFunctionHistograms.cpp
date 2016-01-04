@@ -106,9 +106,9 @@ int main(int argc,char *argv[]) {
     std::unordered_map<int, TH1F*> hists_gameScore_wins, hists_gameScore_losses;
     for (int year = 2007; year <= 2016; year++) {
         sprintf(path,"hist_gameScore_wins_%d",year);
-        hists_gameScore_wins.emplace(year, new TH1F(path,"",1600,-3,3));
+        hists_gameScore_wins.emplace(year, new TH1F(path,"",200,-3,3));
         sprintf(path,"hist_gameScore_losses_%d",year);
-        hists_gameScore_losses.emplace(year, new TH1F(path,"",1600,-3,3));
+        hists_gameScore_losses.emplace(year, new TH1F(path,"",200,-3,3));
     }
 
     for (auto &team : teams) {
