@@ -26,9 +26,10 @@ int main(int argc,char *argv[]){
     std::string srsValue = "free";
     std::string evaluationDay = "";
     std::string predictionDay = "";
+    bool printNames = false;
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"y:hHs:d:D:")) != -1){
+    while((c = getopt(argc,argv,"y:hHs:d:D:p")) != -1){
         switch(c){
             case 'y':
                 year = atoi(optarg);
@@ -44,6 +45,9 @@ int main(int argc,char *argv[]){
                 break;
             case 'D':
                 evaluationDay.assign(optarg);
+                break;
+            case 'p':
+                printNames = true;
                 break;
             case 'h':
                 printOptions();
@@ -125,6 +129,7 @@ int main(int argc,char *argv[]){
 
     std::vector<TeamScheduledGame*> *scheduledGamesVec;
     TeamScheduledGame *scheduledGame, *oppScheduledGame;
+    std::vector<std::string> teamsPlaying;
     Team *opp;
     for (auto &team : orderedTeams) {
         scheduledGamesVec = team.second->ScheduledGamesOnDate(
@@ -139,6 +144,9 @@ int main(int argc,char *argv[]){
                 //std::cout << std::endl;
                 continue;
             }
+
+            teamsPlaying.push_back(team.first);
+            teamsPlaying.push_back(opp->getName());
 
             TeamWAverage *waA = team.second->WAverageOnDate(boost::gregorian::date(boost::gregorian::from_string(evaluationDay)));
             TeamWAverage *waB = opp->WAverageOnDate(boost::gregorian::date(boost::gregorian::from_string(evaluationDay)));
@@ -183,6 +191,15 @@ int main(int argc,char *argv[]){
                     std::cout << opp->getName() << " is favored to win the game with a gameScore of " <<
                     doubleFormatter(gameScoreB, 3) << " against " << team.first << std::endl;
             }
+        }
+    }
+
+    if (printNames){
+        std::sort(teamsPlaying.begin(),teamsPlaying.end());
+        for (std::string &name : teamsPlaying){
+            std::string just_name = name.substr(5,name.size() - 5);
+            boost::replace_all(just_name, " ","-");
+            std::cout << just_name << std::endl;
         }
     }
 
