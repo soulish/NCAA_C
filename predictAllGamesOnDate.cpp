@@ -166,10 +166,10 @@ int main(int argc,char *argv[]){
                     std::cout << opp->getName() << " is " << doubleFormatter(gamePctB * 100, 1) <<
                     "% likely to win the game against " << team.first << std::endl;
                 }
-                double moneylineA = pctToMoneyline(gamePctA,true);
-                double moneylineB = pctToMoneyline(gamePctB,true);
                 double spreadA = pctToSpread(gamePctA);
                 double spreadB = pctToSpread(gamePctB);
+                double moneylineA = pctToMoneyline(gamePctA,true);
+                double moneylineB = pctToMoneyline(gamePctB,true);
                 std::cout << "\t\t" << team.first << " moneyline should be: " << doubleFormatter(moneylineA,0) << "\t" <<
                         "corresponding to a spread of: " << doubleFormatter(spreadA,1) << std::endl;
                 std::cout << "\t\t" << opp->getName() << " moneyline should be: " << doubleFormatter(moneylineB,0) << "\t" <<
