@@ -29,7 +29,6 @@ std::vector<double> srs;
 
 double evaluateFcn(double parOOR, double parOEFG, double parOFTMR, double parOTO, double parSRS);
 void fcn(int& num_par, double* grad, double& f, double pars[], int flag);
-void fcn2(int& num_par, double* grad, double& f, double pars[], int flag);
 std::vector<double> run_fit(double parOOR, double parOEFG, double parOFTMR,
                             double parOTO, double parSRS);
 void printOptions();
