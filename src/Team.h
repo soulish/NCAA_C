@@ -37,6 +37,7 @@ public:
     const std::unordered_map<std::string, std::vector<TeamScheduledGame *> *> &getScheduledGamesByDate() const {
         return scheduledGamesByDate;
     }
+    TeamGame *GameOnDate(boost::gregorian::date d) const;
     TeamGame *GameOnDate(boost::gregorian::date d, std::string opponent) const;
     TeamAverage *AverageOnDate(boost::gregorian::date d) const;
     TeamWAverage *WAverageOnDate(boost::gregorian::date d) const;

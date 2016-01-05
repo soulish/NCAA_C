@@ -612,6 +612,20 @@ std::vector<double> Team::calcWeightedAverage(boost::gregorian::date date) {
     return result;
 }
 
+//this method should only be used when you are absolutely certain that the
+//team only played one game on this date, otherwise use the version below
+//which allows you to specify the opponent.
+TeamGame *Team::GameOnDate(boost::gregorian::date d) const {
+    TeamGame *teamGame = nullptr;
+    std::string chosenDate = boost::gregorian::to_iso_extended_string(d);
+    for (auto &game : gamesByDate){
+        std::string gameDate = game.first.substr(0,chosenDate.size());
+        if (gameDate == chosenDate)
+            teamGame = game.second;
+    }
+    return teamGame;
+}
+
 TeamGame *Team::GameOnDate(boost::gregorian::date d, std::string opponent) const {
     if (gamesByDate.find(boost::gregorian::to_iso_extended_string(d) + opponent) == gamesByDate.end())
         return nullptr;
