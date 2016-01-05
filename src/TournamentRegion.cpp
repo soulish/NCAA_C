@@ -14,7 +14,8 @@ TournamentRegion::TournamentRegion(int _year)
           regionChamp(""),
           playInSeeds(),
           seeds(),
-          pcts_all() { }
+          pcts_all(),
+          challengePoints(0) { }
 
 void TournamentRegion::addTeam(std::string team, int seed) {
     teams.emplace(team,seed);
@@ -127,10 +128,39 @@ void TournamentRegion::firstRound(TH1F *hist, bool verbose, std::string chosenTe
         if (teamsBySeed[matchups[i]->at(0)] == chosenTeam ||
             (teamsBySeed[matchups[i]->at(1)] != chosenTeam && gameScore >= 0)){
             firstRoundWinners.push_back(teamsBySeed[matchups[i]->at(0)]);
+
+            //try to find the game played by this team on this date (either two or three days after
+            //the start of the tournament). If you find it that means that the team played in a game
+            //and if they won we get credit, no matter who they played.
+            TeamGame *x;
+            x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(2));
+            if (!x)
+                x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                      boost::gregorian::date_duration(3));
+            if (x && x->getWin() == 1){
+                //there is a bonus in this round for correctly selecting an upset
+//                if (teams[teamsBySeed[matchups[i]->at(0)]] >= 10) challengePoints += 2;
+//                else challengePoints += 1;
+                challengePoints += 10;
+            }
         }
         else if (teamsBySeed[matchups[i]->at(1)] == chosenTeam ||
                  (teamsBySeed[matchups[i]->at(0)] != chosenTeam && gameScore < 0)){
             firstRoundWinners.push_back(teamsBySeed[matchups[i]->at(1)]);
+
+            TeamGame *x;
+            x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(2));
+            if (!x)
+                x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                      boost::gregorian::date_duration(3));
+            if (x && x->getWin() == 1){
+                //there is a bonus in this round for correctly selecting an upset
+//                if (teams[teamsBySeed[matchups[i]->at(0)]] >= 10) challengePoints += 2;
+//                else challengePoints += 1;
+                challengePoints += 10;
+            }
         }
         pcts[teamsBySeed[matchups[i]->at(0)]] *= gamePct;
         pcts[teamsBySeed[matchups[i]->at(1)]] *= (1 - gamePct);
@@ -171,10 +201,28 @@ void TournamentRegion::secondRound(TH1F *hist, bool verbose, std::string chosenT
         if (firstRoundWinners[matchups[i]->at(0)] == chosenTeam ||
             (firstRoundWinners[matchups[i]->at(1)] != chosenTeam && gameScore >= 0)){
             secondRoundWinners.push_back(firstRoundWinners[matchups[i]->at(0)]);
+
+            TeamGame *x;
+            x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(4));
+            if (!x)
+                x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                      boost::gregorian::date_duration(5));
+            if (x && x->getWin() == 1)
+                challengePoints += 20;
         }
         else if (firstRoundWinners[matchups[i]->at(1)] == chosenTeam ||
                  (firstRoundWinners[matchups[i]->at(0)] != chosenTeam && gameScore < 0)){
             secondRoundWinners.push_back(firstRoundWinners[matchups[i]->at(1)]);
+
+            TeamGame *x;
+            x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(4));
+            if (!x)
+                x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                      boost::gregorian::date_duration(5));
+            if (x && x->getWin() == 1)
+                challengePoints += 20;
         }
         pcts[firstRoundWinners[matchups[i]->at(0)]] *= gamePct;
         pcts[firstRoundWinners[matchups[i]->at(1)]] *= (1 - gamePct);
@@ -211,10 +259,28 @@ void TournamentRegion::thirdRound(TH1F *hist, bool verbose, std::string chosenTe
         if (secondRoundWinners[matchups[i]->at(0)] == chosenTeam ||
             (secondRoundWinners[matchups[i]->at(1)] != chosenTeam && gameScore >= 0)){
             thirdRoundWinners.push_back(secondRoundWinners[matchups[i]->at(0)]);
+
+            TeamGame *x;
+            x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(9));
+            if (!x)
+                x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                      boost::gregorian::date_duration(10));
+            if (x && x->getWin() == 1)
+                challengePoints += 40;
         }
         else if (secondRoundWinners[matchups[i]->at(1)] == chosenTeam ||
                  (secondRoundWinners[matchups[i]->at(0)] != chosenTeam && gameScore < 0)){
             thirdRoundWinners.push_back(secondRoundWinners[matchups[i]->at(1)]);
+
+            TeamGame *x;
+            x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(9));
+            if (!x)
+                x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                      boost::gregorian::date_duration(10));
+            if (x && x->getWin() == 1)
+                challengePoints += 40;
         }
         pcts[secondRoundWinners[matchups[i]->at(0)]] *= gamePct;
         pcts[secondRoundWinners[matchups[i]->at(1)]] *= (1 - gamePct);
@@ -242,10 +308,28 @@ void TournamentRegion::fourthRound(TH1F *hist, bool verbose, std::string chosenT
     if (thirdRoundWinners[0] == chosenTeam ||
         (thirdRoundWinners[1] != chosenTeam && gameScore >= 0)){
         regionChamp = thirdRoundWinners[0];
+
+        TeamGame *x;
+        x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(11));
+        if (!x)
+            x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(12));
+        if (x && x->getWin() == 1)
+            challengePoints += 80;
     }
     else if (thirdRoundWinners[1] == chosenTeam ||
              (thirdRoundWinners[0] != chosenTeam && gameScore < 0)){
         regionChamp = thirdRoundWinners[1];
+
+        TeamGame *x;
+        x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(11));
+        if (!x)
+            x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                                  boost::gregorian::date_duration(12));
+        if (x && x->getWin() == 1)
+            challengePoints += 80;
     }
     pcts[thirdRoundWinners[0]] *= gamePct;
     pcts[thirdRoundWinners[1]] *= (1 - gamePct);
@@ -256,11 +340,13 @@ void TournamentRegion::fourthRound(TH1F *hist, bool verbose, std::string chosenT
                teams[thirdRoundWinners[1]], thirdRoundWinners[1].c_str(),
                teams[regionChamp], regionChamp.c_str(),
                gameScore, gameScore >= 0 ? gamePct : 1 - gamePct);
+        std::cout << "Challenge Points: " << challengePoints << std::endl;
     }
 }
 
 void TournamentRegion::reset() {
     pcts_all.clear();
+    challengePoints = 0;
     for (auto &t : teams){
         pcts[t.first] = 1;
         pcts_all.emplace(t.first, new std::array<double,5>());

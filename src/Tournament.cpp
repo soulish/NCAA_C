@@ -14,7 +14,8 @@ Tournament::Tournament(int _year)
           championshipGameTeams(),
           champion(""),
           championPct(1.0),
-          pcts_all(){
+          pcts_all(),
+          challengePoints(0){
     for (int i = 0; i < 4; i++)
         regions[i] = new TournamentRegion(_year);
 }
@@ -78,6 +79,7 @@ void Tournament::play(TH1F *hist, bool verbose, std::string chosenTeam) {
         regions[i]->fourthRound(hist,verbose,chosenTeam);
         regionChamps[i] = regions[i]->getRegionChamp();
         pcts.emplace(regionChamps[i], regions[i]->getPct(regionChamps[i]));
+        challengePoints += regions[i]->getChallengePoints();
     }
 
     if (verbose) std::cout << "\n\n" << std::endl;
@@ -99,10 +101,24 @@ void Tournament::play(TH1F *hist, bool verbose, std::string chosenTeam) {
     double gameScoreCD = ConstantGameFunction::Instance()->predictGame(waC,waD,year,"neutral","neutral");
     double gamePctCD = hist->GetBinContent((gameScoreCD+3)*1600/6.0);
 
-    if (regionChamps[0] == chosenTeam || (regionChamps[1] != chosenTeam && gameScoreAB >= 0))
+    if (regionChamps[0] == chosenTeam || (regionChamps[1] != chosenTeam && gameScoreAB >= 0)) {
         championshipGameTeams[0] = regionChamps[0];
-    else if (regionChamps[1] == chosenTeam || (regionChamps[0] != chosenTeam && gameScoreAB < 0))
+
+        TeamGame *x;
+        x = teamA->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(18));
+        if (x && x->getWin() == 1)
+            challengePoints += 160;
+    }
+    else if (regionChamps[1] == chosenTeam || (regionChamps[0] != chosenTeam && gameScoreAB < 0)) {
         championshipGameTeams[0] = regionChamps[1];
+
+        TeamGame *x;
+        x = teamB->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(18));
+        if (x && x->getWin() == 1)
+            challengePoints += 160;
+    }
     pcts[regionChamps[0]] *= gamePctAB;
     pcts[regionChamps[1]] *= (1 - gamePctAB);
     if (verbose){
@@ -113,10 +129,24 @@ void Tournament::play(TH1F *hist, bool verbose, std::string chosenTeam) {
                fabs(gameScoreAB), gameScoreAB >= 0 ? gamePctAB : 1 - gamePctAB);
     }
 
-    if (regionChamps[2] == chosenTeam || (regionChamps[3] != chosenTeam && gameScoreCD >= 0))
+    if (regionChamps[2] == chosenTeam || (regionChamps[3] != chosenTeam && gameScoreCD >= 0)) {
         championshipGameTeams[1] = regionChamps[2];
-    else if (regionChamps[3] == chosenTeam || (regionChamps[2] != chosenTeam && gameScoreCD < 0))
+
+        TeamGame *x;
+        x = teamC->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(18));
+        if (x && x->getWin() == 1)
+            challengePoints += 160;
+    }
+    else if (regionChamps[3] == chosenTeam || (regionChamps[2] != chosenTeam && gameScoreCD < 0)) {
         championshipGameTeams[1] = regionChamps[3];
+
+        TeamGame *x;
+        x = teamD->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(18));
+        if (x && x->getWin() == 1)
+            challengePoints += 160;
+    }
     pcts[regionChamps[2]] *= gamePctCD;
     pcts[regionChamps[3]] *= (1 - gamePctCD);
     if (verbose){
@@ -140,10 +170,24 @@ void Tournament::play(TH1F *hist, bool verbose, std::string chosenTeam) {
     double gameScoreEF = ConstantGameFunction::Instance()->predictGame(waE,waF,year,"neutral","neutral");
     double gamePctEF = hist->GetBinContent((gameScoreEF+3)*1600/6.0);
 
-    if (championshipGameTeams[0] == chosenTeam || (championshipGameTeams[1] != chosenTeam && gameScoreEF >= 0))
+    if (championshipGameTeams[0] == chosenTeam || (championshipGameTeams[1] != chosenTeam && gameScoreEF >= 0)) {
         champion = championshipGameTeams[0];
-    else if (championshipGameTeams[1] == chosenTeam || (championshipGameTeams[0] != chosenTeam && gameScoreEF < 0))
+
+        TeamGame *x;
+        x = teamE->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(18));
+        if (x && x->getWin() == 1)
+            challengePoints += 320;
+    }
+    else if (championshipGameTeams[1] == chosenTeam || (championshipGameTeams[0] != chosenTeam && gameScoreEF < 0)) {
         champion = championshipGameTeams[1];
+
+        TeamGame *x;
+        x = teamF->GameOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start") +
+                              boost::gregorian::date_duration(18));
+        if (x && x->getWin() == 1)
+            challengePoints += 320;
+    }
     pcts[championshipGameTeams[0]] *= gamePctEF;
     pcts[championshipGameTeams[1]] *= (1 - gamePctEF);
     if (verbose){
@@ -152,6 +196,8 @@ void Tournament::play(TH1F *hist, bool verbose, std::string chosenTeam) {
                teams[championshipGameTeams[1]], championshipGameTeams[1].c_str(),
                teams[champion], champion.c_str(),
                fabs(gameScoreEF), gameScoreEF >= 0 ? gamePctEF : 1 - gamePctEF);
+
+        std::cout << "Challenge Points: " << challengePoints << std::endl;
     }
 
     championPct = pcts[champion];

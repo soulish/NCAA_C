@@ -19,6 +19,7 @@ public:
     void readTournamentInfo(std::string);
     void play(TH1F* hist, bool verbose = true, std::string chosenTeam = "");
     void calculateTotalPercentages(TH1F* hist);
+    int getChallengePoints() { return challengePoints; }
 
 private:
     const int year;
@@ -30,6 +31,7 @@ private:
     std::string champion;
     double championPct;
     std::unordered_map<std::string, std::array<double,7> *> pcts_all;
+    int challengePoints;
 };
 
 

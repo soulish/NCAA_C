@@ -35,6 +35,7 @@ public:
     double getPct(std::string teamName) { return pcts[teamName]; }
     std::unordered_map<std::string, std::array<double,5> *> getPctsAll() { return pcts_all; }
     std::unordered_map<int,std::string> getTeamsBySeed();
+    int getChallengePoints() { return challengePoints; }
 
 private:
     const int year;
@@ -47,6 +48,7 @@ private:
     std::vector<int> playInSeeds;
     std::vector<int> seeds;
     std::unordered_map<std::string, std::array<double,5> *> pcts_all;
+    int challengePoints;
 };
 
 
