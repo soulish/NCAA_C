@@ -91,6 +91,7 @@ int main(int argc,char *argv[]) {
     //read in the game and waverage info
     sprintf(path, "%s/cpp/NCAA_C/teams/%d/", homePath, year);
     std::cout << "Reading in waverages for " << year << std::endl;
+    readTeamsFromDir(path, "games");
     readTeamsFromDir(path, "waverages");
 
     sprintf(path, "%s/cpp/NCAA_C/rootFiles/gameFunctionHistograms.%s.root", homePath, srsValue.c_str());
