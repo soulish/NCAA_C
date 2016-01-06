@@ -191,6 +191,7 @@ void printOptions(){
     std::cout << "\t-d (string yyyy-mm-dd or mm-dd or string) date on which to rank teams." << std::endl;
     std::cout << "\t\t Date format or season info strings allowed, such as \"tournament end\"" << std::endl;
     std::cout << "\t\t (default:\"tournament start\")[Optional]" << std::endl;
+    std::cout << "\t-n (int) number of teams to print out, starting from no. 1 (default: show all teams)[Optional]" << std::endl;
     std::cout << "\t-h show this dialog" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: $CLION/rankTeamsByGameScore -y 2014,2015 -H -s 0.5 -Y 2007 -d \"tournament end\"" << std::endl;
