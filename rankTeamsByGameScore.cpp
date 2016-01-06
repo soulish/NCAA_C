@@ -30,9 +30,10 @@ int main(int argc,char *argv[]) {
     int chosenYear = 0;
     std::string rankingDay = "tournament start";
     boost::gregorian::date rankingDate;
+    int numToShow = 1000000;
 
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:Hs:Y:d:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:Hs:Y:d:n:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -49,6 +50,9 @@ int main(int argc,char *argv[]) {
                 break;
             case 'd':
                 rankingDay.assign(optarg);
+                break;
+            case 'n':
+                numToShow = atoi(optarg);
                 break;
             case 'h':
                 printOptions();
@@ -156,6 +160,7 @@ int main(int argc,char *argv[]) {
         int i = 1;
         for (std::map<double, std::string>::reverse_iterator it = sortedGameScores.rbegin();
              it != sortedGameScores.rend(); ++it) {
+            if (i > numToShow) break;
             std::cout << i << "\t" << doubleFormatter(it->first, 4) << "\t\t" <<
                     doubleFormatter(gameScorePcts[it->second],3) << "\t\t" <<
                     it->second << '\n';
@@ -166,6 +171,7 @@ int main(int argc,char *argv[]) {
         int i = 1;
         for (std::map<double, std::string>::reverse_iterator it = sortedGameScores.rbegin();
              it != sortedGameScores.rend(); ++it) {
+            if (i > numToShow) break;
             std::cout << i << "\t" << doubleFormatter(it->first, 4) << "\t\t" << it->second << '\n';
             i++;
         }
