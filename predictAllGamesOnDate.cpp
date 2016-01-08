@@ -215,6 +215,7 @@ void printOptions(){
     std::cout << "\t-D (date string: yyyy-mm-dd) date of the waverages used for prediction (default: day of predictions)[Optional]" << std::endl;
     std::cout << "\t-H use histograms file to calculate percentages [Optional]" << std::endl;
     std::cout << "\t-s (double) srs value to use for weights and histograms (default: \tfree\")[Optional]" << std::endl;
+    std::cout << "\t-p print out list of the teams that played on this date [Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: predictAllGamesOnDate -y 2016 -H -d 2016-01-01 -D 2016-12-31" << std::endl;
