@@ -35,6 +35,7 @@ teamNameB = nil
 srsVal = "free"
 useHistograms = false
 evaluationDate = "tournament start"
+loc = "neutral"
 
 #command line switcher
 ARGV.each_with_index do |entry, index|
@@ -51,8 +52,11 @@ ARGV.each_with_index do |entry, index|
     teamNameB = ARGV[index+1]
   when /^-d/
     evaluationDate = ARGV[index+1]
+  when /^-l/
+    loc = ARGV[index+1]
   when /^-h/
     printOptions
+    exit
   end
 end
 
@@ -68,17 +72,17 @@ else
   result = nil
   if fileName.nil?
     if !useHistograms
-      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -d #{evaluationDate}`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -d #{evaluationDate} -l #{loc}`
     else
-      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -H -s #{srsVal} -d #{evaluationDate}`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"temp.root\" -H -s #{srsVal} -d #{evaluationDate} -l #{loc}`
     end
     #sleep 3
     file = TFile.new("rootFiles/temp.root")
   else
     if !useHistograms
-      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -d #{evaluationDate}`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -d #{evaluationDate} -l #{loc}`
     else
-      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -H -s #{srsVal} -d #{evaluationDate}`
+      result = `$CLION/predictGameOnDate -t \"#{teamNameA}\" -T \"#{teamNameB}\" -o \"#{fileName}\" -H -s #{srsVal} -d #{evaluationDate} -l #{loc}`
     end
     #sleep 3
     file = TFile.new("rootFiles/#{fileName}")

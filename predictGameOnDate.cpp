@@ -24,9 +24,11 @@ int main(int argc,char *argv[]){
     bool useHistogramsFile = false;
     std::string srsValue = "free";
     std::string evaluationDay = "tournament start";
+    std::string loc = "neutral";
+    std::string oppLoc = "neutral";
 
     /*____________________________Parse Command Line___________________________*/
-    while((c = getopt(argc,argv,"t:T:o:hHs:d:")) != -1){
+    while((c = getopt(argc,argv,"t:T:o:hHs:d:l:")) != -1){
         switch(c){
             case 't':
                 teamNameA = optarg;
@@ -45,6 +47,16 @@ int main(int argc,char *argv[]){
                 break;
             case 'd':
                 evaluationDay.assign(optarg);
+                break;
+            case 'l':
+                loc.assign(optarg);
+                if (loc == "home") oppLoc = "away";
+                else if (loc == "away") oppLoc = "home";
+                else if (loc == "neutral") oppLoc = "neutral";
+                else{
+                    std::cout << "Location must be either \"home\", \"away\", or \"neutral\"" << std::endl;
+                    return 0;
+                }
                 break;
             case 'h':
                 printOptions();
@@ -338,8 +350,8 @@ int main(int argc,char *argv[]){
         predicted_wavgsA["oto.p"]->SetBinContent(140, predictionsA["oto.p"] * waA->getValue("oto.p"));
         predicted_wavgsB["oto.p"]->SetBinContent(140, predictionsB["oto.p"] * waB->getValue("oto.p"));
 
-        double gameScoreA = gameFunction->predictGame(waA, waB, teamA->getYear(), "neutral", "neutral");
-        double gameScoreB = gameFunction->predictGame(waB, waA, teamB->getYear(), "neutral", "neutral");
+        double gameScoreA = gameFunction->predictGame(waA, waB, teamA->getYear(), loc, oppLoc);
+        double gameScoreB = gameFunction->predictGame(waB, waA, teamB->getYear(), oppLoc, loc);
 
         if (useHistogramsFile) {
             double gamePctA = probs_by_year[teamA->getYear()]->GetBinContent((gameScoreA + 3) * 1600 / 6.0);
@@ -375,8 +387,8 @@ int main(int argc,char *argv[]){
         TeamWAverage *waA = teamA->WAverageOnDate(seasonInfo->get(teamA->getYear(), evaluationDay));
         TeamWAverage *waB = teamB->WAverageOnDate(seasonInfo->get(teamB->getYear(), evaluationDay));
 
-        double gameScoreA = gameFunction->predictGame(waA, waB, teamA->getYear(), "neutral", "neutral");
-        double gameScoreB = gameFunction->predictGame(waB, waA, teamB->getYear(), "neutral", "neutral");
+        double gameScoreA = gameFunction->predictGame(waA, waB, teamA->getYear(), loc, oppLoc);
+        double gameScoreB = gameFunction->predictGame(waB, waA, teamB->getYear(), oppLoc, loc);
 
         if (useHistogramsFile) {
             double gamePctA = probs_by_year[teamA->getYear()]->GetBinContent((gameScoreA + 3) * 1600 / 6.0);
@@ -414,6 +426,7 @@ void printOptions(){
     std::cout << "\t-d (string yyyy-mm-dd or mm-dd or string) date on which to predict game." << std::endl;
     std::cout << "\t\t Date format or season info strings allowed, such as \"tournament end\"" << std::endl;
     std::cout << "\t\t (default:\"tournament start\")[Optional]" << std::endl;
+    std::cout << "\t-l (string) set location for -t team: \"home\", \"away\", or \"neutral\" (default: \"neutral\")[Optional]" << std::endl;
     std::cout << "\t-H calculate game score using histograms file (no default)[Optional]" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "Ex: predictGameOnDate -t \"2015 north carolina\" -T \"2015 harvard\" -o \"temp.root\" -H -s 0.5" << std::endl;
