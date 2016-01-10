@@ -33,8 +33,9 @@ int main(int argc,char *argv[]) {
     double sigmas = 3;
     int nbins = 33;
     std::string predictionDay = "";
+    std::string endRangeDay = "";
     /*____________________________Parse Command Line___________________________*/
-    while ((c = getopt(argc, argv, "y:HS:o:s:n:d:h")) != -1) {
+    while ((c = getopt(argc, argv, "y:HS:o:s:n:d:D:h")) != -1) {
         switch (c) {
             case 'y':
                 inYears.assign(optarg);
@@ -58,6 +59,9 @@ int main(int argc,char *argv[]) {
             case 'd':
                 predictionDay.assign(optarg);
                 break;
+            case 'D':
+                endRangeDay.assign(optarg);
+                break;
             case 'h':
                 printOptions();
                 return 0;
@@ -78,6 +82,15 @@ int main(int argc,char *argv[]) {
     boost::gregorian::date predictionDate;
     if (predictionDay != "")
         predictionDate = boost::gregorian::date(boost::gregorian::from_string(predictionDay));
+
+    boost::gregorian::date endRangeDate;
+    if (endRangeDay != ""){
+        endRangeDate = boost::gregorian::date(boost::gregorian::from_string(endRangeDay));
+        if (predictionDay == ""){
+            std::cout << "If you enter an end date, you must also specify a start date" << std::endl;
+            return 0;
+        }
+    }
 
     char *homePath, path[256];
     homePath = getenv("HOME");
@@ -155,21 +168,33 @@ int main(int argc,char *argv[]) {
     TH1F *h_total = new TH1F("h_total","",nbins,0,1);
     TH2F *spread_vs_spread = new TH2F("spread_vs_spread","",80,-20,20,80,-20,20);
     TH2F *myspread_vs_pct = new TH2F("myspread_vs_pct","",100,0,1,80,-20,20);
+    TH2F *myPct_vs_VegasPct = new TH2F("myPct_vs_VegasPct","",nbins,0,1,nbins,0,1);
 
     for (auto &team : teams) {
         games = team.second->getGamesByDate();
         for (auto &game : games) {
-            if (predictionDay != "" && predictionDate != game.second->getDate()) continue;
+            //look only at games within a certain range
+            if (predictionDay != ""){
+                if (endRangeDay == ""){
+                    if (predictionDate != game.second->getDate()) continue;
+                }
+                else{
+                    if (game.second->getDate() < predictionDate || game.second->getDate() > endRangeDate) continue;
+                }
+            }
+            else{
+                if (game.second->getDate() >= seasonInfo->get(team.second->getYear(), "tournament start")) continue;
+                if (game.second->getDate().month().as_number() == 11) continue;
+            }
             if (team.first < game.second->getOpp()) continue; //look at each game only once
             opp = Team::findTeam(game.second->getOpp());
             if (!opp) continue;
-            if (game.second->getDate() >= seasonInfo->get(team.second->getYear(), "tournament start")) continue;
-            if (game.second->getDate().month().as_number() == 11) continue;
 
             TeamGame *oppgame = opp->GameOnDate(game.second->getDate(),team.second->getName());
 
             bool win = game.second->getWin() == 1;
             double spread = game.second->getSpread();
+            double mySpread;
 
             wa1 = team.second->WAverageOnDate(game.second->getDate());
             wa2 = opp->WAverageOnDate(game.second->getDate());
@@ -227,9 +252,10 @@ int main(int argc,char *argv[]) {
                 h_total->Fill(gameScorePct);
 
                 if (spread != 0 && spread == -1*oppgame->getSpread()){
-                    double myspread = gameScorePct < 0.5 ? pctToSpread(gameScorePct) : -1*pctToSpread(1 - gameScorePct);
-                    myspread_vs_pct->Fill(gameScorePct,myspread);
-                    spread_vs_spread->Fill(spread, myspread);
+                    mySpread = pctToSpread(gameScorePct);
+                    myspread_vs_pct->Fill(gameScorePct,mySpread);
+                    spread_vs_spread->Fill(spread, mySpread);
+                    myPct_vs_VegasPct->Fill(spreadToPct(spread),gameScorePct);
                 }
             }
 
@@ -260,7 +286,8 @@ int main(int argc,char *argv[]) {
         }
     }
 
-    std::cout << "All games:\t\t" << gameScoreWins << " / " << gameScoreTotal << " = " <<
+    std::cout << "All Games" << std::endl;
+    std::cout << "gameScore:\t\t" << gameScoreWins << " / " << gameScoreTotal << " = " <<
     doubleFormatter(gameScoreWins / (double) gameScoreTotal, 3) << std::endl;
 
     if (useHistogramsFile) {
@@ -279,13 +306,14 @@ int main(int argc,char *argv[]) {
 
     std::cout << std::endl;
 
-    std::cout << "Vegas precitions:\t" << vegasWinsSpread << " / " << vegasTotalSpread << " = " <<
+    std::cout << "Games with a spread" << std::endl;
+    std::cout << "Vegas:\t\t\t" << vegasWinsSpread << " / " << vegasTotalSpread << " = " <<
     doubleFormatter(vegasWinsSpread / (double) vegasTotalSpread,3) << std::endl;
 
-    std::cout << "Games with Spread:\t" << gameScoreWinsSpread << " / " << gameScoreTotalSpread << " = " <<
+    std::cout << "gameScore:\t\t" << gameScoreWinsSpread << " / " << gameScoreTotalSpread << " = " <<
     doubleFormatter(gameScoreWinsSpread / (double) gameScoreTotalSpread, 3) << std::endl;
 
-    std::cout << "SRS with Spread:\t" << srsWinsSpread << " / " << srsTotalSpread << " = " <<
+    std::cout << "SRS:\t\t\t" << srsWinsSpread << " / " << srsTotalSpread << " = " <<
     doubleFormatter(srsWinsSpread / (double) srsTotalSpread, 3) << std::endl;
 
     std::cout << "SRS, GameScore agree :\t" << srsGameScoreWinsSpread << " / " << srsGameScoreTotalSpread << " = " <<
@@ -307,6 +335,8 @@ void printOptions(){
     std::cout << "\t-H use histograms file (no default)[Optional]" << std::endl;
     std::cout << "\t-s (double) SRS value to determine weights file (default: \"free\")[Optional]" << std::endl;
     std::cout << "\t-o (string) write output ROOT file in rootFiles/ with designated name (no default)[Optional]" << std::endl;
+    std::cout << "\t-d (date string) check games only on specified date (no default, all games checked)[Optional]" << std::endl;
+    std::cout << "\t-D (date string) check games only between -d and -D dates (inclusive) (no default)[Optional, Requires -d set]" << std::endl;
     std::cout << "\t-S (double) set number of sigmas to use (default: 3)[Optional]" << std::endl;
     std::cout << "\t-h print this message" << std::endl;
     std::cout << "" << std::endl;
