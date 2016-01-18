@@ -1,5 +1,5 @@
 This is my NCAA basketball analysis code.  It was originally written in
-Ruby, however I have converted it into C++ for this project.  There are 
+Ruby, but I have converted it into C++ for this project.  There are 
 still a few Ruby files around to easily display some of the graphs and
 histograms made by some of the programs, but all of the actual work is done
 in C++.
@@ -30,12 +30,18 @@ by the year in which they end, so the 2016 season is shorthand for the
 2015-2016 season), I will need the statistics for the 2011, 2012, 2013, 2014
 and 2015 seasons.  
 
-I have gathered the box scores for every single Division-I
+#Directory Structure
+
+The root directory contains all of the actual programs which will
+be used in the analysis, and the class information and other
+backing data is contained in subdirectories.
+
+I have gathered the box scores for *every single* Division-I
 college basketball game played since the 2001 season, and they reside in the
 `teams/YEAR/` directory, where YEAR is the year in question, i.e. any number
 between 2001 and 2016.  In each year directory, there is a single file for
 every team labelled teams.YEAR_team_name.games.d (e.g. 
-teams.2015_north_carolina.games.d), which contains the box score information
+`teams.2015_north_carolina.games.d`), which contains the box score information
 for every game they played that season, including the opponent's name, the
 date, the location, whether they won or lost, how many points they scored,
 how many field goals they made and attempted, etc, as well as those same
@@ -45,8 +51,6 @@ required, and their unimportance for understanding the rest of the code,
 I have only uploaded a single example file to github, but in reality there
 are nearly 350 files per year.
 
-#Directory Stucture
-
 There is a constants directory, which contains many files that will be 
 created throughout the course of running the program files, but initially
 it would be empty.
@@ -54,6 +58,9 @@ it would be empty.
 There is also a tournamentInfo directory, which contains information about
 the NCAA tournament for every year since 2001.  Those files will not be 
 needed until the very end of the process.
+
+The src/ directory contains all of the class files for the project and
+will be fully explained below.
 
 Lastly, there is a helpers directory, which contains very small bits of
 helpful code that will be useful throughout the project.  One is called
@@ -173,33 +180,33 @@ where we simulate a game against a completely average opponent.
 
 The classes are:
 
-*ConstantSeasonInfo - containing the important dates in the season
-*ConstantTeam5YearAverages - containing the team averages for each stat
+* ConstantSeasonInfo - containing the important dates in the season
+* ConstantTeam5YearAverages - containing the team averages for each stat
 			    over the previous 5 seasons, for each
 			    season from 2003-2016.
-*ConstantTeamNeutralRatios - containing the neutral ratios for each stat
+* ConstantTeamNeutralRatios - containing the neutral ratios for each stat
 			    at each location (home, away, neutral) over
 			    the previous 5 seasons, for each season
 			    from 2003-2016.
-*ConstantTeamPointDifferentials - containing the average point differentials
+* ConstantTeamPointDifferentials - containing the average point differentials
 			    over the previous 5 seasons, for each
 			    season from 2003-2016.
-*ConstantTeamWinRatios - containing the win ratios
+* ConstantTeamWinRatios - containing the win ratios
 			over the previous 5 seasons, for each
 			season from 2003-2016.
-*ConstantSRSadditions - containing the SRS additions determined from the
+* ConstantSRSadditions - containing the SRS additions determined from the
 		       previous 5 seasons, for each season from 2005-2016.
-*ConstantStandardDeviations - containing the standard deviations for the
+* ConstantStandardDeviations - containing the standard deviations for the
 			     TeamWAverages for each of the eight useful
 			     stats over the previous 5 seasons, for each 
 			     season from 2005-2016.
-*ConstantWAverageFunctions - containing the functions used to determine the
+* ConstantWAverageFunctions - containing the functions used to determine the
 			    predicted value of an offensive stat given
 			    an offensive weighted average and defensive
 			    weighted average.  These were calculated using
 			    the previous 5 years stats for every season
 			    from 2005-2016.
-*ConstantGameFunction - containing the functions used to predict a winner
+* ConstantGameFunction - containing the functions used to predict a winner
 		       in a game.  These were calculated using the previous
 		       5 years stats for every season from 2005-2016.
 
