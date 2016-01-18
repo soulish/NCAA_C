@@ -6,7 +6,7 @@ in C++.
 
 I have written a document explaining all of the theory and formulas used
 throughout the project, which can be found 
-[here](http://www.brianvernarsky.com/files/brian_vernarsky_college_basketball_project.pdf). 
+[on my website](http://www.brianvernarsky.com/files/brian_vernarsky_college_basketball_project.pdf). 
 This document will simply try to explain what all of the files are and their
 purposes are, and also show the order in which to run the program files which
 exist in this main directory.
@@ -81,7 +81,7 @@ the pointer to the team by the team name.  It also contains a method
 to calculate the weighted average (explained below) on a given date.
 
 There is a file called readTeams.h that provides a method to read all of 
-the files in a given directory (one of the teams/YEAR/ directories) and add
+the files in a given directory (one of the `teams/YEAR/` directories) and add
 in all of the games, averages, or waverage files in that directory.  This is
 used to add all of the teams in a given year in at once.  This is the main
 way to read in the game, average, or waverage information in the programs,
@@ -161,7 +161,7 @@ of each team in the tournament reaching each of the rounds in the tournament,
 as well as winning the entire tournament.
 
 
-#The Constant Classes
+##The Constant Classes
 
 These classes are used to store constants needed in the programs.  Each of
 the classes are singleton classes with few methods (generally only a way
@@ -174,31 +174,39 @@ where we simulate a game against a completely average opponent.
 The classes are:
 
 ConstantSeasonInfo - containing the important dates in the season
+
 ConstantTeam5YearAverages - containing the team averages for each stat
 			    over the previous 5 seasons, for each
 			    season from 2003-2016.
+
 ConstantTeamNeutralRatios - containing the neutral ratios for each stat
 			    at each location (home, away, neutral) over
 			    the previous 5 seasons, for each season
 			    from 2003-2016.
+
 ConstantTeamPointDifferentials - containing the average point differentials
 			    over the previous 5 seasons, for each
 			    season from 2003-2016.
+
 ConstantTeamWinRatios - containing the win ratios
 			over the previous 5 seasons, for each
 			season from 2003-2016.
+
 ConstantSRSadditions - containing the SRS additions determined from the
 		       previous 5 seasons, for each season from 2005-2016.
+
 ConstantStandardDeviations - containing the standard deviations for the
 			     TeamWAverages for each of the eight useful
 			     stats over the previous 5 seasons, for each 
 			     season from 2005-2016.
+
 ConstantWAverageFunctions - containing the functions used to determine the
 			    predicted value of an offensive stat given
 			    an offensive weighted average and defensive
 			    weighted average.  These were calculated using
 			    the previous 5 years stats for every season
 			    from 2005-2016.
+
 ConstantGameFunction - containing the functions used to predict a winner
 		       in a game.  These were calculated using the previous
 		       5 years stats for every season from 2005-2016.
@@ -214,7 +222,7 @@ some other programs listed below that are used to look at the results
 of these programs.  I will note how many of them you have to run before
 you can use them.
 
-##generateAverages:
+###generateAverages:
 This file is for generating the averages for each of the stats over all teams
 in a year or a specified set of years.  It will yield the average of the 
 number of successes (e.g. made field goals), attempts (e.g. attempted field 
@@ -226,9 +234,9 @@ away games). This ratio is used when weighting the stats to come up with
 opponent-adjusted stats.
 
 
-##generateWeightedAverages.cpp:
+###generateWeightedAverages.cpp:
 This program will generate the weighted averages for every team in a given 
-year. It requires you to specify the year.  Then it searches the teams/YEAR/ 
+year. It requires you to specify the year.  Then it searches the `teams/YEAR/` 
 directory to find all of the team's game information.  It also reads in the 
 averages and neutral ratios files found in the constants directory.  It 
 outputs two files for each team, an (unweighted) averages file and a weighted 
@@ -237,7 +245,7 @@ the year's directory, you may choose whether or not to overwrite them with
 the -o switch.
 
 
-##generateSRS.cpp:
+###generateSRS.cpp:
 The program iterates over the SRS values to come up with the final values.
 It processes one year at a time.  It defaults to iterate 100 times.  You
 may choose to write the output to file with the -o switch, or print the 
@@ -249,7 +257,7 @@ calculation, without having to start from the current iteration, it is
 possible to start over using the original SRS values using the -O switch.
 
 
-##generateSRSadditions.cpp:
+###generateSRSadditions.cpp:
 The program calculates the number of points to add to a team's SRS when playing
 at home.  It does so for a given outYear (specified with the -Y switch), by
 analyzing the years sepcified as the input years using the -y switch and a
@@ -258,7 +266,7 @@ but can be written to a file, specified with the -o switch, which is created
 in the constants directory.
 
 
-##generateWAverageFunctions.cpp:
+###generateWAverageFunctions.cpp:
 This program generates the histograms which will be used to generate the
 functions which take as input Team A's offensive WAverages and Team B's
 defensive WAverage, and returns a prediction for what Team A's offensive
@@ -271,7 +279,7 @@ showWAverageFns.rb program.  The number of bins will depend on the number
 of input years (generally 5 => 301, less => 165).
 
 
-##showWAverageFns.rb:
+###showWAverageFns.rb:
 This program is used to show the results of the generateWAverageFunctions 
 program, but it can also be used to run that program first and then process 
 the output, so as to make this a one-step process.  If a ROOT file already 
@@ -291,14 +299,14 @@ If the -R option is chosen, then the canvases will be drawn, otherwise
 they will not.
 
 
-##generateStandardDeviations.cpp:
+###generateStandardDeviations.cpp:
 This program generates the standard deviations necessary for the game 
 functions. It takes as input 5 years worth of weighted averages and then 
 outputs the standard deviations for a given year (set with -Y option) either 
 to the terminal or to a file (set by the -o option).
 
 
-##generateWeights.cpp:
+###generateWeights.cpp:
 This program determines the best weights to use to maximize the number
 of games correctly predicted by the game function.  It takes as input
 5 seasons worth of weighted averages, and the associated standard deviations
@@ -311,13 +319,13 @@ wish to, you can enter a (properly formatted) file with set starting values
 using the -S option.
 
 
-##generateWeightsFixedSRS.cpp:
+###generateWeightsFixedSRS.cpp:
 This is basically the same program as generateWeights except that you
 fix the value of SRS and don't fit it, so there are only four
 parameters to fit each iteration.
 
 
-##generateGameFunctionHistograms.cpp:
+###generateGameFunctionHistograms.cpp:
 This program generates the histograms which are used to determine the
 likely winning percentage of a team based on their game score.  It requires
 all of the years for which the game score function weights have been defined
@@ -325,13 +333,13 @@ and the name of the output ROOT file, which will be created in the
 rootFiles/ directory.
 
 
-##checkGamePredictions.cpp:
+###checkGamePredictions.cpp:
 This program checks every game in the list of input years using the game
 function to determine how well it did.  If an SRS value is provided, using the
 -s option, a different game function weights file is used.  The histograms
 file is used to convert from the game score to likelihood of winning.
 
-##checkGamePredictions.rb
+###checkGamePredictions.rb
 This program is used to show the results of the checkGamePredictions.cpp 
 program, but it can also be used to run that program first and then process 
 the output, so as to make this a one-step process.  If a ROOT file already 
@@ -346,7 +354,7 @@ first-order polynomial.  If everything has gone well, then the resulting fit
 should be a line with intercept of 0 and slope of 1.  The parameters of the 
 fit are output on the screen, to see the actual plots, use the -R switch.
 
-##tournamentSimulation.cpp:
+###tournamentSimulation.cpp:
 This program will simulate the NCAA tournament for a given year (must be
 between 2007 and 2015 (currently)), using a histograms file to calculate
 the winning percentages.  The results will be output on the screen.
@@ -362,7 +370,7 @@ These programs are generally used to look at the results of previous
 programs in some way, shape, or form.  I note how far down the list of
 programs you need to go to be able to use them.
 
-##showTeamStats.cpp:
+###showTeamStats.cpp:
 This program creates histograms for each of the four factors, offense and
 defense, over the course of the season.  It creates histograms for both
 the regular averages as well as the weighted averages.  It also plots
@@ -374,7 +382,7 @@ SRS value for the weights if necessary.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-##showTeamStats.rb:
+###showTeamStats.rb:
 This program is used to show the results of the showTeamStats program, but
 it can also be used to run that program first and then process the output, 
 so as to make this a one-step process.  If a ROOT file already exists, you 
@@ -388,7 +396,7 @@ which is deleted at the end of the program.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-##predictGameOnDate.cpp:
+###predictGameOnDate.cpp:
 This program creates histograms for each of the four factors, offense and
 defense, over the course of the season for two teams.  It creates histograms 
 for both the regular averages as well as the weighted averages.  It also plots
@@ -401,7 +409,7 @@ SRS value for the weights if necessary.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-##predictGameOnDate.rb:
+###predictGameOnDate.rb:
 This program is used to show the results of the predictGameOnDate program,
 but it can also be used to run that program first and then process the output,
 so as to make this a one-step process.  If a ROOT file already exists, you 
@@ -415,7 +423,7 @@ is deleted at the end of the program.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-##predictAllGamesOnDate.rb:
+###predictAllGamesOnDate.rb:
 This program will calculate the odds of each team winning for every game to be
 played on the date specified by the -d switch.  The games to be played on the 
 date are determined by the schedules files.  Every team is cycled through, and
@@ -431,7 +439,7 @@ for every day, so the stats lag behind by a few days.
 Necessary programs: all up to and including generateSRS, must go to
 generateGameFunctionHistograms to use the -H option.
 
-##rankTeamsByGameScore.cpp:
+###rankTeamsByGameScore.cpp:
 This program ranks all of the teams in the list of years provided by their 
 gameScore as it is calculated on the day the NCAA tournament began in that year
 using either the constants appropriate for the year of the team, or a 
