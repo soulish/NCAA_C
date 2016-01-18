@@ -1,3 +1,5 @@
+#Introduction
+
 This is my NCAA basketball analysis code.  It was originally written in
 Ruby, but I have converted it into C++ for this project.  There are 
 still a few Ruby files around to easily display some of the graphs and
@@ -10,8 +12,6 @@ throughout the project, which can be found
 This document will simply try to explain what all of the files are and their
 purposes are, and also show the order in which to run the program files which
 exist in this main directory.
-
-#Introduction
 
 The basic idea behind this project is that I want to have a fairly simple
 equation to quickly tell me, for a game involving Team A and Team B, at
