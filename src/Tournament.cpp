@@ -254,7 +254,7 @@ void Tournament::calculateTotalPercentages(TH1F *hist) {
             Team *teamA = Team::findTeam(teamSeed.second);
             TeamWAverage *waA = teamA->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
             for (auto &oppTeamSeed : oppTeamsBySeed){
-                Team *teamB = Team::findTeam(teamSeed.second);
+                Team *teamB = Team::findTeam(oppTeamSeed.second);
                 TeamWAverage *waB = teamB->WAverageOnDate(ConstantSeasonInfo::Instance()->get(year, "tournament start"));
 
                 double gameScore = ConstantGameFunction::Instance()->predictGame(waA,waB,year,"neutral","neutral");
@@ -292,8 +292,8 @@ void Tournament::calculateTotalPercentages(TH1F *hist) {
             oppRegions[1] = regions[3];
         }
         if (i == 2 || i == 3) {
-            oppRegions[0] = regions[2];
-            oppRegions[1] = regions[3];
+            oppRegions[0] = regions[0];
+            oppRegions[1] = regions[1];
         }
 
         std::unordered_map<int, std::string> teamsBySeed = region->getTeamsBySeed();
@@ -307,7 +307,7 @@ void Tournament::calculateTotalPercentages(TH1F *hist) {
                 std::unordered_map<int, std::string> oppTeamsBySeed = oppRegion->getTeamsBySeed();
 
                 for (auto &oppTeamSeed : oppTeamsBySeed) {
-                    Team *teamB = Team::findTeam(teamSeed.second);
+                    Team *teamB = Team::findTeam(oppTeamSeed.second);
                     TeamWAverage *waB = teamB->WAverageOnDate(
                             ConstantSeasonInfo::Instance()->get(year, "tournament start"));
 
